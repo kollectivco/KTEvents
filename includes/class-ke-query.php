@@ -1,6 +1,6 @@
 <?php
 /**
- * Kontentainment Events Query Logic - Phase 5.2 Updated
+ * Kontentainment Events Query Logic - Phase 6 Optimized
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -25,9 +25,19 @@ class KE_Query {
 	 */
 	public function get_events( $overrides = array() ) {
 		$args = $this->get_filtered_events_args( $overrides );
+
+		// 1. Check Cache
+		$cache_key   = md_hash( json_encode( $args ) );
+		$cached_query = KE_Cache::get_instance()->get( 'event_q_' . $cache_key );
+		if ( $cached_query ) return $cached_query;
+
+		// 2. Fetch Query
 		$query = new WP_Query( $args );
 
-		// Track IDs for Unique Posts
+		// 3. Set Cache
+		KE_Cache::get_instance()->set( 'event_q_' . $cache_key, $query );
+
+		// Track IDs for Unique Posts (on real query)
 		if ( (isset($overrides['unique_post']) && 'yes' === $overrides['unique_post']) || isset($overrides['is_widget']) ) {
 			if ( $query->have_posts() ) {
 				foreach ( $query->posts as $p ) {
@@ -36,6 +46,21 @@ class KE_Query {
 			}
 		}
 
+		return $query;
+	}
+
+	/**
+	 * Get filtered venues with caching
+	 */
+	public function get_venues( $overrides = array() ) {
+		$args = $this->get_filtered_venues_args( $overrides );
+		
+		$cache_key = md_hash( json_encode( $args ) );
+		$cached = KE_Cache::get_instance()->get( 'venue_q_' . $cache_key );
+		if ( $cached ) return $cached;
+
+		$query = new WP_Query( $args );
+		KE_Cache::get_instance()->set( 'venue_q_' . $cache_key, $query );
 		return $query;
 	}
 
@@ -57,15 +82,14 @@ class KE_Query {
 			'offset'         => 0,
 			'post__in'       => array(),
 			'post__not_in'   => array(),
+			'ignore_sticky_posts' => true, // Production optimization
 		);
 
 		$args = wp_parse_args( $overrides, $defaults );
 
-		// 1. Query Mode Logic
 		$mode = $input['query_mode'] ?? 'standard';
 		
 		if ( 'current' === $mode ) {
-			// Dynamic Context
 			if ( is_single() && get_post_type() === 'venue' ) {
 				$args['meta_query'][] = array( 'key' => 'KE_event_venue_id', 'value' => get_the_ID(), 'compare' => '=' );
 			} elseif ( is_tax() ) {
@@ -73,26 +97,20 @@ class KE_Query {
 				$args['tax_query'][] = array( 'taxonomy' => $queried_object->taxonomy, 'field' => 'term_id', 'terms' => $queried_object->term_id );
 			}
 		} elseif ( 'standard' === $mode ) {
-			// Manual Selections
 			if ( ! empty( $input['include_ids'] ) ) $args['post__in'] = array_map( 'intval', explode( ',', $input['include_ids'] ) );
 			if ( ! empty( $input['exclude_ids'] ) ) $args['post__not_in'] = array_map( 'intval', explode( ',', $input['exclude_ids'] ) );
 			if ( ! empty( $input['offset'] ) ) $args['offset'] = intval( $input['offset'] );
 		}
 
-		// 2. Unique Post Filtering
 		if ( isset($input['unique_post']) && 'yes' === $input['unique_post'] ) {
 			$tracked_ids = KE_Unique_Posts::get_instance()->get_ids();
-			if ( ! empty( $tracked_ids ) ) {
-				$args['post__not_in'] = array_merge( (array) $args['post__not_in'], $tracked_ids );
-			}
+			if ( ! empty( $tracked_ids ) ) $args['post__not_in'] = array_merge( (array) $args['post__not_in'], $tracked_ids );
 		}
 
-		// Handle Offset + Pagination conflict
 		if ( $args['offset'] > 0 && $args['paged'] > 1 ) {
 			$args['offset'] = intval( $args['offset'] ) + ( ( $args['paged'] - 1 ) * $args['posts_per_page'] );
 		}
 
-		// Taxonomies
 		$tax_map = array( 'event_category' => 'event_category', 'event_city' => 'event_city', 'event_area' => 'event_area' );
 		foreach ( $tax_map as $key => $taxonomy ) {
 			$val = $input[ $key ] ?? '';
@@ -101,7 +119,6 @@ class KE_Query {
 			}
 		}
 
-		// Event Specific Metadata Filters
 		$status = $input['status'] ?? '';
 		if ( ! empty( $status ) ) {
 			if ( 'all_exc_past' === $status ) {
@@ -114,18 +131,16 @@ class KE_Query {
 		$meta_toggles = array( 'featured' => 'KE_event_featured', 'editor_pick' => 'KE_event_editor_pick' );
 		foreach ( $meta_toggles as $key => $meta_key ) {
 			$val = $input[ $key ] ?? '';
-			if ( '1' === (string)$val || true === $val || 'yes' === $val ) {
+			if ( in_array((string)$val, [ '1', 'yes', 'true' ]) ) {
 				$args['meta_query'][] = array( 'key' => $meta_key, 'value' => '1', 'compare' => '=' );
 			}
 		}
 
-		// Venue filter
 		$venue_id = $input['venue_id'] ?? '';
 		if ( ! empty( $venue_id ) ) {
 			$args['meta_query'][] = array( 'key' => 'KE_event_venue_id', 'value' => $venue_id, 'compare' => '=' );
 		}
 
-		// Sorting
 		$sort = $input['orderby_custom'] ?? 'upcoming';
 		switch ( $sort ) {
 			case 'latest': $args['orderby'] = 'date'; $args['order'] = 'DESC'; break;
@@ -145,23 +160,15 @@ class KE_Query {
 	}
 
 	/**
-	 * Render Events Loop with Presets and horizontal scroll detection
+	 * Optimized Render Events Loop
 	 */
 	public function render_events_loop( $query, $settings = array() ) {
-		$display = wp_parse_args( $settings, array(
-			'layout_preset' => 'classic',
-			'columns'       => 3,
-			'columns_tablet' => 2,
-			'columns_mobile' => 1,
-		) );
-
+		$display = wp_parse_args( $settings, array( 'layout_preset' => 'classic', 'columns' => 3, 'columns_tablet' => 2, 'columns_mobile' => 1 ) );
 		ob_start();
 		if ( $query->have_posts() ) {
 			$classes = array( 'ke-loop-wrapper', 'ke-preset-' . esc_attr($display['layout_preset']), 'ke-columns-' . esc_attr($display['columns']) );
 			if ( isset($display['horizontal_scroll']) && 'yes' === $display['horizontal_scroll'] ) $classes[] = 'ke-horizontal-scroll';
 			if ( isset($display['is_boxed']) && 'yes' === $display['is_boxed'] ) $classes[] = 'ke-boxed';
-			
-			// Foxiz dark mode classes
 			if ( isset($display['color_scheme']) && 'dark' === $display['color_scheme'] ) $classes[] = 'ke-scheme-dark';
 
 			echo '<div class="' . implode(' ', $classes) . '">';
@@ -173,10 +180,7 @@ class KE_Query {
 				else include KE_PLUGIN_DIR . 'templates/partials/loop-event-card.php';
 			}
 			echo '</div>';
-
-			// Render Pagination
 			if ( ! empty( $display['pagination'] ) ) $this->render_pagination( $query, $display );
-
 			wp_reset_postdata();
 		} else {
 			include KE_PLUGIN_DIR . 'templates/partials/archive-empty-state.php';
@@ -184,20 +188,39 @@ class KE_Query {
 		return ob_get_clean();
 	}
 
-	/**
-	 * Render Pagination
-	 */
 	private function render_pagination( $query, $settings ) {
 		if ( $query->max_num_pages <= 1 ) return;
 		$type = $settings['pagination'];
 		$style = $settings['pagination_style'] ?? 'standard';
 		$label = $settings['pagination_label'] ?? 'LOAD MORE';
-
 		echo '<div class="ke-pagination-wrapper ke-pagination-' . esc_attr($type) . ' ke-pagination-style-' . esc_attr($style) . '">';
-		if ( 'load_more' === $type ) {
-			echo '<a href="#" class="ke-load-more-btn" data-max-pages="' . $query->max_num_pages . '">' . esc_html($label) . '</a>';
-		}
+		if ( 'load_more' === $type ) echo '<a href="#" class="ke-load-more-btn" data-max-pages="' . $query->max_num_pages . '">' . esc_html($label) . '</a>';
 		echo '</div>';
+	}
+
+	public function get_filtered_venues_args( $overrides = array() ) {
+		$input = empty( $overrides ) || (isset( $overrides['paged'] ) && !isset($overrides['is_widget'])) ? $_GET : $overrides;
+		$defaults = array( 'post_type' => 'venue', 'posts_per_page' => 12, 'paged' => $input['ke_paged'] ?? 1, 'post_status' => 'publish', 'ignore_sticky_posts' => true );
+		$args = wp_parse_args( $overrides, $defaults );
+		if ( ! empty( $input['ke_search'] ) ) $args['s'] = sanitize_text_field( $input['ke_search'] );
+		$tax_map = array( 'event_city' => 'event_city', 'event_area' => 'event_area' );
+		foreach ( $tax_map as $key => $taxonomy ) {
+			$val = $input[ $key ] ?? '';
+			if ( ! empty( $val ) ) $args['tax_query'][] = array( 'taxonomy' => $taxonomy, 'field' => 'term_id', 'terms' => (array) $val );
+		}
+		return $args;
+	}
+
+	public function render_venues_loop( $query, $settings = array() ) {
+		$display = wp_parse_args( $settings, array( 'layout_preset' => 'grid', 'columns' => 3 ) );
+		ob_start();
+		if ( $query->have_posts() ) {
+			echo '<div class="ke-loop-wrapper ke-venues-preset-' . esc_attr($display['layout_preset']) . ' ke-columns-' . esc_attr($display['columns']) . '">';
+			while ( $query->have_posts() ) { $query->the_post(); include KE_PLUGIN_DIR . 'templates/partials/loop-venue-card.php'; }
+			echo '</div>';
+			wp_reset_postdata();
+		} else { include KE_PLUGIN_DIR . 'templates/partials/archive-empty-state.php'; }
+		return ob_get_clean();
 	}
 }
 KE_Query::get_instance();

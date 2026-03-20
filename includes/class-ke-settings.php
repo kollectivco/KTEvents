@@ -1,6 +1,6 @@
 <?php
 /**
- * Kontentainment Events Import Settings
+ * Kontentainment Events Settings - Phase 6 Optimized
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -19,101 +19,84 @@ class KE_Settings {
 	}
 
 	private function __construct() {
+		add_action( 'admin_menu', array( $this, 'register_settings_page' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 	}
 
-	/**
-	 * Register settings using WordPress Settings API
-	 */
+	public function register_settings_page() {
+		add_submenu_page(
+			'edit.php?post_type=event',
+			'KEA Settings',
+			'Settings',
+			'manage_options',
+			'ke-settings',
+			array( $this, 'render_settings_page' )
+		);
+	}
+
 	public function register_settings() {
-		register_setting( 'ke_import_settings_group', 'ke_import_settings', array( $this, 'sanitize' ) );
+		// Production Settings
+		register_setting( 'ke_settings_group', 'ke_enable_caching' );
+		register_setting( 'ke_settings_group', 'ke_cache_ttl' );
+		register_setting( 'ke_settings_group', 'ke_enable_schema' );
+		register_setting( 'ke_settings_group', 'ke_delete_on_uninstall' );
+		register_setting( 'ke_settings_group', 'ke_enable_import_logging' );
 
-		add_settings_section(
-			'ke_import_main_section',
-			'General Import Settings',
-			array( $this, 'section_callback' ),
-			'ke-import-settings'
-		);
-
-		$fields = array(
-			'timeout'              => 'Request Timeout (sec)',
-			'user_agent'           => 'User Agent String',
-			'auto_create_venue'    => 'Auto-create Venues',
-			'auto_sideload_image'  => 'Auto-download Images',
-			'allowed_domains'      => 'Allowed Domains (one per line)',
-			'blocked_domains'      => 'Blocked Domains (one per line)',
-			'debug_logging'        => 'Debug Logging',
-		);
-
-		foreach ( $fields as $id => $title ) {
-			add_settings_field(
-				$id,
-				$title,
-				array( $this, $id . '_callback' ),
-				'ke-import-settings',
-				'ke_import_main_section'
-			);
-		}
+		// Import Logic Settings
+		register_setting( 'ke_settings_group', 'ke_import_settings' );
 	}
 
-	/**
-	 * Settings Section Callback
-	 */
-	public function section_callback() {
-		echo '<p>Configure the default behavior for the editorial import system.</p>';
-	}
+	public function render_settings_page() {
+		?>
+		<div class="wrap">
+			<h1>Kontentainment Events Settings</h1>
+			<form method="post" action="options.php">
+				<?php settings_fields( 'ke_settings_group' ); ?>
+				<?php do_settings_sections( 'ke_settings_group' ); ?>
 
-	/**
-	 * Callback methods for settings fields
-	 */
-	public function timeout_callback() {
-		$opts = get_option( 'ke_import_settings' );
-		echo '<input type="number" name="ke_import_settings[timeout]" value="' . esc_attr( $opts['timeout'] ?? 30 ) . '" class="small-text"> seconds';
-	}
+				<table class="form-table">
+					<tr valign="top">
+						<th scope="row">Performance / Caching</th>
+						<td>
+							<label>
+								<input type="checkbox" name="ke_enable_caching" value="1" <?php checked( get_option('ke_enable_caching', '1'), '1' ); ?>>
+								Enable Frontend Query Caching (Recommended)
+							</label>
+							<p class="description">Reduces server load by caching expensive database queries for events and venues.</p>
+						</td>
+					</tr>
+					<tr valign="top">
+						<th scope="row">Cache TTL (seconds)</th>
+						<td>
+							<input type="number" name="ke_cache_ttl" value="<?php echo esc_attr( get_option('ke_cache_ttl', HOUR_IN_SECONDS) ); ?>">
+							<p class="description">How long should queries stay cached. Default is 3600 (1 hour).</p>
+						</td>
+					</tr>
+					<tr valign="top">
+						<th scope="row">SEO / Structured Data</th>
+						<td>
+							<label>
+								<input type="checkbox" name="ke_enable_schema" value="1" <?php checked( get_option('ke_enable_schema', '1'), '1' ); ?>>
+								Enable Event/Venue JSON-LD Schema
+							</label>
+							<p class="description">Helps search engines understand event details for Google events results.</p>
+						</td>
+					</tr>
+					<tr valign="top">
+						<th scope="row">Maintenance</th>
+						<td>
+							<label>
+								<input type="checkbox" name="ke_delete_on_uninstall" value="1" <?php checked( get_option('ke_delete_on_uninstall'), '1' ); ?>>
+								Delete KE data on uninstall (options only)
+							</label>
+							<p class="description">If checked, all settings will be removed when the plugin is deleted. CPT content will remain preserved.</p>
+						</td>
+					</tr>
+				</table>
 
-	public function user_agent_callback() {
-		$opts = get_option( 'ke_import_settings' );
-		echo '<input type="text" name="ke_import_settings[user_agent]" value="' . esc_attr( $opts['user_agent'] ?? 'Mozilla/5.0 (WordPress/KontentainmentEvents)' ) . '" class="regular-text">';
-	}
-
-	public function auto_create_venue_callback() {
-		$opts = get_option( 'ke_import_settings' );
-		echo '<input type="checkbox" name="ke_import_settings[auto_create_venue]" value="1" ' . checked( $opts['auto_create_venue'] ?? 0, 1, false ) . '>';
-	}
-
-	public function auto_sideload_image_callback() {
-		$opts = get_option( 'ke_import_settings' );
-		echo '<input type="checkbox" name="ke_import_settings[auto_sideload_image]" value="1" ' . checked( $opts['auto_sideload_image'] ?? 0, 1, false ) . '>';
-	}
-
-	public function allowed_domains_callback() {
-		$opts = get_option( 'ke_import_settings' );
-		echo '<textarea name="ke_import_settings[allowed_domains]" rows="4" class="large-text">' . esc_textarea( $opts['allowed_domains'] ?? '' ) . '</textarea>';
-	}
-
-	public function blocked_domains_callback() {
-		$opts = get_option( 'ke_import_settings' );
-		echo '<textarea name="ke_import_settings[blocked_domains]" rows="4" class="large-text">' . esc_textarea( $opts['blocked_domains'] ?? '' ) . '</textarea>';
-	}
-
-	public function debug_logging_callback() {
-		$opts = get_option( 'ke_import_settings' );
-		echo '<input type="checkbox" name="ke_import_settings[debug_logging]" value="1" ' . checked( $opts['debug_logging'] ?? 0, 1, false ) . '>';
-	}
-
-	/**
-	 * Sanitize Settings
-	 */
-	public function sanitize( $input ) {
-		$new_input = array();
-		$new_input['timeout']             = intval( $input['timeout'] ?? 30 );
-		$new_input['user_agent']          = sanitize_text_field( $input['user_agent'] ?? '' );
-		$new_input['auto_create_venue']   = isset( $input['auto_create_venue'] ) ? 1 : 0;
-		$new_input['auto_sideload_image'] = isset( $input['auto_sideload_image'] ) ? 1 : 0;
-		$new_input['allowed_domains']     = sanitize_textarea_field( $input['allowed_domains'] ?? '' );
-		$new_input['blocked_domains']     = sanitize_textarea_field( $input['blocked_domains'] ?? '' );
-		$new_input['debug_logging']       = isset( $input['debug_logging'] ) ? 1 : 0;
-		return $new_input;
+				<?php submit_button(); ?>
+			</form>
+		</div>
+		<?php
 	}
 }
-KE_Settings::get_instance();

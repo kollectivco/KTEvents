@@ -54,6 +54,10 @@ class KE_Events {
 		
 		// Initialize GitHub Updater
 		new KE_Updater( __FILE__, 'https://github.com/kollectivco/KTEvents' );
+		
+		// Phase 6: Lifecycle & Schema
+		KE_Upgrades::get_instance();
+		KE_Schema::get_instance();
 	}
 
 	/**
@@ -69,11 +73,10 @@ class KE_Events {
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-meta-boxes.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-save.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-admin.php';
-		require_once KE_PLUGIN_DIR . 'includes/class-ke-query.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-templates.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-ajax.php';
 		
-		// Phase 3: Import System
+		// Phase 3 & 4
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-scraper.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-parser-interface.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-parser-generic.php';
@@ -84,6 +87,14 @@ class KE_Events {
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-logs.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-settings.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-import-url.php';
+
+		// Phase 6 Production Hardening
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-cache.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-query.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-schema.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-admin-tools.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-diagnostics.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-upgrades.php';
 
 		// Phase 5: Elementor Integration
 		if ( did_action( 'elementor/loaded' ) ) {
@@ -96,18 +107,19 @@ class KE_Events {
 	 * Initialize hooks
 	 */
 	private function init_hooks() {
-		// Enqueue scripts
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
-
-		// Flush rewrite rules on activation
 		register_activation_hook( __FILE__, array( $this, 'activate' ) );
+		
+		// Cache Invalidation Hook
+		add_action( 'save_post', array( KE_Cache::get_instance(), 'invalidate_post_cache' ) );
 	}
 
 	/**
 	 * Enqueue frontend assets
 	 */
 	public function enqueue_frontend_assets() {
+		// Only load if relevant template or widget is active
 		wp_enqueue_style( 'ke-frontend', KE_PLUGIN_URL . 'assets/css/ke-frontend.css', array(), KE_PLUGIN_VERSION );
 		wp_enqueue_script( 'ke-frontend', KE_PLUGIN_URL . 'assets/js/ke-frontend.js', array( 'jquery' ), KE_PLUGIN_VERSION, true );
 	}
@@ -115,19 +127,24 @@ class KE_Events {
 	/**
 	 * Enqueue admin assets
 	 */
-	public function enqueue_admin_assets() {
-		wp_enqueue_style( 'ke-admin', KE_PLUGIN_URL . 'assets/css/ke-admin.css', array(), KE_PLUGIN_VERSION );
-		wp_enqueue_script( 'ke-admin', KE_PLUGIN_URL . 'assets/js/ke-admin.js', array( 'jquery' ), KE_PLUGIN_VERSION, true );
+	public function enqueue_admin_assets( $hook ) {
+		// Only load on KE admin screens
+		if ( strpos( $hook, 'ke-' ) !== false || strpos( $hook, 'event' ) !== false || strpos( $hook, 'venue' ) !== false ) {
+			wp_enqueue_style( 'ke-admin', KE_PLUGIN_URL . 'assets/css/ke-admin.css', array(), KE_PLUGIN_VERSION );
+			wp_enqueue_script( 'ke-admin', KE_PLUGIN_URL . 'assets/js/ke-admin.js', array( 'jquery' ), KE_PLUGIN_VERSION, true );
+		}
 	}
 
 	/**
 	 * Activation hook
 	 */
 	public function activate() {
-		// Initialize CPT and Taxonomies before flushing
 		KE_Taxonomies::get_instance()->register();
 		KE_Post_Types::get_instance()->register();
 		flush_rewrite_rules();
+
+		// Set initial DB version
+		add_option( 'ke_db_version', KE_PLUGIN_VERSION );
 	}
 }
 

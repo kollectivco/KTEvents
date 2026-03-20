@@ -53,9 +53,18 @@ function ke_get_event_status_label( $post_id = null ) {
  * Count upcoming events at a venue
  */
 function ke_count_venue_upcoming_events( $venue_id ) {
-	$query = new WP_Query( array(
+	$cache_key = 'venue_count_' . $venue_id;
+	$cached    = KE_Cache::get_instance()->get( $cache_key );
+	
+	if ( false !== $cached ) {
+		return $cached;
+	}
+
+	$args = array(
 		'post_type'      => 'event',
 		'posts_per_page' => -1,
+		'fields'         => 'ids', // Performance
+		'no_found_rows'  => false,
 		'meta_query'     => array(
 			array(
 				'key'     => 'KE_event_venue_id',
@@ -68,7 +77,13 @@ function ke_count_venue_upcoming_events( $venue_id ) {
 				'compare' => '=',
 			),
 		),
-	) );
+	);
 
-	return $query->found_posts;
+	$query = new WP_Query( $args );
+	$count = $query->found_posts;
+
+	// Cache for 24 hours unless invalidated
+	KE_Cache::get_instance()->set( $cache_key, $count, DAY_IN_SECONDS );
+
+	return $count;
 }
