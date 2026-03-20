@@ -1,0 +1,113 @@
+/* 
+ * Kontentainment Events Admin Styles - Phase 3 
+ */
+
+.ke-admin-wrapper {
+    max-width: 1200px;
+    margin-bottom: 60px;
+}
+
+.ke-import-container {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+}
+
+.ke-inline-fields {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.ke-inline-fields select,
+.ke-inline-fields input {
+    margin: 0;
+}
+
+/* Preview Grid */
+.ke-preview-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 40px;
+    margin-top: 30px;
+}
+
+.ke-preview-sidebar {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.ke-preview-image-box {
+    text-align: center;
+    background: #fff;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 25px;
+}
+
+.ke-preview-image-box img {
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.ke-preview-block {
+    margin-bottom: 30px;
+}
+
+.ke-preview-block h3 {
+    margin: 0 0 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+.ke-preview-block label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #666;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.ke-preview-sidebar .widefat {
+    margin-bottom: 12px;
+}
+
+.ke-preview-meta {
+    font-size: 12px;
+    color: #666;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+    margin-top: 20px;
+}
+
+.ke-preview-meta p {
+    margin: 4px 0;
+}
+
+/* Logs Status */
+.ke-status-tag { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.ke-status-created { background: #dcfce7; color: #166534; }
+.ke-status-updated { background: #dbeafe; color: #1e40af; }
+.ke-status-failed { background: #fee2e2; color: #991b1b; }
+.ke-status-previewed { background: #f3f4f6; color: #374151; }
+
+#ke-fetch-spinner {
+    float: none;
+    margin: 0 0 0 10px;
+}
+
+#ke-duplicate-notice {
+    padding: 15px;
+    margin-bottom: 25px;
+    border-left-width: 6px;
+}
+
+.ke-update-btn {
+    margin-top: 10px !important;
+}

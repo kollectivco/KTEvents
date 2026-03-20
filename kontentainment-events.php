@@ -1,0 +1,130 @@
+<?php
+/**
+ * Plugin Name: Kontentainment Events
+ * Plugin URI:  #
+ * Description: A standalone editorial events directory for magazine websites.
+ * Version:     1.0.0
+ * Author:      Antigravity
+ * Author URI:  #
+ * Text Domain: kontentainment-events
+ * Domain Path: /languages
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+// Define constants
+define( 'KE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'KE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'KE_PLUGIN_VERSION', '1.0.0' );
+
+/**
+ * Main Kontentainment Events Class
+ */
+class KE_Events {
+
+	/**
+	 * Instance of this class.
+	 *
+	 * @var KE_Events
+	 */
+	protected static $instance = null;
+
+	/**
+	 * Return an instance of this class.
+	 *
+	 * @return KE_Events
+	 */
+	public static function get_instance() {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
+
+	/**
+	 * Constructor
+	 */
+	private function __construct() {
+		$this->includes();
+		$this->init_hooks();
+	}
+
+	/**
+	 * Include required files
+	 */
+	private function includes() {
+		require_once KE_PLUGIN_DIR . 'includes/helpers.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-taxonomies.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-post-types.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-meta-boxes.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-save.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-admin.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-query.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-templates.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-ajax.php';
+		
+		// Phase 3: Import System
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-scraper.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-parser-interface.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-parser-generic.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-parser-scenenow.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-parser-cairojazzclub.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-parser-registry.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-duplicates.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-logs.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-settings.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-import-url.php';
+
+		// Phase 5: Elementor Integration
+		if ( did_action( 'elementor/loaded' ) ) {
+			require_once KE_PLUGIN_DIR . 'includes/class-ke-elementor.php';
+			KE_Elementor::get_instance();
+		}
+	}
+
+	/**
+	 * Initialize hooks
+	 */
+	private function init_hooks() {
+		// Enqueue scripts
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+
+		// Flush rewrite rules on activation
+		register_activation_hook( __FILE__, array( $this, 'activate' ) );
+	}
+
+	/**
+	 * Enqueue frontend assets
+	 */
+	public function enqueue_frontend_assets() {
+		wp_enqueue_style( 'ke-frontend', KE_PLUGIN_URL . 'assets/css/ke-frontend.css', array(), KE_PLUGIN_VERSION );
+		wp_enqueue_script( 'ke-frontend', KE_PLUGIN_URL . 'assets/js/ke-frontend.js', array( 'jquery' ), KE_PLUGIN_VERSION, true );
+	}
+
+	/**
+	 * Enqueue admin assets
+	 */
+	public function enqueue_admin_assets() {
+		wp_enqueue_style( 'ke-admin', KE_PLUGIN_URL . 'assets/css/ke-admin.css', array(), KE_PLUGIN_VERSION );
+		wp_enqueue_script( 'ke-admin', KE_PLUGIN_URL . 'assets/js/ke-admin.js', array( 'jquery' ), KE_PLUGIN_VERSION, true );
+	}
+
+	/**
+	 * Activation hook
+	 */
+	public function activate() {
+		// Initialize CPT and Taxonomies before flushing
+		KE_Taxonomies::get_instance()->register();
+		KE_Post_Types::get_instance()->register();
+		flush_rewrite_rules();
+	}
+}
+
+// Initialize the plugin
+function KE_Init() {
+	return KE_Events::get_instance();
+}
+KE_Init();
