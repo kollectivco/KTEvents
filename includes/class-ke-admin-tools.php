@@ -65,11 +65,31 @@ class KE_Admin_Tools {
 			<div class="ke-tool-card">
 				<h3>Recalculate Venue Event Counts</h3>
 				<p>Rebuilds the cached counts of upcoming events for each venue.</p>
-				<form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+				<form method="get" action="<?php echo admin_url('admin-post.php'); ?>">
 					<input type="hidden" name="action" value="ke_run_tool">
 					<input type="hidden" name="tool_id" value="recalc_venue_counts">
 					<?php wp_nonce_field( 'ke_tools_action' ); ?>
 					<button type="submit" class="button button-primary">Recalculate</button>
+				</form>
+			</div>
+
+			<div class="ke-tool-card">
+				<h3>Updates / Diagnostics</h3>
+				<p>Current Version: <strong><?php echo KE_PLUGIN_VERSION; ?></strong></p>
+				<?php 
+					$last_check = get_transient( 'ke_last_check_time' );
+					$remote = get_transient( 'ke_github_update_data' );
+				?>
+				<p>Last Check: <?php echo $last_check ?: 'Never'; ?></p>
+				<?php if ( $remote && ! empty($remote->tag_name) ) : ?>
+					<p>Latest on GitHub: <a href="<?php echo esc_url($remote->html_url); ?>" target="_blank"><?php echo esc_html($remote->tag_name); ?></a></p>
+				<?php endif; ?>
+
+				<form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+					<input type="hidden" name="action" value="ke_run_tool">
+					<input type="hidden" name="tool_id" value="check_updates">
+					<?php wp_nonce_field( 'ke_tools_action' ); ?>
+					<button type="submit" class="button button-secondary">Check for Updates Now</button>
 				</form>
 			</div>
 		</div>
@@ -102,6 +122,16 @@ class KE_Admin_Tools {
 			case 'recalc_venue_counts':
 				$this->recalc_venue_counts();
 				$message = 'Venue counts recalculated successfully.';
+				break;
+			case 'check_updates':
+				$updater = new KE_Updater( KE_PLUGIN_DIR . 'kontentainment-events.php', 'https://github.com/kollectivco/KTEvents' );
+				$remote = $updater->get_remote_data( true ); // Force refresh
+				set_transient( 'ke_last_check_time', date_i18n( get_option('date_format') . ' H:i:s' ), DAY_IN_SECONDS );
+				if ( $remote ) {
+					$message = 'GitHub Release detected: ' . $remote->tag_name;
+				} else {
+					$message = 'Check completed. No GitHub Release found yet.';
+				}
 				break;
 		}
 

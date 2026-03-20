@@ -40,6 +40,7 @@ class KE_Settings {
 		register_setting( 'ke_settings_group', 'ke_cache_ttl' );
 		register_setting( 'ke_settings_group', 'ke_enable_schema' );
 		register_setting( 'ke_settings_group', 'ke_delete_on_uninstall' );
+		register_setting( 'ke_settings_group', 'ke_github_token' );
 		register_setting( 'ke_settings_group', 'ke_enable_import_logging' );
 
 		// Import Logic Settings
@@ -90,6 +91,13 @@ class KE_Settings {
 								Delete KE data on uninstall (options only)
 							</label>
 							<p class="description">If checked, all settings will be removed when the plugin is deleted. CPT content will remain preserved.</p>
+						</td>
+					</tr>
+					<tr valign="top">
+						<th scope="row">GitHub Private Token</th>
+						<td>
+							<input type="password" name="ke_github_token" value="<?php echo esc_attr( get_option('ke_github_token') ); ?>" class="regular-text">
+							<p class="description">Optional. Personal Access Token if the repository is private.</p>
 						</td>
 					</tr>
 				</table>
