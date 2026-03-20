@@ -8,6 +8,8 @@
  * Author URI:  #
  * Text Domain: kontentainment-events
  * Domain Path: /languages
+ * GitHub Plugin URI: https://github.com/kollectivco/KTEvents
+ * Primary Branch: main
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -49,6 +51,9 @@ class KE_Events {
 	private function __construct() {
 		$this->includes();
 		$this->init_hooks();
+		
+		// Initialize GitHub Updater
+		new KE_Updater( __FILE__, 'https://github.com/kollectivco/KTEvents' );
 	}
 
 	/**
@@ -56,6 +61,7 @@ class KE_Events {
 	 */
 	private function includes() {
 		require_once KE_PLUGIN_DIR . 'includes/helpers.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-updater.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-taxonomies.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-post-types.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-meta-boxes.php';
