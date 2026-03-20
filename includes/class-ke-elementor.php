@@ -42,6 +42,10 @@ class KE_Elementor {
 	 * Register Widgets
 	 */
 	public function register_widgets( $widgets_manager ) {
+		// Base / Helpers
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-elementor-options.php';
+		require_once KE_PLUGIN_DIR . 'elementor/class-ke-widget-base.php';
+
 		require_once KE_PLUGIN_DIR . 'elementor/widgets/class-ke-widget-events-grid.php';
 		require_once KE_PLUGIN_DIR . 'elementor/widgets/class-ke-widget-featured-events.php';
 		require_once KE_PLUGIN_DIR . 'elementor/widgets/class-ke-widget-upcoming-events.php';

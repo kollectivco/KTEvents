@@ -62,6 +62,8 @@ class KE_Events {
 	private function includes() {
 		require_once KE_PLUGIN_DIR . 'includes/helpers.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-updater.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-elementor-descriptions.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-unique-posts.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-taxonomies.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-post-types.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-meta-boxes.php';

@@ -1,37 +1,21 @@
 <?php
 /**
- * KE Venue Events Widget
+ * KE Venue Events Widget - v5.1
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class KE_Widget_Venue_Events extends \Elementor\Widget_Base {
+class KE_Widget_Venue_Events extends KE_Widget_Base {
 
-	public function get_name() {
-		return 'ke_venue_events';
-	}
-
-	public function get_title() {
-		return 'Events by Venue';
-	}
-
-	public function get_icon() {
-		return 'eicon-archive';
-	}
-
-	public function get_categories() {
-		return [ 'ke-events' ];
-	}
+	public function get_name() { return 'ke_venue_events'; }
+	public function get_title() { return 'Events by Venue v2'; }
+	public function get_icon() { return 'eicon-archive'; }
 
 	protected function register_controls() {
-		$this->start_controls_section(
-			'section_query',
-			[
-				'label' => 'Query',
-			]
-		);
+		// 1. Layout
+		$this->start_controls_section( 'section_layout', [ 'label' => 'Layout Settings' ] );
 
 		$this->add_control(
 			'source_mode',
@@ -58,72 +42,27 @@ class KE_Widget_Venue_Events extends \Elementor\Widget_Base {
 		);
 
 		$this->add_control(
-			'posts_per_page',
+			'layout_preset',
 			[
-				'label' => 'Count',
-				'type' => \Elementor\Controls_Manager::NUMBER,
-				'default' => 4,
+				'label' => 'Display Preset',
+				'type' => \Elementor\Controls_Manager::SELECT,
+				'default' => 'grid_1',
+				'options' => KE_Elementor_Options::get_event_layout_presets(),
 			]
 		);
 
-		$this->add_control(
-			'status',
-			[
-				'label' => 'Status',
-				'type' => \Elementor\Controls_Manager::SELECT,
-				'default' => 'all_exc_past',
-				'options' => [
-					'' => 'All',
-					'all_exc_past' => 'All Except Past',
-					'upcoming' => 'Upcoming Only',
-					'past' => 'Past Only',
-				],
-			]
-		);
-
-		$this->add_control(
-			'orderby_custom',
-			[
-				'label' => 'Order By',
-				'type' => \Elementor\Controls_Manager::SELECT,
-				'default' => 'upcoming',
-				'options' => [
-					'upcoming' => 'Nearest Upcoming First',
-					'latest' => 'Latest Added',
-				],
-			]
-		);
+		$this->add_responsive_control( 'columns', [ 'label' => 'Columns', 'type' => \Elementor\Controls_Manager::NUMBER, 'default' => 3 ] );
 
 		$this->end_controls_section();
 
-		$this->start_controls_section(
-			'section_display',
-			[
-				'label' => 'Display',
-			]
-		);
+		// 2. Query
+		$this->register_query_section();
 
-		$this->add_responsive_control(
-			'columns',
-			[
-				'label' => 'Columns',
-				'type' => \Elementor\Controls_Manager::NUMBER,
-				'min' => 1,
-				'max' => 6,
-				'default' => 3,
-			]
-		);
+		// 3. Entry Meta (from Base)
+		$this->register_entry_meta_controls();
 
-		$this->add_control(
-			'show_image',
-			[
-				'label' => 'Show Image',
-				'type' => \Elementor\Controls_Manager::SWITCHER,
-				'default' => 'yes',
-			]
-		);
-
-		$this->end_controls_section();
+		// 4. Boxed (from Base)
+		$this->register_box_style_controls();
 	}
 
 	protected function render() {
@@ -150,21 +89,12 @@ class KE_Widget_Venue_Events extends \Elementor\Widget_Base {
 		}
 
 		$settings['venue_id'] = $venue_id;
+		$settings['is_widget'] = true;
+		
 		$query = KE_Query::get_instance()->get_events( $settings );
 
 		echo '<div class="ke-elementor-widget ke-venue-events-widget">';
 		echo KE_Query::get_instance()->render_events_loop( $query, $settings );
 		echo '</div>';
-	}
-
-	private function get_post_options( $cpt ) {
-		$posts = get_posts( [ 'post_type' => $cpt, 'numberposts' => -1 ] );
-		$options = [];
-		if ( ! empty( $posts ) ) {
-			foreach ( $posts as $p ) {
-				$options[ $p->ID ] = $p->post_title;
-			}
-		}
-		return $options;
 	}
 }

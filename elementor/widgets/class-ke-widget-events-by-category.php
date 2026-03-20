@@ -1,103 +1,54 @@
 <?php
 /**
- * KE Events by Category Widget
+ * KE Events by Category Widget - v5.1
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class KE_Widget_Events_By_Category extends \Elementor\Widget_Base {
+class KE_Widget_Events_By_Category extends KE_Widget_Base {
 
-	public function get_name() {
-		return 'ke_events_by_category';
-	}
-
-	public function get_title() {
-		return 'Events by Category';
-	}
-
-	public function get_icon() {
-		return 'eicon-folder';
-	}
-
-	public function get_categories() {
-		return [ 'ke-events' ];
-	}
+	public function get_name() { return 'ke_events_by_category'; }
+	public function get_title() { return 'Events by Category v2'; }
+	public function get_icon() { return 'eicon-folder'; }
 
 	protected function register_controls() {
-		$this->start_controls_section(
-			'section_query',
-			[
-				'label' => 'Query',
-			]
-		);
+		// 1. Layout
+		$this->start_controls_section( 'section_layout', [ 'label' => 'Layout Settings' ] );
 
 		$this->add_control(
 			'event_category',
 			[
-				'label' => 'Category',
+				'label' => 'Select Category',
 				'type' => \Elementor\Controls_Manager::SELECT2,
 				'options' => $this->get_tax_options( 'event_category' ),
 				'multiple' => false,
-				'description' => 'Select a category to display events from.',
 			]
 		);
 
 		$this->add_control(
-			'posts_per_page',
+			'layout_preset',
 			[
-				'label' => 'Count',
-				'type' => \Elementor\Controls_Manager::NUMBER,
-				'default' => 4,
-			]
-		);
-
-		$this->add_control(
-			'status',
-			[
-				'label' => 'Status',
+				'label' => 'Display Preset',
 				'type' => \Elementor\Controls_Manager::SELECT,
-				'default' => 'all_exc_past',
-				'options' => [
-					'' => 'All',
-					'all_exc_past' => 'All Except Past',
-					'upcoming' => 'Upcoming Only',
-					'past' => 'Past Only',
-				],
+				'default' => 'classic',
+				'options' => KE_Elementor_Options::get_event_layout_presets(),
 			]
 		);
+
+		$this->add_responsive_control( 'columns', [ 'label' => 'Columns', 'type' => \Elementor\Controls_Manager::NUMBER, 'default' => 3 ] );
 
 		$this->end_controls_section();
 
-		$this->start_controls_section(
-			'section_display',
-			[
-				'label' => 'Display Settings',
-			]
-		);
+		// 2. Query
+		$this->register_query_section();
 
-		$this->add_responsive_control(
-			'columns',
-			[
-				'label' => 'Columns',
-				'type' => \Elementor\Controls_Manager::NUMBER,
-				'min' => 1,
-				'max' => 6,
-				'default' => 3,
-			]
-		);
+		// 3. Entry Meta (from Base)
+		$this->register_entry_meta_controls();
 
-		$this->add_control(
-			'show_image',
-			[
-				'label' => 'Show Image',
-				'type' => \Elementor\Controls_Manager::SWITCHER,
-				'default' => 'yes',
-			]
-		);
-
-		$this->end_controls_section();
+		// 4. Boxed Style (from Base)
+		$this->register_box_style_controls();
 	}
 
 	protected function render() {
@@ -110,21 +61,11 @@ class KE_Widget_Events_By_Category extends \Elementor\Widget_Base {
 			return;
 		}
 
+		$settings['is_widget'] = true;
 		$query = KE_Query::get_instance()->get_events( $settings );
 
 		echo '<div class="ke-elementor-widget ke-events-by-category-widget">';
 		echo KE_Query::get_instance()->render_events_loop( $query, $settings );
 		echo '</div>';
-	}
-
-	private function get_tax_options( $tax ) {
-		$terms = get_terms( [ 'taxonomy' => $tax, 'hide_empty' => false ] );
-		$options = [];
-		if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
-			foreach ( $terms as $term ) {
-				$options[ $term->term_id ] = $term->name;
-			}
-		}
-		return $options;
 	}
 }
