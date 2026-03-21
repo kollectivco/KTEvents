@@ -203,8 +203,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const target = document.getElementById('ke-advanced-filters');
             if (target) {
                 const isHidden = target.style.display === 'none';
-                target.style.display = isHidden ? 'grid' : 'none';
-                toggleBtn.classList.toggle('is-active', isHidden);
+                if (isHidden) {
+                    target.style.display = 'block';
+                    // Force reflow
+                    void target.offsetWidth;
+                    target.style.opacity = '1';
+                    target.style.transform = 'translateY(0)';
+                    toggleBtn.classList.add('is-active');
+                } else {
+                    target.style.opacity = '0';
+                    target.style.transform = 'translateY(-10px)';
+                    toggleBtn.classList.remove('is-active');
+                    setTimeout(() => {
+                        target.style.display = 'none';
+                    }, 400);
+                }
             }
             return;
         }

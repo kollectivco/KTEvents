@@ -135,9 +135,36 @@ jQuery(document).ready(function($) {
             venueMatchLabel.html('');
         }
 
-        // Category & Locations
+        // Category
         if (fields.category) {
             $('#preview_category_id').val(fields.category); 
+        }
+
+        // Smart Location Pre-fill
+        const { detected_location } = payload;
+        const locMatchLabel = $('#ke-location-match-status');
+        
+        if (detected_location && detected_location.gov_id) {
+            // 1. Set Governorate
+            $('#preview_governorate_id').val(detected_location.gov_id).trigger('change');
+            
+            // 2. Set City (Wait a bit for the trigger('change') above to populate city options)
+            if (detected_location.city_id) {
+                setTimeout(() => {
+                    $('#preview_city_id').val(detected_location.city_id);
+                }, 100);
+            }
+
+            // 3. Status Label
+            if (detected_location.source === 'existing_venue') {
+                locMatchLabel.html('<div class="ke-info-note" style="background:#eff6ff; color:#1e40af; border:none; margin-top:10px;">ℹ Location inherited from existing venue.</div>');
+            } else if (detected_location.confidence >= 80) {
+                locMatchLabel.html('<div class="ke-info-note" style="background:#dcfce7; color:#166534; border:none; margin-top:10px;">✓ Location auto-detected from address.</div>');
+            } else {
+                locMatchLabel.html('<div class="ke-info-note" style="background:#fef3c7; color:#92400e; border:none; margin-top:10px;">⚠ Location detected with low confidence. Please verify.</div>');
+            }
+        } else {
+            locMatchLabel.html('<div class="ke-info-note" style="background:#fee2e2; color:#991d1d; border:none; margin-top:10px;">✕ Could not detect governorate/city from address.</div>');
         }
 
         // Diagnostics

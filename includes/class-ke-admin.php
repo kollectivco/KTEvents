@@ -317,16 +317,7 @@ class KE_Admin {
 												<option value="<?php echo $term->term_id; ?>"><?php echo $term->name; ?></option>
 											<?php endforeach; ?>
 										</select>
-									</div>
-
-									<div class="ke-form-row">
-										<label>Status</label>
-										<select name="status" id="preview_status" class="widefat">
-											<option value="upcoming" selected>Upcoming</option>
-											<option value="ongoing">Ongoing</option>
-											<option value="past">Past</option>
-											<option value="cancelled">Cancelled</option>
-										</select>
+										<div id="ke-location-match-status"></div>
 									</div>
 								</div>
 							</div>
