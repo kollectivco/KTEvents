@@ -47,7 +47,7 @@ class KE_Parser_CairoJazzClub implements KE_Parser_Interface {
 		if ( empty( $result['fields']['title'] ) || strlen( $result['fields']['title'] ) < 5 ) {
 			$title_nodes = $xpath->query( "//div[contains(@class, 'event-title')] | //h2[contains(@class, 'title')]" );
 			if ( $title_nodes->length > 0 ) {
-				$result['fields']['title'] = trim( $title_nodes->item(0)->nodeValue );
+				$result['fields']['title'] = $generic->clean_text( $title_nodes->item(0)->nodeValue );
 			}
 		}
 
@@ -55,11 +55,15 @@ class KE_Parser_CairoJazzClub implements KE_Parser_Interface {
 		if ( empty( $result['fields']['event_date'] ) ) {
 			$date_nodes = $xpath->query( "//div[contains(@class, 'event-date')] | //span[contains(@class, 'date')]" );
 			if ( $date_nodes->length > 0 ) {
-				$date_text = trim( $date_nodes->item(0)->nodeValue );
-				$result['fields']['raw_date_text'] = $date_text;
-				$timestamp = strtotime( $date_text );
-				if ( $timestamp && $timestamp > 100000 ) {
-					$result['fields']['event_date'] = date( 'Y-m-d', $timestamp );
+				$raw_val = $date_nodes->item(0)->nodeValue;
+				$clean_val = $generic->clean_text( $raw_val );
+				
+				if ( ! empty( $clean_val ) && ! $generic->is_code_garbage( $clean_val ) ) {
+					$result['fields']['raw_date_text'] = $clean_val;
+					$timestamp = strtotime( $clean_val );
+					if ( $timestamp && $timestamp > 100000 ) {
+						$result['fields']['event_date'] = date( 'Y-m-d', $timestamp );
+					}
 				}
 			}
 		}
@@ -70,7 +74,7 @@ class KE_Parser_CairoJazzClub implements KE_Parser_Interface {
 			if ( $cta_nodes->length > 0 ) {
 				$cta_url = $cta_nodes->item(0)->getAttribute( 'href' );
 				if ( $cta_url && strpos( $cta_url, 'http' ) !== false ) {
-					$result['fields']['official_url'] = $cta_url;
+					$result['fields']['official_url'] = esc_url_raw( $cta_url );
 				}
 			}
 		}
@@ -79,7 +83,7 @@ class KE_Parser_CairoJazzClub implements KE_Parser_Interface {
 		if ( empty( $result['fields']['description'] ) ) {
 			$desc_nodes = $xpath->query( "//div[contains(@class, 'event-description')] | //div[contains(@class, 'description-content')]" );
 			if ( $desc_nodes->length > 0 ) {
-				$result['fields']['description'] = trim( $desc_nodes->item(0)->nodeValue );
+				$result['fields']['description'] = $generic->clean_text( $desc_nodes->item(0)->nodeValue );
 			}
 		}
 

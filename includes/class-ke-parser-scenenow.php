@@ -73,14 +73,14 @@ class KE_Parser_SceneNow implements KE_Parser_Interface {
 			if ( ! $venue_val ) $venue_val = $this->get_value_by_label( $xpath, 'Location' );
 			
 			if ( $venue_val ) {
-				$result['fields']['venue_name'] = $venue_val;
+				$result['fields']['venue_name'] = $generic->clean_text( $venue_val );
 			}
 		}
 
 		if ( empty( $result['fields']['address'] ) ) {
 			$address_val = $this->get_value_by_label( $xpath, 'Address' );
 			if ( $address_val ) {
-				$result['fields']['address'] = $address_val;
+				$result['fields']['address'] = $generic->clean_text( $address_val );
 			}
 		}
 
@@ -88,13 +88,13 @@ class KE_Parser_SceneNow implements KE_Parser_Interface {
 		if ( empty( $result['fields']['phone'] ) ) {
 			$phone_val = $this->get_value_by_label( $xpath, 'Phone' );
 			if ( ! $phone_val ) $phone_val = $this->get_value_by_label( $xpath, 'Telephone' );
-			if ( $phone_val ) $result['fields']['phone'] = $phone_val;
+			if ( $phone_val ) $result['fields']['phone'] = $generic->clean_text( $phone_val );
 		}
 
 		// 5. Category (Fallback)
 		if ( empty( $result['fields']['category'] ) ) {
 			$cat_val = $this->get_value_by_label( $xpath, 'Category' );
-			if ( $cat_val ) $result['fields']['category'] = $cat_val;
+			if ( $cat_val ) $result['fields']['category'] = $generic->clean_text( $cat_val );
 		}
 
 		// Confidence Logic Enhancement
@@ -117,17 +117,37 @@ class KE_Parser_SceneNow implements KE_Parser_Interface {
 
 	/**
 	 * Helper to find text after a label (e.g. <strong>Date:</strong> 25 May)
+	 * Revised to be extremely strict against script/code pollution.
 	 */
 	private function get_value_by_label( $xpath, $label ) {
-		$nodes = $xpath->query( "//*[contains(text(), '$label')]/following-sibling::*[1] | //*[contains(text(), '$label')]/parent::*[1]" );
-		foreach ( $nodes as $node ) {
-			$text = trim( $node->nodeValue );
-			// Remove the label from the text if it's included in parent
+		$generic = new KE_Parser_Generic();
+		
+		// Look for elements containing the label text that are likely visible
+		// We exclude script, style, and metadata nodes
+		$query = "//*[not(self::script) and not(self::style) and (text() = '$label' or contains(text(), '$label:'))]";
+		$matches = $xpath->query( $query );
+
+		foreach ( $matches as $match ) {
+			// 1. Try following sibling first (typical for <strong>Date:</strong> <span>Value</span>)
+			$sibling = $xpath->query( "following-sibling::*[1]", $match );
+			if ( $sibling->length > 0 ) {
+				$text = $generic->clean_text( $sibling->item(0)->nodeValue );
+				if ( ! empty( $text ) && ! $generic->is_code_garbage( $text ) ) {
+					return $text;
+				}
+			}
+
+			// 2. Try parent node value (typical for <li>Date: Value</li>)
+			$text = $match->parentNode->nodeValue;
 			$text = str_ireplace( array( $label, ':', '：' ), '', $text );
-			if ( ! empty( $text ) ) {
-				return trim( $text );
+			$text = $generic->clean_text( $text );
+			
+			if ( ! empty( $text ) && ! $generic->is_code_garbage( $text ) ) {
+				// Final check: if it contains common JS artifacts, reject it
+				return $text;
 			}
 		}
+
 		return null;
 	}
 }
