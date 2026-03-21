@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - 'v*'
-      - '[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   build:
@@ -16,22 +15,37 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Validate Plugin Version
+        run: |
+          TAG_VERSION=${GITHUB_REF_NAME#v}
+          HEADER_VERSION=$(grep -m 1 "Version:" kontentainment-events.php | awk '{print $NF}')
+          CONSTANT_VERSION=$(grep "define( 'KE_PLUGIN_VERSION'" kontentainment-events.php | cut -d"'" -f4)
+          
+          echo "Tag Version: $TAG_VERSION"
+          echo "Header Version: $HEADER_VERSION"
+          echo "Constant Version: $CONSTANT_VERSION"
+          
+          if [ "$TAG_VERSION" != "$HEADER_VERSION" ]; then
+            echo "Error: Tag version ($TAG_VERSION) does not match Plugin Header Version ($HEADER_VERSION)"
+            exit 1
+          fi
+          
+          if [ "$TAG_VERSION" != "$CONSTANT_VERSION" ]; then
+            echo "Error: Tag version ($TAG_VERSION) does not match KE_PLUGIN_VERSION ($CONSTANT_VERSION)"
+            exit 1
+          fi
+
       - name: Create release folder and ZIP
         run: |
-          # Define plugin slug
           PLUGIN_SLUG="kontentainment-events"
-          
-          # Clean up any potential artifacts
           rm -rf $PLUGIN_SLUG $PLUGIN_SLUG.zip
-          
-          # Create fresh folder
           mkdir $PLUGIN_SLUG
-          
-          # Sync files (excluding git, github, and the destination folder itself)
-          rsync -rc . $PLUGIN_SLUG/ --exclude=".git*" --exclude=".github" --exclude="$PLUGIN_SLUG" --exclude="*.zip" --exclude="node_modules" --exclude="composer.json" --exclude="composer.lock" --exclude="RELEASE_GUIDE.md"
-          
-          # Create the ZIP
+          rsync -rc . $PLUGIN_SLUG/ --exclude=".git*" --exclude=".github" --exclude="$PLUGIN_SLUG" --exclude="*.zip" --exclude="node_modules"
           zip -r $PLUGIN_SLUG.zip $PLUGIN_SLUG/
+          
+      - name: Verify ZIP Content
+        run: |
+          unzip -l kontentainment-events.zip | grep -E "kontentainment-events/kontentainment-events.php"
           
       - name: Create Release
         id: create_release
