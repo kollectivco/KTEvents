@@ -23,6 +23,134 @@
 }
 
 /*
+ * Premium Editorial Hero - Two-Row Split Model
+ */
+.ke-hero-section {
+    margin-bottom: 60px;
+}
+
+/* Row 1: Category & Title Header */
+.ke-hero-upper {
+    margin-bottom: 40px;
+}
+
+.ke-hero-category {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--ke-accent);
+    margin-bottom: 12px;
+    letter-spacing: 0.1em;
+}
+
+.ke-hero-title {
+    font-size: 44px;
+    line-height: 1.1;
+    font-weight: 800;
+    margin: 0;
+    color: #1a1e26;
+    letter-spacing: -0.01em;
+}
+
+/* Row 2: Image & Meta Split Header */
+.ke-hero-split {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    align-items: flex-start;
+}
+
+.ke-hero-poster-col {
+    flex: 0 0 440px;
+    max-width: 100%;
+}
+
+.ke-poster-image {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    display: block;
+}
+
+.ke-hero-meta-col {
+    flex: 1;
+    min-width: 320px;
+}
+
+/* Meta Vertical Stack (Aligned with Image Top) */
+.ke-meta-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.ke-meta-block {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.ke-meta-icon-box {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    color: var(--ke-accent);
+    margin-top: 4px;
+}
+
+.ke-meta-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ke-meta-info label {
+    font-size: 10px;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
+}
+
+.ke-meta-info strong {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1e26;
+    line-height: 1.3;
+}
+
+.ke-meta-info strong a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.ke-meta-info strong a:hover {
+    color: var(--ke-accent);
+}
+
+.ke-register-btn {
+    display: inline-block;
+    background: #1a1e26;
+    color: #fff;
+    padding: 14px 30px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.ke-register-btn:hover {
+    background: var(--ke-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(51, 167, 224, 0.2);
+}
+
+/*
  * Single Event Hero - Editorial Alignment Fix
  */
 .ke-single-hero-foxiz {
@@ -77,50 +205,10 @@
 }
 
 /* Meta Details - Begins AT IMAGE TOP line (image has margin-top: 100px) */
-.ke-info-box .ke-meta-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-    border: none;
-    padding-top: 0;
-}
-
-.ke-meta-node {
-    display: flex;
-    align-items: flex-start;
-    gap: 15px;
-}
-
-.ke-meta-icon {
-    flex-shrink: 0;
-    width: 20px;
-    height: 20px;
-    color: var(--ke-accent);
-    margin-top: 3px;
-}
-
-.ke-meta-text {
-    display: flex;
-    flex-direction: column;
-}
-
-.ke-meta-text label {
-    font-size: 10px;
-    font-weight: 800;
-    color: var(--ke-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    display: block;
-    margin-bottom: 3px;
-}
-
-.ke-meta-text span {
-    font-size: 16px;
-    color: var(--ke-primary);
-    font-weight: 700;
-}
+/* This block is replaced by the new .ke-meta-stack definition */
 
 /* Sections */
+/* Section Content Titles */
 .ke-foxiz-section-title {
     font-size: 24px;
     font-weight: 800;

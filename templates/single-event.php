@@ -1,7 +1,6 @@
 <?php
 /**
- * Single Event Template - Full Foxiz Theme Integration
- * Supports Rb-Container, RB-Flex, and Sidebar
+ * Single Event Template - Premium Editorial Layout
  */
 
 get_header();
@@ -12,7 +11,6 @@ $event_time  = ke_get_event_meta( $event_id, 'time' );
 $status      = ke_get_event_status_label( $event_id );
 $venue_id    = ke_get_event_meta( $event_id, 'venue_id' );
 $address     = $venue_id ? ke_get_venue_meta( $venue_id, 'address' ) : '';
-$organizer   = ke_get_event_meta( $event_id, 'organizer' );
 $official_url = ke_get_event_meta( $event_id, 'url' );
 
 $categories = get_the_terms( $event_id, 'event_category' );
@@ -36,69 +34,82 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 			<div class="ke-main-col">
 				<div class="ke-foxiz-aware">
 
-					<!-- Hero: Split Layout with Editorial Alignment -->
-					<header class="ke-single-hero-foxiz">
+					<!-- Target Hero Section -->
+					<header class="ke-hero-section">
 						
-						<!-- LEFT: Poster -->
-						<div class="ke-poster-box">
-							<?php if ( has_post_thumbnail() ) : ?>
-								<?php the_post_thumbnail( 'large' ); ?>
-							<?php else : ?>
-								<img src="<?php echo KE_PLUGIN_URL . 'assets/images/event-placeholder.jpg'; ?>" alt="<?php the_title(); ?>">
+						<!-- Row 1: Category & Title -->
+						<div class="ke-hero-upper">
+							<?php if ( $cat_name ) : ?>
+								<div class="ke-hero-category"><?php echo esc_html($cat_name); ?></div>
 							<?php endif; ?>
+							<h1 class="ke-hero-title"><?php the_title(); ?></h1>
 						</div>
 
-						<!-- RIGHT: Info area -->
-						<div class="ke-info-box">
-							<?php if ( $cat_name ) : ?>
-								<div class="ke-cat-chip"><?php echo esc_html($cat_name); ?></div>
-							<?php endif; ?>
-
-							<h1 class="ke-title-large"><?php the_title(); ?></h1>
-
-							<div class="ke-title-divider"></div>
-
-							<div class="ke-meta-stack">
-								<div class="ke-meta-node">
-									<?php echo $icon_calendar; ?>
-									<div class="ke-meta-text">
-										<label>Date</label>
-										<span><?php echo ke_get_event_date_display(); ?></span>
-									</div>
-								</div>
-								<?php if ( $event_time ) : ?>
-								<div class="ke-meta-node">
-									<?php echo $icon_clock; ?>
-									<div class="ke-meta-text">
-										<label>Time</label>
-										<span><?php echo esc_html($event_time); ?></span>
-									</div>
-								</div>
+						<!-- Row 2: Image & Meta Split -->
+						<div class="ke-hero-split">
+							
+							<!-- Main Column: Poster Image -->
+							<div class="ke-hero-poster-col">
+								<?php if ( has_post_thumbnail() ) : ?>
+									<?php the_post_thumbnail( 'large', [ 'class' => 'ke-poster-image' ] ); ?>
+								<?php else : ?>
+									<img src="<?php echo KE_PLUGIN_URL . 'assets/images/event-placeholder.jpg'; ?>" alt="<?php the_title(); ?>" class="ke-poster-image">
 								<?php endif; ?>
-								<?php if ( $venue_id ) : ?>
-								<div class="ke-meta-node">
-									<?php echo $icon_venue; ?>
-									<div class="ke-meta-text">
-										<label>Venue</label>
-										<span><a href="<?php echo get_permalink($venue_id); ?>"><?php echo get_the_title($venue_id); ?></a></span>
-									</div>
-								</div>
-								<?php endif; ?>
-								<?php if ( $address ) : ?>
-								<div class="ke-meta-node">
-									<?php echo $icon_location; ?>
-									<div class="ke-meta-text">
-										<label>Location</label>
-										<span><?php echo esc_html($address); ?></span>
-									</div>
-								</div>
-								<?php endif; ?>
+							</div>
 
-								<?php if ( $official_url ) : ?>
-								<div class="ke-actions-bt" style="margin-top: 20px;">
-									<a href="<?php echo esc_url($official_url); ?>" target="_blank" class="button button-primary is-full-width">Register / Visit Website</a>
+							<!-- Details Column: Meta Stack -->
+							<div class="ke-hero-meta-col">
+								
+								<div class="ke-meta-stack">
+									<!-- 1. DATE -->
+									<div class="ke-meta-block">
+										<div class="ke-meta-icon-box"><?php echo $icon_calendar; ?></div>
+										<div class="ke-meta-info">
+											<label>Date</label>
+											<strong><?php echo ke_get_event_date_display(); ?></strong>
+										</div>
+									</div>
+
+									<!-- 2. TIME -->
+									<?php if ( $event_time ) : ?>
+									<div class="ke-meta-block">
+										<div class="ke-meta-icon-box"><?php echo $icon_clock; ?></div>
+										<div class="ke-meta-info">
+											<label>Time</label>
+											<strong><?php echo esc_html($event_time); ?></strong>
+										</div>
+									</div>
+									<?php endif; ?>
+
+									<!-- 3. VENUE -->
+									<?php if ( $venue_id ) : ?>
+									<div class="ke-meta-block">
+										<div class="ke-meta-icon-box"><?php echo $icon_venue; ?></div>
+										<div class="ke-meta-info">
+											<label>Venue</label>
+											<strong><a href="<?php echo get_permalink($venue_id); ?>"><?php echo get_the_title($venue_id); ?></a></strong>
+										</div>
+									</div>
+									<?php endif; ?>
+
+									<!-- 4. LOCATION -->
+									<?php if ( $address ) : ?>
+									<div class="ke-meta-block">
+										<div class="ke-meta-icon-box"><?php echo $icon_location; ?></div>
+										<div class="ke-meta-info">
+											<label>Location</label>
+											<strong><?php echo esc_html($address); ?></strong>
+										</div>
+									</div>
+									<?php endif; ?>
+
+									<?php if ( $official_url ) : ?>
+									<div class="ke-hero-actions" style="margin-top: 30px;">
+										<a href="<?php echo esc_url($official_url); ?>" target="_blank" class="ke-register-btn">Register / Visit Website</a>
+									</div>
+									<?php endif; ?>
 								</div>
-								<?php endif; ?>
+
 							</div>
 						</div>
 					</header>
@@ -113,8 +124,7 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 					</div>
 					<?php endif; ?>
 
-					<!-- Supporting Sections with Current Event Fallback -->
-					
+					<!-- Related Sections (Fallbacks) -->
 					<?php if ( $venue_id ) : ?>
 					<div class="ke-supporting-block">
 						<h2 class="ke-foxiz-section-title">More at this Venue</h2>
@@ -125,8 +135,6 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 							'post__not_in' => [ $event_id ],
 							'meta_query' => [ [ 'key' => 'KE_event_venue_id', 'value' => $venue_id ] ]
 						]);
-
-						// Use Current Event as fallback if no other events at this venue
 						$venue_query = $other_venue_query->have_posts() 
 							? $other_venue_query 
 							: new WP_Query([ 'p' => $event_id, 'post_type' => 'event' ]);
@@ -153,8 +161,6 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 							'post__not_in' => [ $event_id ],
 							'tax_query' => [ [ 'taxonomy' => 'event_category', 'terms' => $cat_id ] ]
 						]);
-
-						// Use Current Event as fallback if no other events in this category
 						$cat_query = $other_cat_query->have_posts() 
 							? $other_cat_query 
 							: new WP_Query([ 'p' => $event_id, 'post_type' => 'event' ]);
