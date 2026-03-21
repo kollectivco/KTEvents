@@ -14,10 +14,43 @@ get_header(); ?>
 					<header class="ke-rb-archive-header">
 						<h1 class="ke-foxiz-section-title"><?php post_type_archive_title(); ?></h1>
 						
-						<!-- Foxiz-Style Filter Bar -->
+						<!-- Foxiz-Style Dual-Layer Filter Bar -->
 						<div class="ke-filters-bar">
 							<form id="ke-filter-form" method="get" action="<?php echo esc_url( get_post_type_archive_link( 'event' ) ); ?>">
-								<div class="ke-filter-inner">
+								
+								<!-- Layer 1: Navigation Tabs -->
+								<div class="ke-quick-nav">
+									<div class="ke-nav-scroll">
+										<button type="button" class="ke-nav-item <?php echo empty($_GET['ke_range']) && empty($_GET['ke_recommended']) ? 'active' : ''; ?>" data-range="">Upcoming</button>
+										<button type="button" class="ke-nav-item <?php echo ($_GET['ke_recommended'] ?? '') === '1' ? 'active' : ''; ?>" data-meta="ke_recommended">Recommended</button>
+										<button type="button" class="ke-nav-item <?php echo ($_GET['ke_range'] ?? '') === 'today' ? 'active' : ''; ?>" data-range="today">Today</button>
+										<button type="button" class="ke-nav-item <?php echo ($_GET['ke_range'] ?? '') === 'weekend' ? 'active' : ''; ?>" data-range="weekend">Weekend</button>
+										<button type="button" class="ke-nav-item <?php echo ($_GET['ke_range'] ?? '') === 'week' ? 'active' : ''; ?>" data-range="week">This Week</button>
+										<button type="button" class="ke-nav-toggle-btn" id="ke-toggle-advanced">Get Specific <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 9l-7 7-7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+									</div>
+								</div>
+
+								<!-- Layer 2: Dynamic Location Pills -->
+								<div class="ke-location-pills">
+									<div class="ke-pills-scroll">
+										<button type="button" class="ke-pill-item <?php echo empty($_GET['ke_city']) ? 'active' : ''; ?>" data-city="">All Events</button>
+										<?php 
+										$cities = get_terms( array( 'taxonomy' => 'event_city', 'hide_empty' => true ) );
+										foreach ( $cities as $city ) : ?>
+											<button type="button" class="ke-pill-item <?php echo ($_GET['ke_city'] ?? '') === $city->slug ? 'active' : ''; ?>" data-city="<?php echo esc_attr($city->slug); ?>">
+												<?php echo esc_html($city->name); ?>
+											</button>
+										<?php endforeach; ?>
+									</div>
+								</div>
+
+								<!-- Hidden Inputs for Quick Filters -->
+								<input type="hidden" name="ke_range" id="ke-input-range" value="<?php echo esc_attr($_GET['ke_range'] ?? ''); ?>">
+								<input type="hidden" name="ke_recommended" id="ke-input-recommended" value="<?php echo esc_attr($_GET['ke_recommended'] ?? ''); ?>">
+								<input type="hidden" name="ke_city" id="ke-input-city" value="<?php echo esc_attr($_GET['ke_city'] ?? ''); ?>">
+
+								<!-- Level 3: Advanced Filter Form (Collapsible) -->
+								<div id="ke-advanced-filters" class="ke-filter-inner" style="display: none;">
 									<!-- Search -->
 									<div class="ke-filter-node">
 										<label>Keywords</label>
@@ -30,22 +63,9 @@ get_header(); ?>
 										<select name="ke_category">
 											<option value="">All Categories</option>
 											<?php 
-											$terms = get_terms( array( 'taxonomy' => 'event_category', 'hide_empty' => true ) );
-											foreach ( $terms as $term ) : ?>
-												<option value="<?php echo $term->slug; ?>" <?php selected( $_GET['ke_category'] ?? '', $term->slug ); ?>><?php echo $term->name; ?></option>
-											<?php endforeach; ?>
-										</select>
-									</div>
-
-									<!-- City -->
-									<div class="ke-filter-node">
-										<label>City</label>
-										<select name="ke_city">
-											<option value="">All Cities</option>
-											<?php 
-											$terms = get_terms( array( 'taxonomy' => 'event_city', 'hide_empty' => true ) );
-											foreach ( $terms as $term ) : ?>
-												<option value="<?php echo $term->slug; ?>" <?php selected( $_GET['ke_city'] ?? '', $term->slug ); ?>><?php echo $term->name; ?></option>
+											$categories = get_terms( array( 'taxonomy' => 'event_category', 'hide_empty' => true ) );
+											foreach ( $categories as $cat ) : ?>
+												<option value="<?php echo $cat->slug; ?>" <?php selected( $_GET['ke_category'] ?? '', $cat->slug ); ?>><?php echo $cat->name; ?></option>
 											<?php endforeach; ?>
 										</select>
 									</div>
@@ -61,7 +81,7 @@ get_header(); ?>
 									</div>
 
 									<div class="ke-filter-node">
-										<button type="submit" class="button button-primary">Filter</button>
+										<button type="submit" class="button button-primary is-full-width">Apply Filters</button>
 									</div>
 								</div>
 							</form>

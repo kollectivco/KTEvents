@@ -89,6 +89,17 @@ class KE_Query {
 
 		$mode = $input['query_mode'] ?? 'standard';
 		
+		// 1. Mandatory Upcoming Filter (Global Frontend Rule)
+		// We hide past events by default unless explicitly allowed (e.g. in some specific archive mode if ever needed)
+		if ( ! ( isset($overrides['show_past']) && $overrides['show_past'] ) ) {
+			$args['meta_query'][] = array(
+				'key'     => 'KE_event_date',
+				'value'   => current_time( 'Y-m-d' ),
+				'compare' => '>=',
+				'type'    => 'DATE'
+			);
+		}
+
 		if ( 'current' === $mode ) {
 			if ( is_single() && get_post_type() === 'venue' ) {
 				$args['meta_query'][] = array( 'key' => 'KE_event_venue_id', 'value' => get_the_ID(), 'compare' => '=' );
@@ -111,12 +122,53 @@ class KE_Query {
 			$args['offset'] = intval( $args['offset'] ) + ( ( $args['paged'] - 1 ) * $args['posts_per_page'] );
 		}
 
-		$tax_map = array( 'event_category' => 'event_category', 'event_city' => 'event_city', 'event_governorate' => 'event_governorate' );
+		$tax_map = array( 
+			'ke_category' => 'event_category', 
+			'ke_city'     => 'event_city', 
+			'ke_gov'      => 'event_governorate',
+			'event_category' => 'event_category', // Compatibility
+			'event_city'     => 'event_city'      // Compatibility
+		);
 		foreach ( $tax_map as $key => $taxonomy ) {
 			$val = $input[ $key ] ?? '';
 			if ( ! empty( $val ) ) {
 				$args['tax_query'][] = array( 'taxonomy' => $taxonomy, 'field' => is_numeric($val) ? 'term_id' : 'slug', 'terms' => (array) $val );
 			}
+		}
+
+		// Quick Dynamic Range Filter
+		$range = $input['ke_range'] ?? '';
+		if ( ! empty( $range ) ) {
+			$start = current_time( 'Y-m-d' );
+			$end   = $start;
+			
+			switch ( $range ) {
+				case 'today':
+					$end = $start;
+					break;
+				case 'weekend':
+					$end = date( 'Y-m-d', strtotime( 'next Sunday' ) );
+					$start = date( 'Y-m-d', strtotime( 'next Friday' ) );
+					break;
+				case 'week':
+					$end = date( 'Y-m-d', strtotime( 'next Sunday' ) );
+					break;
+			}
+
+			// Redefine the date filter for quick ranges
+			// We remove the mandatory generic one if it was added
+			foreach ( $args['meta_query'] as $k => $q ) {
+				if ( is_array($q) && isset($q['key']) && 'KE_event_date' === $q['key'] ) {
+					unset( $args['meta_query'][$k] );
+				}
+			}
+
+			$args['meta_query'][] = array(
+				'key'     => 'KE_event_date',
+				'value'   => array( $start, $end ),
+				'compare' => 'BETWEEN',
+				'type'    => 'DATE'
+			);
 		}
 
 		$status = $input['status'] ?? '';
@@ -128,7 +180,11 @@ class KE_Query {
 			}
 		}
 
-		$meta_toggles = array( 'featured' => 'KE_event_featured', 'editor_pick' => 'KE_event_editor_pick' );
+		$meta_toggles = array( 
+			'featured'      => 'KE_event_featured', 
+			'editor_pick'   => 'KE_event_editor_pick',
+			'ke_recommended' => 'KE_event_featured' // Map recommended to featured
+		);
 		foreach ( $meta_toggles as $key => $meta_key ) {
 			$val = $input[ $key ] ?? '';
 			if ( in_array((string)$val, [ '1', 'yes', 'true' ]) ) {
@@ -141,7 +197,7 @@ class KE_Query {
 			$args['meta_query'][] = array( 'key' => 'KE_event_venue_id', 'value' => $venue_id, 'compare' => '=' );
 		}
 
-		$sort = $input['orderby_custom'] ?? 'upcoming';
+		$sort = $input['ke_sort'] ?? $input['orderby_custom'] ?? 'upcoming';
 		switch ( $sort ) {
 			case 'latest': $args['orderby'] = 'date'; $args['order'] = 'DESC'; break;
 			case 'title_asc': $args['orderby'] = 'title'; $args['order'] = 'ASC'; break;
@@ -150,9 +206,10 @@ class KE_Query {
 			case 'date_desc': $args['meta_key'] = 'KE_event_date'; $args['orderby'] = 'meta_value'; $args['order'] = 'DESC'; break;
 			case 'rand': $args['orderby'] = 'rand'; break;
 			default:
-				$args['meta_query']['status_clause'] = array( 'key' => 'KE_event_status', 'compare' => 'EXISTS' );
-				$args['meta_query']['date_clause'] = array( 'key' => 'KE_event_date', 'compare' => 'EXISTS', 'type' => 'DATE' );
-				$args['orderby'] = array( 'date_clause' => 'ASC' );
+				// If upcoming or default
+				$args['meta_key'] = 'KE_event_date';
+				$args['orderby']  = 'meta_value'; 
+				$args['order']    = 'ASC';
 				break;
 		}
 

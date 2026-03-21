@@ -158,6 +158,57 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Global Click Handlers (for injected buttons)
     document.addEventListener('click', (e) => {
+        // Quick Nav Tabs
+        const navItem = e.target.closest('.ke-nav-item');
+        if (navItem) {
+            const range = navItem.getAttribute('data-range');
+            const meta = navItem.getAttribute('data-meta');
+            
+            // UI Update
+            document.querySelectorAll('.ke-nav-item').forEach(item => item.classList.remove('active'));
+            navItem.classList.add('active');
+
+            // Logic Update
+            const rangeInput = document.getElementById('ke-input-range');
+            const recInput = document.getElementById('ke-input-recommended');
+
+            if (range !== null) rangeInput.value = range;
+            if (meta === 'ke_recommended') recInput.value = '1';
+            else recInput.value = '';
+
+            filterArchive();
+            return;
+        }
+
+        // Location Pills
+        const pillItem = e.target.closest('.ke-pill-item');
+        if (pillItem) {
+            const city = pillItem.getAttribute('data-city');
+            
+            // UI Update
+            document.querySelectorAll('.ke-pill-item').forEach(item => item.classList.remove('active'));
+            pillItem.classList.add('active');
+
+            // Logic Update
+            const cityInput = document.getElementById('ke-input-city');
+            if (cityInput) cityInput.value = city;
+
+            filterArchive();
+            return;
+        }
+
+        // Advanced Filter Toggle
+        const toggleBtn = e.target.closest('#ke-toggle-advanced');
+        if (toggleBtn) {
+            const target = document.getElementById('ke-advanced-filters');
+            if (target) {
+                const isHidden = target.style.display === 'none';
+                target.style.display = isHidden ? 'grid' : 'none';
+                toggleBtn.classList.toggle('is-active', isHidden);
+            }
+            return;
+        }
+
         // Reset filters support for empty state button
         if (e.target.id === 'ke-reset-filters') {
             resetFilters();

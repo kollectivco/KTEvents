@@ -130,15 +130,11 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 						<div class="ke-supporting-block">
 							<h2 class="ke-foxiz-section-title">More at this Venue</h2>
 							<?php
-							$other_venue_query = new WP_Query([
-								'post_type' => 'event',
+							$venue_query = KE_Query::get_instance()->get_events([
 								'posts_per_page' => 4,
-								'post__not_in' => [ $event_id ],
-								'meta_query' => [ [ 'key' => 'KE_event_venue_id', 'value' => $venue_id ] ]
+								'post__not_in'   => [ $event_id ],
+								'venue_id'       => $venue_id
 							]);
-							$venue_query = $other_venue_query->have_posts() 
-								? $other_venue_query 
-								: new WP_Query([ 'p' => $event_id, 'post_type' => 'event' ]);
 
 							if ( $venue_query->have_posts() ) :
 								echo KE_Query::get_instance()->render_events_loop( $venue_query, array(
@@ -157,15 +153,11 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 						<div class="ke-supporting-block">
 							<h2 class="ke-foxiz-section-title">More in this Category</h2>
 							<?php
-							$other_cat_query = new WP_Query([
-								'post_type' => 'event',
+							$cat_query = KE_Query::get_instance()->get_events([
 								'posts_per_page' => 4,
-								'post__not_in' => [ $event_id ],
-								'tax_query' => [ [ 'taxonomy' => 'event_category', 'terms' => $cat_id ] ]
+								'post__not_in'   => [ $event_id ],
+								'ke_category'    => $cat_id
 							]);
-							$cat_query = $other_cat_query->have_posts() 
-								? $other_cat_query 
-								: new WP_Query([ 'p' => $event_id, 'post_type' => 'event' ]);
 
 							if ( $cat_query->have_posts() ) :
 								echo KE_Query::get_instance()->render_events_loop( $cat_query, array(
@@ -183,11 +175,10 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 						<div class="ke-supporting-block">
 							<h2 class="ke-foxiz-section-title">Recommended Events</h2>
 							<?php
-							$rec_query = new WP_Query([
-								'post_type' => 'event',
+							$rec_query = KE_Query::get_instance()->get_events([
 								'posts_per_page' => 12,
-								'post__not_in' => [ $event_id ],
-								'orderby' => 'rand'
+								'post__not_in'   => [ $event_id ],
+								'ke_sort'        => 'rand'
 							]);
 							if ( $rec_query->have_posts() ) :
 								echo KE_Query::get_instance()->render_events_loop( $rec_query, array(
