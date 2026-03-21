@@ -184,15 +184,37 @@ class KE_Query {
 			if ( isset($display['is_boxed']) && 'yes' === $display['is_boxed'] ) $classes[] = 'ke-boxed';
 			if ( isset($display['color_scheme']) && 'dark' === $display['color_scheme'] ) $classes[] = 'ke-scheme-dark';
 
+			$count = 0;
+			$max_initial = $display['max_initial'] ?? 0;
+
 			echo '<div class="' . implode(' ', $classes) . '">';
 			while ( $query->have_posts() ) {
 				$query->the_post();
+				$count++;
 				$preset = $display['layout_preset'];
+				$item_classes = array();
+				if ( $max_initial > 0 && $count > $max_initial ) {
+					$item_classes[] = 'ke-hidden-item';
+				}
+
 				$partial = KE_PLUGIN_DIR . 'templates/partials/widgets/event-card-' . $preset . '.php';
+				
+				// Standardize item wrapper for hidden state support
+				if ( ! empty( $item_classes ) ) echo '<div class="' . implode(' ', $item_classes) . '">';
+				
 				if ( file_exists( $partial ) ) include $partial;
 				else include KE_PLUGIN_DIR . 'templates/partials/loop-event-card.php';
+				
+				if ( ! empty( $item_classes ) ) echo '</div>';
 			}
 			echo '</div>';
+
+			if ( $max_initial > 0 && $query->post_count > $max_initial ) {
+				echo '<div class="ke-show-more-wrapper">';
+				echo '<button type="button" class="ke-show-more-btn" data-target="next">' . esc_html__( 'Show More', 'kontentainment-events' ) . '</button>';
+				echo '</div>';
+			}
+
 			if ( ! empty( $display['pagination'] ) ) $this->render_pagination( $query, $display );
 			wp_reset_postdata();
 		} else {

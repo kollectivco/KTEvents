@@ -863,7 +863,50 @@
     --ke-text-secondary: #a0a0a0;
 }
 
-.ke-scheme-dark .ke-card { background-color: var(--ke-card-bg); }
+.ke-hidden-item {
+    display: none;
+}
+
+.ke-show-more-wrapper {
+    text-align: center;
+    margin-top: 40px;
+    padding-bottom: 20px;
+}
+
+.ke-show-more-btn {
+    display: inline-block;
+    background: #1a1e26;
+    color: #fff;
+    padding: 14px 32px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.ke-show-more-btn:hover {
+    background: var(--ke-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(51, 167, 224, 0.25);
+}
+
+.ke-item-revealed {
+    animation: ke-fade-up 0.5s ease forwards;
+}
+
+@keyframes ke-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 .ke-scheme-dark .ke-card-title a { color: var(--ke-text-primary); }
 .ke-scheme-dark .ke-card-meta { color: var(--ke-text-secondary); }
 

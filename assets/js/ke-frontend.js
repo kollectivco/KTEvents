@@ -5,16 +5,12 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     const archiveContainer = document.getElementById('ke-archive-container');
-    if (!archiveContainer) return;
-
     const filterForm = document.getElementById('ke-filter-form');
     const archiveLoop = document.getElementById('ke-archive-loop');
     const loadMoreBtn = document.getElementById('ke-load-more');
     const resetBtn = document.getElementById('ke-reset-filters');
     const loadingOverlay = document.getElementById('ke-loading-overlay');
-    const postType = archiveContainer.getAttribute('data-post-type');
-
-    if (!filterForm || !archiveLoop) return;
+    const postType = archiveContainer ? archiveContainer.getAttribute('data-post-type') : 'event';
 
     /**
      * State Management
@@ -25,15 +21,17 @@ document.addEventListener('DOMContentLoaded', function() {
      * AJAX Filter Logic
      */
     async function filterArchive(isLoadMore = false) {
-        if (isLoading) return;
+        if (!filterForm || !archiveLoop || isLoading) return;
         isLoading = true;
 
         if (!isLoadMore) {
-            loadingOverlay.classList.add('is-active');
+            if (loadingOverlay) loadingOverlay.classList.add('is-active');
             archiveLoop.style.opacity = '0.5';
         } else {
-            loadMoreBtn.classList.add('is-loading');
-            loadMoreBtn.disabled = true;
+            if (loadMoreBtn) {
+                loadMoreBtn.classList.add('is-loading');
+                loadMoreBtn.disabled = true;
+            }
         }
 
         const formData = new FormData(filterForm);
@@ -77,10 +75,12 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('KE Filters Error:', error);
         } finally {
             isLoading = false;
-            loadingOverlay.classList.remove('is-active');
+            if (loadingOverlay) loadingOverlay.classList.remove('is-active');
             archiveLoop.style.opacity = '1';
-            loadMoreBtn.classList.remove('is-loading');
-            loadMoreBtn.disabled = false;
+            if (loadMoreBtn) {
+                loadMoreBtn.classList.remove('is-loading');
+                loadMoreBtn.disabled = false;
+            }
         }
     }
 
@@ -120,20 +120,20 @@ document.addEventListener('DOMContentLoaded', function() {
     /**
      * Event Listeners
      */
-    
-    // Form Inputs (Autosubmit)
-    filterForm.addEventListener('change', (e) => {
-        // Only autosubmit on selects and checkboxes
-        if (e.target.tagName === 'SELECT' || e.target.type === 'checkbox') {
-            filterArchive();
-        }
-    });
+    if (filterForm) {
+        // Form Inputs (Autosubmit)
+        filterForm.addEventListener('change', (e) => {
+            if (e.target.tagName === 'SELECT' || e.target.type === 'checkbox') {
+                filterArchive();
+            }
+        });
 
-    // Form Submit
-    filterForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        filterArchive();
-    });
+        // Form Submit
+        filterForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            filterArchive();
+        });
+    }
 
     // Load More
     if (loadMoreBtn) {
@@ -144,8 +144,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Reset Filters
     const resetFilters = () => {
+        if (!filterForm) return;
         filterForm.reset();
-        // Clear all select values (sometimes form.reset doesn't trigger change)
         filterForm.querySelectorAll('select').forEach(select => select.value = '');
         filterForm.querySelectorAll('input[type="text"]').forEach(input => input.value = '');
         filterForm.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
@@ -156,22 +156,42 @@ document.addEventListener('DOMContentLoaded', function() {
         resetBtn.addEventListener('click', resetFilters);
     }
 
-    // Handle Archive Empty State buttons (injected via loop)
+    // Global Click Handlers (for injected buttons)
     document.addEventListener('click', (e) => {
+        // Reset filters support for empty state button
         if (e.target.id === 'ke-reset-filters') {
             resetFilters();
         }
+
+        // Show More / Reveal Hidden Items logic
+        if (e.target.classList.contains('ke-show-more-btn')) {
+            const button = e.target;
+            const supportingBlock = button.closest('.ke-supporting-block, .ke-main-col, body');
+            
+            if (supportingBlock) {
+                const hiddenItems = supportingBlock.querySelectorAll('.ke-hidden-item');
+                hiddenItems.forEach((item, index) => {
+                    item.style.display = 'block';
+                    // Trigger reflow for animation
+                    void item.offsetWidth;
+                    item.classList.remove('ke-hidden-item');
+                    item.classList.add('ke-item-revealed');
+                    item.style.animationDelay = `${index * 0.08}s`;
+                });
+                button.parentElement.style.display = 'none';
+            }
+        }
     });
 
-    // History Back/Forward
+    // History Context
     window.addEventListener('popstate', () => {
-        window.location.reload(); // Simplest sync for popstate in Phase 2
+        if (archiveContainer) window.location.reload();
     });
 
     // Keyboard search debounce
-    let searchTimeout;
     const searchInput = document.getElementById('ke_search');
     if (searchInput) {
+        let searchTimeout;
         searchInput.addEventListener('input', () => {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {

@@ -141,7 +141,7 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 
 						if ( $venue_query->have_posts() ) :
 							echo KE_Query::get_instance()->render_events_loop( $venue_query, array(
-								'columns'        => 4,
+								'columns'        => 3,
 								'columns_tablet' => 2,
 								'columns_mobile' => 1,
 								'gap'            => 'medium'
@@ -168,7 +168,7 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 
 						if ( $cat_query->have_posts() ) :
 							echo KE_Query::get_instance()->render_events_loop( $cat_query, array(
-								'columns'        => 4,
+								'columns'        => 3,
 								'columns_tablet' => 2,
 								'columns_mobile' => 1,
 								'gap'            => 'medium'
@@ -184,16 +184,17 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 						<?php
 						$rec_query = new WP_Query([
 							'post_type' => 'event',
-							'posts_per_page' => 4,
+							'posts_per_page' => 12,
 							'post__not_in' => [ $event_id ],
 							'orderby' => 'rand'
 						]);
 						if ( $rec_query->have_posts() ) :
 							echo KE_Query::get_instance()->render_events_loop( $rec_query, array(
-								'columns'        => 4,
+								'columns'        => 3,
 								'columns_tablet' => 2,
 								'columns_mobile' => 1,
-								'gap'            => 'medium'
+								'gap'            => 'medium',
+								'max_initial'    => 3
 							) );
 						endif;
 						wp_reset_postdata();
