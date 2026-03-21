@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment Events
  * Plugin URI:  https://github.com/kollectivco/KTEvents
  * Description: A professional editorial events directory for magazine websites.
- * Version:     1.2.4
+ * Version:     1.2.5
  * Author:      Kollectiv
  * Author URI:  https://github.com/kollectivco
  * Text Domain: kontentainment-events
