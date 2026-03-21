@@ -39,7 +39,7 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 					<!-- Hero: Split Layout with Editorial Alignment -->
 					<header class="ke-single-hero-foxiz">
 						
-						<!-- LEFT: Poster - Starts Pushed Down to Align with Meta -->
+						<!-- LEFT: Poster -->
 						<div class="ke-poster-box">
 							<?php if ( has_post_thumbnail() ) : ?>
 								<?php the_post_thumbnail( 'large' ); ?>
@@ -50,18 +50,14 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 
 						<!-- RIGHT: Info area -->
 						<div class="ke-info-box">
-							<!-- 1. Category -->
 							<?php if ( $cat_name ) : ?>
 								<div class="ke-cat-chip"><?php echo esc_html($cat_name); ?></div>
 							<?php endif; ?>
 
-							<!-- 2. Title -->
 							<h1 class="ke-title-large"><?php the_title(); ?></h1>
 
-							<!-- 3. Divider -->
 							<div class="ke-title-divider"></div>
 
-							<!-- 4. Detailed Meta Block (Aligned with Image Top) -->
 							<div class="ke-meta-stack">
 								<div class="ke-meta-node">
 									<?php echo $icon_calendar; ?>
@@ -117,21 +113,27 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 					</div>
 					<?php endif; ?>
 
-					<!-- Supporting Grids -->
+					<!-- Supporting Sections with Current Event Fallback -->
+					
 					<?php if ( $venue_id ) : ?>
 					<div class="ke-supporting-block">
 						<h2 class="ke-foxiz-section-title">More at this Venue</h2>
 						<?php
-						$venue_query = new WP_Query([
+						$other_venue_query = new WP_Query([
 							'post_type' => 'event',
 							'posts_per_page' => 4,
-							'post__not_in' => $shown_ids,
+							'post__not_in' => [ $event_id ],
 							'meta_query' => [ [ 'key' => 'KE_event_venue_id', 'value' => $venue_id ] ]
 						]);
+
+						// Use Current Event as fallback if no other events at this venue
+						$venue_query = $other_venue_query->have_posts() 
+							? $other_venue_query 
+							: new WP_Query([ 'p' => $event_id, 'post_type' => 'event' ]);
+
 						if ( $venue_query->have_posts() ) :
 							echo '<div class="ke-card-grid">';
 							while ( $venue_query->have_posts() ) : $venue_query->the_post();
-								$shown_ids[] = get_the_ID();
 								include KE_PLUGIN_DIR . 'templates/partials/loop-event-card.php';
 							endwhile;
 							echo '</div>';
@@ -145,16 +147,21 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 					<div class="ke-supporting-block">
 						<h2 class="ke-foxiz-section-title">More in this Category</h2>
 						<?php
-						$cat_query = new WP_Query([
+						$other_cat_query = new WP_Query([
 							'post_type' => 'event',
 							'posts_per_page' => 4,
-							'post__not_in' => $shown_ids,
+							'post__not_in' => [ $event_id ],
 							'tax_query' => [ [ 'taxonomy' => 'event_category', 'terms' => $cat_id ] ]
 						]);
+
+						// Use Current Event as fallback if no other events in this category
+						$cat_query = $other_cat_query->have_posts() 
+							? $other_cat_query 
+							: new WP_Query([ 'p' => $event_id, 'post_type' => 'event' ]);
+
 						if ( $cat_query->have_posts() ) :
 							echo '<div class="ke-card-grid">';
 							while ( $cat_query->have_posts() ) : $cat_query->the_post();
-								$shown_ids[] = get_the_ID();
 								include KE_PLUGIN_DIR . 'templates/partials/loop-event-card.php';
 							endwhile;
 							echo '</div>';
@@ -170,7 +177,7 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 						$rec_query = new WP_Query([
 							'post_type' => 'event',
 							'posts_per_page' => 4,
-							'post__not_in' => $shown_ids,
+							'post__not_in' => [ $event_id ],
 							'orderby' => 'rand'
 						]);
 						if ( $rec_query->have_posts() ) :
