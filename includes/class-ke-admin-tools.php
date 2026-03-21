@@ -82,22 +82,26 @@ class KE_Admin_Tools {
 				?>
 				<p>Last Sync Check: <span class="ke-meta-value"><?php echo $last_check ?: 'Never'; ?></span></p>
 				
-				<?php if ( $remote && ! empty($remote->tag_name) ) : ?>
+				<?php if ( $remote && ! empty($remote->version) ) : ?>
 					<div class="ke-update-info-plate">
-						<p>Latest on GitHub: <a href="<?php echo esc_url($remote->html_url); ?>" target="_blank" class="ke-tag-version"><?php echo esc_html($remote->tag_name); ?></a></p>
-						<p class="description">Published on: <?php echo date_i18n( get_option('date_format'), strtotime($remote->published_at) ); ?></p>
+						<p>Latest on GitHub: <span class="ke-tag-version"><?php echo esc_html($remote->version); ?></span></p>
+						<?php if ( version_compare( KE_PLUGIN_VERSION, ltrim($remote->version, 'v'), '<' ) ) : ?>
+							<p class="ke-notice-warning">Update Available! Refresh the Plugins page to see the notification.</p>
+						<?php else : ?>
+							<p class="ke-notice-info">You are running the latest version.</p>
+						<?php endif; ?>
 					</div>
 				<?php elseif ( $remote === false ) : ?>
-					<p class="ke-notice-warning">GitHub API could not be reached or no releases exist.</p>
+					<p class="ke-notice-warning">GitHub API check failed. Ensure the repo has at least one Tag or Release.</p>
 				<?php else : ?>
-					<p class="ke-notice-info">No update data cached yet.</p>
+					<p class="ke-notice-info">No update data cached. Click the button below to check.</p>
 				<?php endif; ?>
 
 				<form method="post" action="<?php echo admin_url('admin-post.php'); ?>" style="margin-top: 20px;">
 					<input type="hidden" name="action" value="ke_run_tool">
 					<input type="hidden" name="tool_id" value="check_updates">
 					<?php wp_nonce_field( 'ke_tools_action' ); ?>
-					<button type="submit" class="button button-secondary">Force Check for Updates Now</button>
+					<button type="submit" class="button button-secondary">Run Forced Version Check</button>
 				</form>
 			</div>
 		</div>
@@ -138,12 +142,16 @@ class KE_Admin_Tools {
 				break;
 			case 'check_updates':
 				$updater = new KE_Updater( KE_PLUGIN_DIR . 'kontentainment-events.php', 'https://github.com/kollectivco/KTEvents' );
-				$remote = $updater->get_remote_data( true ); // Force refresh
-				set_transient( 'ke_last_check_time', date_i18n( get_option('date_format') . ' H:i:s' ), DAY_IN_SECONDS );
+				$remote  = $updater->get_remote_data( true ); // Force refresh
 				if ( $remote ) {
-					$message = 'GitHub Release detected: ' . $remote->tag_name;
+					$v_remote = ltrim($remote->version, 'v');
+					if ( version_compare( KE_PLUGIN_VERSION, $v_remote, '<' ) ) {
+						$message = "Update detected! GitHub Version: $v_remote. Visit Plugins to install.";
+					} else {
+						$message = "Check complete. Version $v_remote is the latest on GitHub.";
+					}
 				} else {
-					$message = 'Check completed. No GitHub Release found yet.';
+					$message = 'Check failed. No tagged versions found on GitHub.';
 				}
 				break;
 		}
