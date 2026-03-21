@@ -1,161 +1,187 @@
 <?php
 /**
- * Single Event Template
+ * Single Event Template - Modern Editorial Redesign
  */
 
-get_header(); ?>
+get_header();
 
-<?php while ( have_posts() ) : the_post(); 
-$post_id = get_the_ID();
-$venue_id = ke_get_event_meta( $post_id, 'venue_id' );
-$event_date = ke_get_event_date_display();
-$event_end_date = ke_get_event_meta( $post_id, 'end_date' );
-$event_time = ke_get_event_meta( $post_id, 'time' );
-$event_end_time = ke_get_event_meta( $post_id, 'end_time' );
-$status = ke_get_event_meta( $post_id, 'status' );
-$organizer = ke_get_event_meta( $post_id, 'organizer_name' );
-$address = ke_get_event_meta( $post_id, 'address' );
-$phone = ke_get_event_meta( $post_id, 'phone' );
-$official_url = ke_get_event_meta( $post_id, 'official_url' );
-$source_url = ke_get_event_meta( $post_id, 'source_url' );
+$event_id    = get_the_ID();
+$event_date  = ke_get_event_meta( $event_id, 'date' );
+$event_time  = ke_get_event_meta( $event_id, 'time' );
+$status      = ke_get_event_status_label( $event_id );
+$venue_id    = ke_get_event_meta( $event_id, 'venue_id' );
+$address     = $venue_id ? ke_get_venue_meta( $venue_id, 'address' ) : '';
+$organizer   = ke_get_event_meta( $event_id, 'organizer' );
+$official_url = ke_get_event_meta( $event_id, 'url' );
+
+$categories = get_the_terms( $event_id, 'event_category' );
+$cat_id = ! empty( $categories ) ? $categories[0]->term_id : 0;
+$cat_name = ! empty( $categories ) ? $categories[0]->name : 'Event';
+
+// Track shown IDs for duplicates
+$shown_ids = [ $event_id ];
 ?>
 
-<div class="ke-container ke-single-event">
-	<div class="ke-single-grid">
-		<div class="ke-single-content">
-			<header class="ke-single-header">
-				<div class="ke-single-meta">
-					<span class="ke-badge ke-badge-status ke-status-<?php echo esc_attr( $status ); ?>"><?php echo esc_html( ke_get_event_status_label( $post_id ) ); ?></span>
-					<span class="ke-date"><?php echo esc_html( $event_date ); ?><?php echo $event_end_date ? ' - ' . esc_html( date_i18n( get_option( 'date_format' ), strtotime( $event_end_date ) ) ) : ''; ?></span>
-					<?php if ( $event_time ) : ?>
-						<span class="ke-time"><?php echo esc_html( $event_time ); ?><?php echo $event_end_time ? ' - ' . esc_html( $event_end_time ) : ''; ?></span>
-					<?php endif; ?>
-				</div>
-				<h1 class="ke-single-title"><?php the_title(); ?></h1>
-				
-				<?php if ( has_excerpt() ) : ?>
-					<div class="ke-single-excerpt">
-						<?php the_excerpt(); ?>
-					</div>
-				<?php endif; ?>
-			</header>
-
-			<div class="ke-single-image">
-				<?php if ( has_post_thumbnail() ) : ?>
-					<?php the_post_thumbnail( 'large' ); ?>
-				<?php endif; ?>
-			</div>
-
-			<div class="ke-single-description">
-				<h2 class="ke-section-title">About this Event</h2>
-				<?php the_content(); ?>
-			</div>
-
-			<!-- Related Events -->
-			<section class="ke-related-events">
-				<h2 class="ke-section-title">Related Events</h2>
-				<div class="ke-grid ke-grid-small">
-					<?php 
-					$related_query = KE_Query::get_instance()->get_related_events( $post_id, 3 );
-					if ( $related_query->have_posts() ) :
-						while ( $related_query->have_posts() ) : $related_query->the_post(); ?>
-							<article class="ke-card ke-event-card-small">
-								<a href="<?php the_permalink(); ?>">
-									<?php if ( has_post_thumbnail() ) : ?>
-										<?php the_post_thumbnail( 'medium' ); ?>
-									<?php endif; ?>
-									<h4 class="ke-card-title"><?php the_title(); ?></h4>
-									<div class="ke-card-meta"><?php echo esc_html( ke_get_event_date_display() ); ?></div>
-								</a>
-							</article>
-						<?php endwhile;
-						wp_reset_postdata();
-					else : ?>
-						<p>No related events found.</p>
-					<?php endif; ?>
-				</div>
-			</section>
-
-			<?php if ( $venue_id ) : ?>
-				<!-- More events from same venue -->
-				<section class="ke-venue-events">
-					<h2 class="ke-section-title">More from <?php echo esc_html( get_the_title( $venue_id ) ); ?></h2>
-					<div class="ke-grid ke-grid-small">
-						<?php 
-						$venue_events = KE_Query::get_instance()->get_venue_events( $venue_id, 'upcoming', 3 );
-						if ( $venue_events->have_posts() ) :
-							while ( $venue_events->have_posts() ) : $venue_events->the_post(); 
-								if ( get_the_ID() === $post_id ) continue; ?>
-								<article class="ke-card ke-event-card-small">
-									<a href="<?php the_permalink(); ?>">
-										<?php if ( has_post_thumbnail() ) : ?>
-											<?php the_post_thumbnail( 'medium' ); ?>
-										<?php endif; ?>
-										<h4 class="ke-card-title"><?php the_title(); ?></h4>
-										<div class="ke-card-meta"><?php echo esc_html( ke_get_event_date_display() ); ?></div>
-									</a>
-								</article>
-							<?php endwhile;
-							wp_reset_postdata();
-						else : ?>
-							<p>No other events found at this venue.</p>
-						<?php endif; ?>
-					</div>
-				</section>
+<div class="ke-container ke-single-event-redesign">
+	
+	<!-- PART 1: TOP SECTION (Hero Info) -->
+	<header class="ke-single-event-header">
+		
+		<div class="ke-single-event-poster">
+			<?php if ( has_post_thumbnail() ) : ?>
+				<?php the_post_thumbnail( 'large' ); ?>
+			<?php else : ?>
+				<img src="<?php echo KE_PLUGIN_URL . 'assets/images/event-placeholder.jpg'; ?>" alt="<?php the_title(); ?>">
 			<?php endif; ?>
 		</div>
 
-		<aside class="ke-single-sidebar">
-			<div class="ke-sidebar-block ke-event-info">
-				<h3 class="ke-sidebar-title">Event Info</h3>
-				<ul class="ke-info-list">
-					<?php if ( $venue_id ) : ?>
-						<li>
-							<strong>Venue:</strong> 
-							<a href="<?php echo esc_url( get_the_permalink( $venue_id ) ); ?>"><?php echo esc_html( get_the_title( $venue_id ) ); ?></a>
-						</li>
-					<?php endif; ?>
+		<div class="ke-single-event-info">
+			<?php if ( $cat_name ) : ?>
+				<div class="ke-single-event-cat"><?php echo esc_html($cat_name); ?></div>
+			<?php endif; ?>
 
-					<?php if ( $organizer ) : ?>
-						<li><strong>Organizer:</strong> <?php echo esc_html( $organizer ); ?></li>
-					<?php endif; ?>
+			<h1 class="ke-single-event-title"><?php the_title(); ?></h1>
 
-					<?php if ( $address ) : ?>
-						<li><strong>Address:</strong> <?php echo esc_html( $address ); ?></li>
-					<?php endif; ?>
-
-					<?php if ( $phone ) : ?>
-						<li><strong>Phone:</strong> <?php echo esc_html( $phone ); ?></li>
-					<?php endif; ?>
-
-					<?php if ( $official_url ) : ?>
-						<li><strong>Official URL:</strong> <a href="<?php echo esc_url( $official_url ); ?>" target="_blank" rel="nofollow">Visit Official Website</a></li>
-					<?php endif; ?>
-
-					<?php if ( $source_url ) : ?>
-						<li><strong>Source:</strong> <a href="<?php echo esc_url( $source_url ); ?>" target="_blank" rel="nofollow">View Source</a></li>
-					<?php endif; ?>
-				</ul>
-			</div>
-
-			<div class="ke-sidebar-block ke-event-categories">
-				<h3 class="ke-sidebar-title">Categories</h3>
-				<div class="ke-tag-list">
-					<?php echo get_the_term_list( $post_id, 'event_category', '', ' ', '' ); ?>
+			<div class="ke-single-event-meta-grid">
+				<div class="ke-meta-item">
+					<span class="ke-meta-label">Date & Time</span>
+					<span class="ke-meta-value"><?php echo ke_get_event_date_display(); ?> <?php echo $event_time ? ' @ ' . esc_html($event_time) : ''; ?></span>
 				</div>
+
+				<?php if ( $venue_id ) : ?>
+				<div class="ke-meta-item">
+					<span class="ke-meta-label">Venue</span>
+					<span class="ke-meta-value">
+						<a href="<?php echo get_permalink($venue_id); ?>"><?php echo get_the_title($venue_id); ?></a>
+					</span>
+				</div>
+				<?php endif; ?>
+
+				<?php if ( $address ) : ?>
+				<div class="ke-meta-item">
+					<span class="ke-meta-label">Location</span>
+					<span class="ke-meta-value"><?php echo esc_html($address); ?></span>
+				</div>
+				<?php endif; ?>
+
+				<?php if ( $organizer ) : ?>
+				<div class="ke-meta-item">
+					<span class="ke-meta-label">Organizer</span>
+					<span class="ke-meta-value"><?php echo esc_html($organizer); ?></span>
+				</div>
+				<?php endif; ?>
 			</div>
 
-			<div class="ke-sidebar-block ke-event-location">
-				<h3 class="ke-sidebar-title">Location</h3>
-				<div class="ke-tag-list">
-					<?php echo get_the_term_list( $post_id, 'event_city', '', ' ', '' ); ?>
-					<?php echo get_the_term_list( $post_id, 'event_area', '', ' ', '' ); ?>
-				</div>
+			<?php if ( $official_url ) : ?>
+			<div class="ke-single-event-actions">
+				<a href="<?php echo esc_url($official_url); ?>" target="_blank" class="ke-cta-btn">View Official Website</a>
 			</div>
-		</aside>
-	</div>
+			<?php endif; ?>
+		</div>
+	</header>
+
+	<!-- PART 2: CONTENT SECTION -->
+	<section class="ke-single-event-content">
+		<h2 class="ke-section-title">About the Event</h2>
+		<div class="ke-editorial-description">
+			<?php while ( have_posts() ) : the_post(); the_content(); endwhile; ?>
+		</div>
+	</section>
+
+	<hr class="ke-separator">
+
+	<!-- PART 3: SUPPORTING SECTIONS -->
+
+	<?php if ( $venue_id ) : ?>
+	<section class="ke-supporting-section">
+		<h2 class="ke-section-title">More at this Venue</h2>
+		<?php
+		$venue_query = new WP_Query([
+			'post_type' => 'event',
+			'posts_per_page' => 4,
+			'post__not_in' => $shown_ids,
+			'meta_query' => [ [ 'key' => 'KE_event_venue_id', 'value' => $venue_id, 'compare' => '=' ] ]
+		]);
+		if ( $venue_query->have_posts() ) :
+			echo '<div class="ke-loop-wrapper">';
+			while ( $venue_query->have_posts() ) : $venue_query->the_post();
+				$shown_ids[] = get_the_ID();
+				include KE_PLUGIN_DIR . 'templates/partials/loop-event-card.php';
+			endwhile;
+			echo '</div>';
+		else :
+			echo '<p class="ke-empty-notice">No other upcoming events at this venue.</p>';
+		endif;
+		wp_reset_postdata();
+		?>
+	</section>
+	<?php endif; ?>
+
+	<?php if ( $cat_id ) : ?>
+	<section class="ke-supporting-section">
+		<h2 class="ke-section-title">More in this Category</h2>
+		<?php
+		$cat_query = new WP_Query([
+			'post_type' => 'event',
+			'posts_per_page' => 4,
+			'post__not_in' => $shown_ids,
+			'tax_query' => [ [ 'taxonomy' => 'event_category', 'field' => 'term_id', 'terms' => $cat_id ] ]
+		]);
+		if ( $cat_query->have_posts() ) :
+			echo '<div class="ke-loop-wrapper">';
+			while ( $cat_query->have_posts() ) : $cat_query->the_post();
+				$shown_ids[] = get_the_ID();
+				include KE_PLUGIN_DIR . 'templates/partials/loop-event-card.php';
+			endwhile;
+			echo '</div>';
+		endif;
+		wp_reset_postdata();
+		?>
+	</section>
+	<?php endif; ?>
+
+	<section class="ke-supporting-section">
+		<h2 class="ke-section-title">Recommended Events</h2>
+		<?php
+		$rec_query = new WP_Query([
+			'post_type' => 'event',
+			'posts_per_page' => 4,
+			'post__not_in' => $shown_ids,
+			'meta_key' => 'KE_event_featured',
+			'meta_value' => '1',
+			'orderby' => 'rand'
+		]);
+		if ( ! $rec_query->have_posts() ) {
+			// Fallback to latest upcoming
+			$rec_query = new WP_Query([
+				'post_type' => 'event',
+				'posts_per_page' => 4,
+				'post__not_in' => $shown_ids,
+				'meta_key' => 'KE_event_date',
+				'orderby' => 'meta_value',
+				'order' => 'ASC'
+			]);
+		}
+		if ( $rec_query->have_posts() ) :
+			echo '<div class="ke-loop-wrapper">';
+			while ( $rec_query->have_posts() ) : $rec_query->the_post();
+				include KE_PLUGIN_DIR . 'templates/partials/loop-event-card.php';
+			endwhile;
+			echo '</div>';
+		endif;
+		wp_reset_postdata();
+		?>
+	</section>
+
 </div>
 
-<?php endwhile; ?>
+<style>
+.ke-single-event-redesign { margin-top: 60px; margin-bottom: 80px; }
+.ke-section-title { font-size: 24px; font-weight: 800; margin-bottom: 32px; color: var(--ke-primary); border-left: 4px solid var(--ke-accent); padding-left: 16px; }
+.ke-editorial-description { font-size: 18px; line-height: 1.8; color: var(--ke-secondary); max-width: 800px; }
+.ke-supporting-section { margin-top: 80px; }
+.ke-separator { border: 0; border-top: 1px solid var(--ke-border); margin: 60px 0; }
+.ke-empty-notice { color: var(--ke-secondary); font-style: italic; }
+</style>
 
 <?php get_footer(); ?>
