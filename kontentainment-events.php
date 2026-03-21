@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment Events
  * Plugin URI:  https://github.com/kollectivco/KTEvents
  * Description: A professional editorial events directory for magazine websites.
- * Version:     1.2.5
+ * Version:     1.2.6
  * Author:      Kollectiv
  * Author URI:  https://github.com/kollectivco
  * Text Domain: kontentainment-events
@@ -143,6 +143,9 @@ class KE_Events {
 		if ( strpos( $hook, 'ke-' ) !== false || strpos( $hook, 'event' ) !== false || strpos( $hook, 'venue' ) !== false ) {
 			wp_enqueue_style( 'ke-admin', KE_PLUGIN_URL . 'assets/css/ke-admin.css', array(), KE_PLUGIN_VERSION );
 			wp_enqueue_script( 'ke-admin', KE_PLUGIN_URL . 'assets/js/ke-admin.js', array( 'jquery' ), KE_PLUGIN_VERSION, true );
+			
+			// Inject Egypt Location Data
+			wp_add_inline_script( 'ke-admin', 'const keEgyptData = ' . json_encode( KE_Egypt_Locations::get_locations_bridge() ) . ';', 'before' );
 		}
 	}
 

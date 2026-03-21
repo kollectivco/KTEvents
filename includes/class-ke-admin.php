@@ -438,8 +438,8 @@ class KE_Admin {
 			'ke_date'    => 'Event Date',
 			'ke_status'  => 'Status',
 			'ke_venue'   => 'Venue',
-			'ke_city'    => 'City',
-			'ke_area'    => 'Area',
+			'ke_governorate' => 'Gov.',
+			'ke_city'        => 'City',
 			'ke_featured' => 'Featured',
 			'date'       => $columns['date'],
 		);
@@ -468,9 +468,9 @@ class KE_Admin {
 				$cities = get_the_term_list( $post_id, 'event_city', '', ', ', '' );
 				echo $cities ?: '—';
 				break;
-			case 'ke_area':
-				$areas = get_the_term_list( $post_id, 'event_area', '', ', ', '' );
-				echo $areas ?: '—';
+			case 'ke_governorate':
+				$govs = get_the_term_list( $post_id, 'event_governorate', '', ', ', '' );
+				echo $govs ?: '—';
 				break;
 			case 'ke_featured':
 				$featured = get_post_meta( $post_id, 'KE_event_featured', true );

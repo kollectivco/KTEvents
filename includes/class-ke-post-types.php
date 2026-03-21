@@ -52,7 +52,7 @@ class KE_Post_Types {
 			'has_archive'         => true,
 			'rewrite'             => array( 'slug' => 'events' ),
 			'show_in_rest'        => true,
-			'taxonomies'          => array( 'event_category', 'event_governorate', 'event_city', 'event_area' ),
+			'taxonomies'          => array( 'event_category', 'event_governorate', 'event_city' ),
 		) );
 
 		// Venue CPT
@@ -81,7 +81,7 @@ class KE_Post_Types {
 			'has_archive'         => true,
 			'rewrite'             => array( 'slug' => 'venues' ),
 			'show_in_rest'        => true,
-			'taxonomies'          => array( 'event_governorate', 'event_city', 'event_area' ),
+			'taxonomies'          => array( 'event_governorate', 'event_city' ),
 		) );
 	}
 }

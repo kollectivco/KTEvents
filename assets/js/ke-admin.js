@@ -5,27 +5,27 @@ jQuery(document).ready(function($) {
     const errorNotice = $('#ke-import-error');
     const previewWrapper = $('#ke-import-preview-wrapper');
 
-    // Load Egypt Data
-    const egyptDataEl = $('#ke-egypt-data');
-    const egyptData = egyptDataEl.length ? JSON.parse(egyptDataEl.text()) : {};
-
-    if (!fetchForm.length) return;
-
     /**
-     * Handle Governorate -> City Change
+     * Handle Governorate -> City Change (Generic)
      */
-    $(document).on('change', '#preview_governorate_id', function() {
-        const govName = $(this).find('option:selected').text();
-        const citySelect = $('#preview_city_id');
+    $(document).on('change', '.ke-governorate-select, #preview_governorate_id', function() {
+        const govId = $(this).val();
+        const container = $(this).closest('.ke-card-body, .ke-admin-form, .ke-main-col');
+        const citySelect = container.find('.ke-city-select, #preview_city_id');
         
+        if (!citySelect.length) return;
+
         citySelect.find('option').not(':first').remove();
         
-        if (egyptData[govName]) {
-            egyptData[govName].forEach(city => {
-                citySelect.append(`<option value="${city}">${city}</option>`);
+        if (govId && typeof keEgyptData !== 'undefined' && keEgyptData[govId]) {
+            const cities = keEgyptData[govId].cities;
+            cities.forEach(city => {
+                citySelect.append(`<option value="${city.id}">${city.name}</option>`);
             });
         }
     });
+
+    // Handle Area population (Removed Area logic from here as well)
 
     /**
      * Venue Mode Toggle

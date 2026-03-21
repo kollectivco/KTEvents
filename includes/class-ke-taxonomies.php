@@ -95,28 +95,6 @@ class KE_Taxonomies {
 			'show_in_rest'      => true,
 		) );
 
-		// Event Areas (Shared)
-		register_taxonomy( 'event_area', array( 'event', 'venue' ), array(
-			'labels'            => array(
-				'name'          => 'Areas',
-				'singular_name' => 'Area',
-				'search_items'  => 'Search Areas',
-				'all_items'     => 'All Areas',
-				'parent_item'   => 'Parent Area',
-				'parent_item_colon' => 'Parent Area:',
-				'edit_item'     => 'Edit Area',
-				'update_item'   => 'Update Area',
-				'add_new_item'  => 'Add New Area',
-				'new_item_name' => 'New Area Name',
-				'menu_name'     => 'Areas',
-			),
-			'hierarchical'      => true,
-			'show_ui'           => true,
-			'show_admin_column' => true,
-			'query_var'         => true,
-			'rewrite'           => array( 'slug' => 'event-area' ),
-			'show_in_rest'      => true,
-		) );
 	}
 }
 KE_Taxonomies::get_instance();

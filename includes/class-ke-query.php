@@ -111,7 +111,7 @@ class KE_Query {
 			$args['offset'] = intval( $args['offset'] ) + ( ( $args['paged'] - 1 ) * $args['posts_per_page'] );
 		}
 
-		$tax_map = array( 'event_category' => 'event_category', 'event_city' => 'event_city', 'event_area' => 'event_area' );
+		$tax_map = array( 'event_category' => 'event_category', 'event_city' => 'event_city', 'event_governorate' => 'event_governorate' );
 		foreach ( $tax_map as $key => $taxonomy ) {
 			$val = $input[ $key ] ?? '';
 			if ( ! empty( $val ) ) {
@@ -238,7 +238,7 @@ class KE_Query {
 		$defaults = array( 'post_type' => 'venue', 'posts_per_page' => 12, 'paged' => $input['ke_paged'] ?? 1, 'post_status' => 'publish', 'ignore_sticky_posts' => true );
 		$args = wp_parse_args( $overrides, $defaults );
 		if ( ! empty( $input['ke_search'] ) ) $args['s'] = sanitize_text_field( $input['ke_search'] );
-		$tax_map = array( 'event_city' => 'event_city', 'event_area' => 'event_area' );
+		$tax_map = array( 'event_governorate' => 'event_governorate', 'event_city' => 'event_city' );
 		foreach ( $tax_map as $key => $taxonomy ) {
 			$val = $input[ $key ] ?? '';
 			if ( ! empty( $val ) ) $args['tax_query'][] = array( 'taxonomy' => $taxonomy, 'field' => 'term_id', 'terms' => (array) $val );

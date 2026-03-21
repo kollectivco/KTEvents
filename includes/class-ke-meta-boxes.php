@@ -142,6 +142,35 @@ class KE_Meta_Boxes {
 				<input type="date" name="KE_event_last_verified" id="KE_event_last_verified" value="<?php echo esc_attr( $last_verified ); ?>" class="widefat">
 			</p>
 
+			<div style="display: flex; gap: 20px;">
+				<p style="flex: 1;">
+					<label for="ke_event_governorate"><strong>Governorate</strong></label><br>
+					<?php
+					$assigned_gov = wp_get_object_terms( $post->ID, 'event_governorate', array( 'fields' => 'ids' ) );
+					$governorates = get_terms( 'event_governorate', array( 'hide_empty' => false ) );
+					?>
+					<select name="ke_event_governorate" id="ke_event_governorate" class="widefat ke-governorate-select">
+						<option value="">-- Select Governorate --</option>
+						<?php foreach ( $governorates as $gov ) : ?>
+							<option value="<?php echo $gov->term_id; ?>" <?php selected( in_array( $gov->term_id, $assigned_gov ), true ); ?>><?php echo esc_html( $gov->name ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</p>
+				<p style="flex: 1;">
+					<label for="ke_event_city"><strong>City / Region</strong></label><br>
+					<?php
+					$assigned_city = wp_get_object_terms( $post->ID, 'event_city', array( 'fields' => 'ids' ) );
+					$cities = get_terms( 'event_city', array( 'hide_empty' => false ) );
+					?>
+					<select name="ke_event_city" id="ke_event_city" class="widefat ke-city-select">
+						<option value="">-- Select City --</option>
+						<?php foreach ( $cities as $city ) : ?>
+							<option value="<?php echo $city->term_id; ?>" <?php selected( in_array( $city->term_id, $assigned_city ), true ); ?>><?php echo esc_html( $city->name ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</p>
+			</div>
+
 			<p>
 				<label for="KE_event_internal_notes"><strong>Internal Notes (Admin Only)</strong></label><br>
 				<textarea name="KE_event_internal_notes" id="KE_event_internal_notes" rows="4" class="widefat"><?php echo esc_textarea( $internal_notes ); ?></textarea>
