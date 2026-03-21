@@ -36,8 +36,10 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 			<div class="ke-main-col">
 				<div class="ke-foxiz-aware">
 
-					<!-- Hero: Stacked & Vertical -->
+					<!-- Hero: Split Layout with Editorial Alignment -->
 					<header class="ke-single-hero-foxiz">
+						
+						<!-- LEFT: Poster - Starts Pushed Down to Align with Meta -->
 						<div class="ke-poster-box">
 							<?php if ( has_post_thumbnail() ) : ?>
 								<?php the_post_thumbnail( 'large' ); ?>
@@ -46,13 +48,20 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 							<?php endif; ?>
 						</div>
 
+						<!-- RIGHT: Info area -->
 						<div class="ke-info-box">
+							<!-- 1. Category -->
 							<?php if ( $cat_name ) : ?>
 								<div class="ke-cat-chip"><?php echo esc_html($cat_name); ?></div>
 							<?php endif; ?>
 
+							<!-- 2. Title -->
 							<h1 class="ke-title-large"><?php the_title(); ?></h1>
 
+							<!-- 3. Divider -->
+							<div class="ke-title-divider"></div>
+
+							<!-- 4. Detailed Meta Block (Aligned with Image Top) -->
 							<div class="ke-meta-stack">
 								<div class="ke-meta-node">
 									<?php echo $icon_calendar; ?>
@@ -88,13 +97,13 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 									</div>
 								</div>
 								<?php endif; ?>
-							</div>
 
-							<?php if ( $official_url ) : ?>
-							<div class="ke-actions-bt" style="margin-top: 30px;">
-								<a href="<?php echo esc_url($official_url); ?>" target="_blank" class="button button-primary is-full-width">Register / Visit Website</a>
+								<?php if ( $official_url ) : ?>
+								<div class="ke-actions-bt" style="margin-top: 20px;">
+									<a href="<?php echo esc_url($official_url); ?>" target="_blank" class="button button-primary is-full-width">Register / Visit Website</a>
+								</div>
+								<?php endif; ?>
 							</div>
-							<?php endif; ?>
 						</div>
 					</header>
 
