@@ -113,20 +113,40 @@ class KE_Admin_Tools {
 	}
 
 	public function render_tools_page() {
-		// Existing tool page render logic...
 		if ( isset( $_GET['ke_msg'] ) ) {
 			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( urldecode( $_GET['ke_msg'] ) ) . '</p></div>';
 		}
 		?>
 		<div class="wrap ke-admin-tools">
 			<h1>Kontentainment Events Maintenance Tools</h1>
+
+			<div class="ke-tool-card">
+				<h3>Updater Settings (Fixes 403 Forbidden)</h3>
+				<p class="description">GitHub limits public API requests. If you see "403 Forbidden", enter a **Personal Access Token (classic)** with `public_repo` scope.</p>
+				<form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+					<input type="hidden" name="action" value="ke_run_tool">
+					<input type="hidden" name="tool_id" value="save_token">
+					<?php wp_nonce_field( 'ke_tools_action' ); ?>
+					<table class="form-table">
+						<tr>
+							<th scope="row"><label for="ke_github_token">GitHub Access Token</label></th>
+							<td>
+								<input type="password" name="ke_github_token" id="ke_github_token" value="<?php echo esc_attr( get_option('ke_github_token', '') ); ?>" class="regular-text">
+								<p class="description">Increases rate limit from 60 to 5,000 per hour.</p>
+							</td>
+						</tr>
+					</table>
+					<button type="submit" class="button button-primary">Save Settings</button>
+				</form>
+			</div>
+
 			<div class="ke-tool-card">
 				<h3>Flush Caches</h3>
 				<form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
 					<input type="hidden" name="action" value="ke_run_tool">
 					<input type="hidden" name="tool_id" value="flush_cache">
 					<?php wp_nonce_field( 'ke_tools_action' ); ?>
-					<button type="submit" class="button button-primary">Flush Now</button>
+					<button type="submit" class="button button-secondary">Flush Now</button>
 				</form>
 			</div>
 
@@ -183,6 +203,11 @@ class KE_Admin_Tools {
 		$message = 'Tool execution failed.';
 
 		switch ( $tool_id ) {
+			case 'save_token':
+				$token = sanitize_text_field( $_POST['ke_github_token'] ?? '' );
+				update_option( 'ke_github_token', $token );
+				$message = 'Updater settings saved.';
+				break;
 			case 'flush_cache':
 				KE_Cache::get_instance()->flush_all();
 				$message = 'Cache flushed successfully.';
