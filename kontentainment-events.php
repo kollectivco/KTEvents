@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment Events
  * Plugin URI:  https://github.com/kollectivco/KTEvents
  * Description: A professional editorial events directory for magazine websites.
- * Version:     1.2.7
+ * Version:     1.2.8
  * Author:      Kollectiv
  * Author URI:  https://github.com/kollectivco
  * Text Domain: kontentainment-events
@@ -69,6 +69,7 @@ class KE_Events {
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-updater.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-elementor-descriptions.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-unique-posts.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-sidebars.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-taxonomies.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-post-types.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-meta-boxes.php';

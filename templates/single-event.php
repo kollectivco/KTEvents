@@ -26,189 +26,201 @@ $icon_venue = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" viewB
 $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>';
 ?>
 
-<div class="rb-container">
-	<div class="rb-section">
-		<div class="ke-layout-sidebar">
-			
-			<!-- Main Content Column -->
-			<div class="ke-main-col">
-				<div class="ke-foxiz-aware">
+<div class="ke-frontend-main">
+	<div class="rb-container">
+		<div class="rb-section">
+			<div class="ke-layout-sidebar">
+				
+				<!-- Main Content Column -->
+				<div class="ke-main-col">
+					<div class="ke-foxiz-aware">
 
-					<!-- Target Hero Section -->
-					<header class="ke-hero-section">
-						
-						<!-- Row 1: Category & Title -->
-						<div class="ke-hero-upper">
-							<?php if ( $cat_name ) : ?>
-								<div class="ke-hero-category"><?php echo esc_html($cat_name); ?></div>
-							<?php endif; ?>
-							<h1 class="ke-hero-title"><?php the_title(); ?></h1>
-						</div>
-
-						<!-- Row 2: Image & Meta Split -->
-						<div class="ke-hero-split">
+						<!-- Target Hero Section -->
+						<header class="ke-hero-section">
 							
-							<!-- Main Column: Poster Image -->
-							<div class="ke-hero-poster-col">
-								<?php if ( has_post_thumbnail() ) : ?>
-									<?php the_post_thumbnail( 'large', [ 'class' => 'ke-poster-image' ] ); ?>
-								<?php else : ?>
-									<img src="<?php echo KE_PLUGIN_URL . 'assets/images/event-placeholder.jpg'; ?>" alt="<?php the_title(); ?>" class="ke-poster-image">
+							<!-- Row 1: Category & Title -->
+							<div class="ke-hero-upper">
+								<?php if ( $cat_name ) : ?>
+									<div class="ke-hero-category"><?php echo esc_html($cat_name); ?></div>
 								<?php endif; ?>
+								<h1 class="ke-hero-title"><?php the_title(); ?></h1>
 							</div>
 
-							<!-- Details Column: Meta Stack -->
-							<div class="ke-hero-meta-col">
+							<!-- Row 2: Image & Meta Split -->
+							<div class="ke-hero-split">
 								
-								<div class="ke-meta-stack">
-									<!-- 1. DATE -->
-									<div class="ke-meta-block">
-										<div class="ke-meta-icon-box"><?php echo $icon_calendar; ?></div>
-										<div class="ke-meta-info">
-											<label>Date</label>
-											<strong><?php echo ke_get_event_date_display(); ?></strong>
-										</div>
-									</div>
-
-									<!-- 2. TIME -->
-									<?php if ( $event_time ) : ?>
-									<div class="ke-meta-block">
-										<div class="ke-meta-icon-box"><?php echo $icon_clock; ?></div>
-										<div class="ke-meta-info">
-											<label>Time</label>
-											<strong><?php echo esc_html($event_time); ?></strong>
-										</div>
-									</div>
-									<?php endif; ?>
-
-									<!-- 3. VENUE -->
-									<?php if ( $venue_id ) : ?>
-									<div class="ke-meta-block">
-										<div class="ke-meta-icon-box"><?php echo $icon_venue; ?></div>
-										<div class="ke-meta-info">
-											<label>Venue</label>
-											<strong><a href="<?php echo get_permalink($venue_id); ?>"><?php echo get_the_title($venue_id); ?></a></strong>
-										</div>
-									</div>
-									<?php endif; ?>
-
-									<!-- 4. LOCATION -->
-									<?php if ( $address ) : ?>
-									<div class="ke-meta-block">
-										<div class="ke-meta-icon-box"><?php echo $icon_location; ?></div>
-										<div class="ke-meta-info">
-											<label>Location</label>
-											<strong><?php echo esc_html($address); ?></strong>
-										</div>
-									</div>
-									<?php endif; ?>
-
-									<?php if ( $official_url ) : ?>
-									<div class="ke-hero-actions" style="margin-top: 30px;">
-										<a href="<?php echo esc_url($official_url); ?>" target="_blank" class="ke-register-btn">Register / Visit Website</a>
-									</div>
+								<!-- Main Column: Poster Image -->
+								<div class="ke-hero-poster-col">
+									<?php if ( has_post_thumbnail() ) : ?>
+										<?php the_post_thumbnail( 'large', [ 'class' => 'ke-poster-image' ] ); ?>
+									<?php else : ?>
+										<img src="<?php echo KE_PLUGIN_URL . 'assets/images/event-placeholder.jpg'; ?>" alt="<?php the_title(); ?>" class="ke-poster-image">
 									<?php endif; ?>
 								</div>
 
+								<!-- Details Column: Meta Stack -->
+								<div class="ke-hero-meta-col">
+									
+									<div class="ke-meta-stack">
+										<!-- 1. DATE -->
+										<div class="ke-meta-block">
+											<div class="ke-meta-icon-box"><?php echo $icon_calendar; ?></div>
+											<div class="ke-meta-info">
+												<label>Date</label>
+												<strong><?php echo ke_get_event_date_display(); ?></strong>
+											</div>
+										</div>
+
+										<!-- 2. TIME -->
+										<?php if ( $event_time ) : ?>
+										<div class="ke-meta-block">
+											<div class="ke-meta-icon-box"><?php echo $icon_clock; ?></div>
+											<div class="ke-meta-info">
+												<label>Time</label>
+												<strong><?php echo esc_html($event_time); ?></strong>
+											</div>
+										</div>
+										<?php endif; ?>
+
+										<!-- 3. VENUE -->
+										<?php if ( $venue_id ) : ?>
+										<div class="ke-meta-block">
+											<div class="ke-meta-icon-box"><?php echo $icon_venue; ?></div>
+											<div class="ke-meta-info">
+												<label>Venue</label>
+												<strong><a href="<?php echo get_permalink($venue_id); ?>"><?php echo get_the_title($venue_id); ?></a></strong>
+											</div>
+										</div>
+										<?php endif; ?>
+
+										<!-- 4. LOCATION -->
+										<?php if ( $address ) : ?>
+										<div class="ke-meta-block">
+											<div class="ke-meta-icon-box"><?php echo $icon_location; ?></div>
+											<div class="ke-meta-info">
+												<label>Location</label>
+												<strong><?php echo esc_html($address); ?></strong>
+											</div>
+										</div>
+										<?php endif; ?>
+
+										<?php if ( $official_url ) : ?>
+										<div class="ke-hero-actions" style="margin-top: 30px;">
+											<a href="<?php echo esc_url($official_url); ?>" target="_blank" class="ke-register-btn">Register / Visit Website</a>
+										</div>
+										<?php endif; ?>
+									</div>
+
+								</div>
+							</div>
+						</header>
+
+						<!-- Description -->
+						<?php if ( get_the_content() ) : ?>
+						<div class="ke-content-body">
+							<h2 class="ke-foxiz-section-title">About the Event</h2>
+							<div class="entry-content">
+								<?php while ( have_posts() ) : the_post(); the_content(); endwhile; ?>
 							</div>
 						</div>
-					</header>
+						<?php endif; ?>
 
-					<!-- Description -->
-					<?php if ( get_the_content() ) : ?>
-					<div class="ke-content-body">
-						<h2 class="ke-foxiz-section-title">About the Event</h2>
-						<div class="entry-content">
-							<?php while ( have_posts() ) : the_post(); the_content(); endwhile; ?>
+						<!-- Related Sections (Fallbacks) -->
+						<?php if ( $venue_id ) : ?>
+						<div class="ke-supporting-block">
+							<h2 class="ke-foxiz-section-title">More at this Venue</h2>
+							<?php
+							$other_venue_query = new WP_Query([
+								'post_type' => 'event',
+								'posts_per_page' => 4,
+								'post__not_in' => [ $event_id ],
+								'meta_query' => [ [ 'key' => 'KE_event_venue_id', 'value' => $venue_id ] ]
+							]);
+							$venue_query = $other_venue_query->have_posts() 
+								? $other_venue_query 
+								: new WP_Query([ 'p' => $event_id, 'post_type' => 'event' ]);
+
+							if ( $venue_query->have_posts() ) :
+								echo KE_Query::get_instance()->render_events_loop( $venue_query, array(
+									'columns'        => 3,
+									'columns_tablet' => 2,
+									'columns_mobile' => 1,
+									'gap'            => 'medium'
+								) );
+							endif;
+							wp_reset_postdata();
+							?>
+						</div>
+						<?php endif; ?>
+
+						<?php if ( $cat_id ) : ?>
+						<div class="ke-supporting-block">
+							<h2 class="ke-foxiz-section-title">More in this Category</h2>
+							<?php
+							$other_cat_query = new WP_Query([
+								'post_type' => 'event',
+								'posts_per_page' => 4,
+								'post__not_in' => [ $event_id ],
+								'tax_query' => [ [ 'taxonomy' => 'event_category', 'terms' => $cat_id ] ]
+							]);
+							$cat_query = $other_cat_query->have_posts() 
+								? $other_cat_query 
+								: new WP_Query([ 'p' => $event_id, 'post_type' => 'event' ]);
+
+							if ( $cat_query->have_posts() ) :
+								echo KE_Query::get_instance()->render_events_loop( $cat_query, array(
+									'columns'        => 3,
+									'columns_tablet' => 2,
+									'columns_mobile' => 1,
+									'gap'            => 'medium'
+								) );
+							endif;
+							wp_reset_postdata();
+							?>
+						</div>
+						<?php endif; ?>
+
+						<div class="ke-supporting-block">
+							<h2 class="ke-foxiz-section-title">Recommended Events</h2>
+							<?php
+							$rec_query = new WP_Query([
+								'post_type' => 'event',
+								'posts_per_page' => 12,
+								'post__not_in' => [ $event_id ],
+								'orderby' => 'rand'
+							]);
+							if ( $rec_query->have_posts() ) :
+								echo KE_Query::get_instance()->render_events_loop( $rec_query, array(
+									'columns'        => 3,
+									'columns_tablet' => 2,
+									'columns_mobile' => 1,
+									'gap'            => 'medium',
+									'max_initial'    => 3
+								) );
+							endif;
+							wp_reset_postdata();
+							?>
+						</div>
+
+					</div>
+				</div>
+
+				<!-- Sidebar Column -->
+				<?php if ( is_active_sidebar( 'ke-events-sidebar' ) ) : ?>
+					<div class="ke-sidebar-col">
+						<div class="ke-sidebar-inner">
+							<?php dynamic_sidebar( 'ke-events-sidebar' ); ?>
 						</div>
 					</div>
-					<?php endif; ?>
-
-					<!-- Related Sections (Fallbacks) -->
-					<?php if ( $venue_id ) : ?>
-					<div class="ke-supporting-block">
-						<h2 class="ke-foxiz-section-title">More at this Venue</h2>
-						<?php
-						$other_venue_query = new WP_Query([
-							'post_type' => 'event',
-							'posts_per_page' => 4,
-							'post__not_in' => [ $event_id ],
-							'meta_query' => [ [ 'key' => 'KE_event_venue_id', 'value' => $venue_id ] ]
-						]);
-						$venue_query = $other_venue_query->have_posts() 
-							? $other_venue_query 
-							: new WP_Query([ 'p' => $event_id, 'post_type' => 'event' ]);
-
-						if ( $venue_query->have_posts() ) :
-							echo KE_Query::get_instance()->render_events_loop( $venue_query, array(
-								'columns'        => 3,
-								'columns_tablet' => 2,
-								'columns_mobile' => 1,
-								'gap'            => 'medium'
-							) );
-						endif;
-						wp_reset_postdata();
-						?>
+				<?php else : ?>
+					<div class="ke-sidebar-col">
+						<div class="ke-sidebar-inner">
+							<?php get_sidebar(); ?>
+						</div>
 					</div>
-					<?php endif; ?>
+				<?php endif; ?>
 
-					<?php if ( $cat_id ) : ?>
-					<div class="ke-supporting-block">
-						<h2 class="ke-foxiz-section-title">More in this Category</h2>
-						<?php
-						$other_cat_query = new WP_Query([
-							'post_type' => 'event',
-							'posts_per_page' => 4,
-							'post__not_in' => [ $event_id ],
-							'tax_query' => [ [ 'taxonomy' => 'event_category', 'terms' => $cat_id ] ]
-						]);
-						$cat_query = $other_cat_query->have_posts() 
-							? $other_cat_query 
-							: new WP_Query([ 'p' => $event_id, 'post_type' => 'event' ]);
-
-						if ( $cat_query->have_posts() ) :
-							echo KE_Query::get_instance()->render_events_loop( $cat_query, array(
-								'columns'        => 3,
-								'columns_tablet' => 2,
-								'columns_mobile' => 1,
-								'gap'            => 'medium'
-							) );
-						endif;
-						wp_reset_postdata();
-						?>
-					</div>
-					<?php endif; ?>
-
-					<div class="ke-supporting-block">
-						<h2 class="ke-foxiz-section-title">Recommended Events</h2>
-						<?php
-						$rec_query = new WP_Query([
-							'post_type' => 'event',
-							'posts_per_page' => 12,
-							'post__not_in' => [ $event_id ],
-							'orderby' => 'rand'
-						]);
-						if ( $rec_query->have_posts() ) :
-							echo KE_Query::get_instance()->render_events_loop( $rec_query, array(
-								'columns'        => 3,
-								'columns_tablet' => 2,
-								'columns_mobile' => 1,
-								'gap'            => 'medium',
-								'max_initial'    => 3
-							) );
-						endif;
-						wp_reset_postdata();
-						?>
-					</div>
-
-				</div>
 			</div>
-
-			<!-- Sidebar Column -->
-			<div class="ke-sidebar-col">
-				<?php get_sidebar(); ?>
-			</div>
-
 		</div>
 	</div>
 </div>
