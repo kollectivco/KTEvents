@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment Events
  * Plugin URI:  https://github.com/kollectivco/KTEvents
  * Description: A professional editorial events directory for magazine websites.
- * Version:     1.2.6
+ * Version:     1.2.7
  * Author:      Kollectiv
  * Author URI:  https://github.com/kollectivco
  * Text Domain: kontentainment-events
@@ -109,11 +109,31 @@ class KE_Events {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 		register_activation_hook( __FILE__, array( $this, 'activate' ) );
 		
+		// Version Check & Seeding
+		add_action( 'admin_init', array( $this, 'check_version' ) );
+
 		// Delayed Elementor Load
 		add_action( 'init', array( $this, 'init_elementor' ) );
 		
 		// Cache Invalidation Hook
 		add_action( 'save_post', array( KE_Cache::get_instance(), 'invalidate_post_cache' ) );
+	}
+
+	/**
+	 * Check version for potential seeding/upgrades
+	 */
+	public function check_version() {
+		$installed_version = get_option( 'ke_plugin_version' );
+		if ( $installed_version !== KE_PLUGIN_VERSION ) {
+			// Ensure Taxonomies are registered before seeding
+			KE_Taxonomies::get_instance()->register();
+			KE_Post_Types::get_instance()->register();
+			
+			KE_Egypt_Locations::seed_categories();
+			KE_Egypt_Locations::seed_locations();
+			
+			update_option( 'ke_plugin_version', KE_PLUGIN_VERSION );
+		}
 	}
 
 	/**
