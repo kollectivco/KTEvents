@@ -61,11 +61,12 @@ class KE_Admin_Tools {
 		if ( ! current_user_can( 'manage_options' ) ) wp_die('Unauthorized');
 
 		$updater = new KE_Updater( KE_PLUGIN_DIR . 'kontentainment-events.php', 'https://github.com/kollectivco/KTEvents' );
-		$remote  = $updater->get_remote_data( true ); // Force refresh
+		$remote = $updater->get_remote_data( true ); // Force refresh
 
 		$result_code = 'no_update';
-		if ( ! $remote ) {
+		if ( ! $remote || ! empty($remote->error) ) {
 			$result_code = 'error';
+			$error_msg   = $remote ? $remote->error : 'Unknown API Error';
 		} else {
 			$v_remote = ltrim($remote->version, 'v');
 			if ( version_compare( KE_PLUGIN_VERSION, $v_remote, '<' ) ) {
@@ -73,7 +74,10 @@ class KE_Admin_Tools {
 			}
 		}
 
-		wp_safe_redirect( add_query_arg( [ 'ke_update_result' => $result_code ], admin_url( 'plugins.php' ) ) );
+		wp_safe_redirect( add_query_arg( [ 
+			'ke_update_result' => $result_code,
+			'ke_error'         => ! empty($error_msg) ? urlencode($error_msg) : ''
+		], admin_url( 'plugins.php' ) ) );
 		exit;
 	}
 
@@ -84,6 +88,7 @@ class KE_Admin_Tools {
 		if ( ! isset( $_GET['ke_update_result'] ) ) return;
 
 		$result = $_GET['ke_update_result'];
+		$error  = $_GET['ke_error'] ?? '';
 		$class  = 'notice notice-info is-dismissible';
 		$msg    = 'Update check complete.';
 
@@ -93,14 +98,14 @@ class KE_Admin_Tools {
 		switch ( $result ) {
 			case 'update_found':
 				$class = 'notice notice-warning is-dismissible';
-				$msg = "<strong>Kontentainment Events Update Found!</strong> A new version ($v_remote) is available on GitHub. Please click 'Update Now' below.";
+				$msg = "<strong>Kontentainment Events Update Found!</strong> A new version ($v_remote) is available via " . ($remote->source ?? 'GitHub') . ".";
 				break;
 			case 'no_update':
-				$msg = "Kontentainment Events is up to date. (Current: " . KE_PLUGIN_VERSION . ", Latest on GitHub: $v_remote)";
+				$msg = "Kontentainment Events is up to date. (Current: " . KE_PLUGIN_VERSION . ", Latest Remote: $v_remote)";
 				break;
 			case 'error':
 				$class = 'notice notice-error is-dismissible';
-				$msg = "<strong>Update Check Failed.</strong> Could not connect to GitHub or no versions found.";
+				$msg = "<strong>Update Check Failed.</strong> " . ($error ? urldecode($error) : 'Please ensure at least one release or tag exists on GitHub.');
 				break;
 		}
 
@@ -137,16 +142,19 @@ class KE_Admin_Tools {
 				<?php if ( $remote && ! empty($remote->version) ) : ?>
 					<div class="ke-update-info-plate">
 						<p>Latest on GitHub: <span class="ke-tag-version"><?php echo esc_html($remote->version); ?></span></p>
-						<?php if ( version_compare( KE_PLUGIN_VERSION, ltrim($remote->version, 'v'), '<' ) ) : ?>
-							<p class="ke-notice-warning">Update Available! Refresh the Plugins page to see the notification.</p>
+						<p class="description">Source: <strong><?php echo esc_html($remote->source ?? 'Unknown'); ?></strong></p>
+						<?php if ( ! empty($remote->error) ) : ?>
+							<p class="ke-notice-warning">Issue detected: <?php echo esc_html($remote->error); ?></p>
+						<?php elseif ( version_compare( KE_PLUGIN_VERSION, ltrim($remote->version, 'v'), '<' ) ) : ?>
+							<p class="ke-notice-warning">Update Available! Visit the Plugins page to install.</p>
 						<?php else : ?>
 							<p class="ke-notice-info">You are running the latest version.</p>
 						<?php endif; ?>
 					</div>
-				<?php elseif ( $remote === false ) : ?>
-					<p class="ke-notice-warning">GitHub API check failed.</p>
+				<?php elseif ( $remote && ! empty($remote->error) ) : ?>
+					<p class="ke-notice-warning"><strong>Update Check Issue:</strong> <?php echo esc_html($remote->error); ?></p>
 				<?php else : ?>
-					<p class="ke-notice-info">No update data cached.</p>
+					<p class="ke-notice-info">No update data cached. Click the button below to check.</p>
 				<?php endif; ?>
 
 				<form method="post" action="<?php echo admin_url('admin-post.php'); ?>" style="margin-top: 20px;">
