@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment Events
  * Plugin URI:  https://github.com/kollectivco/KTEvents
  * Description: A professional editorial events directory for magazine websites.
- * Version:     1.2.1
+ * Version:     1.2.2
  * Author:      Kollectiv
  * Author URI:  https://github.com/kollectivco
  * Text Domain: kontentainment-events
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Define constants
 define( 'KE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'KE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'KE_PLUGIN_VERSION', '1.2.1' );
+define( 'KE_PLUGIN_VERSION', '1.2.2' );
 
 /**
  * Main Kontentainment Events Class
@@ -97,11 +97,7 @@ class KE_Events {
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-diagnostics.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-upgrades.php';
 
-		// Phase 5: Elementor Integration
-		if ( did_action( 'elementor/loaded' ) ) {
-			require_once KE_PLUGIN_DIR . 'includes/class-ke-elementor.php';
-			KE_Elementor::get_instance();
-		}
+		// Elementor integration is now deferred to init hook for reliability
 	}
 
 	/**
@@ -112,8 +108,21 @@ class KE_Events {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 		register_activation_hook( __FILE__, array( $this, 'activate' ) );
 		
+		// Delayed Elementor Load
+		add_action( 'init', array( $this, 'init_elementor' ) );
+		
 		// Cache Invalidation Hook
 		add_action( 'save_post', array( KE_Cache::get_instance(), 'invalidate_post_cache' ) );
+	}
+
+	/**
+	 * Safe Elementor Loader
+	 */
+	public function init_elementor() {
+		if ( did_action( 'elementor/loaded' ) ) {
+			require_once KE_PLUGIN_DIR . 'includes/class-ke-elementor.php';
+			KE_Elementor::get_instance();
+		}
 	}
 
 	/**

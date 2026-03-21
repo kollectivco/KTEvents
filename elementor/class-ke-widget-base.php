@@ -1,6 +1,6 @@
 <?php
 /**
- * Kontentainment Events Elementor Base Widget - Phase 5.2 Updated
+ * Kontentainment Events Elementor Base Widget - Standardized
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -19,7 +19,14 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 	}
 
 	/**
-	 * Shared Query Section with Advanced Modes
+	 * Query Section - Standard Name
+	 */
+	protected function register_query_section( $args = [] ) {
+		$this->register_advanced_query_section( $args );
+	}
+
+	/**
+	 * Advanced Query Section
 	 */
 	protected function register_advanced_query_section( $args = [] ) {
 		$this->start_controls_section(
@@ -145,7 +152,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 	}
 
 	/**
-	 * Shared Ajax Pagination with Styles
+	 * Pagination Section
 	 */
 	protected function register_pagination_section() {
 		$this->start_controls_section(
@@ -195,7 +202,14 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 	}
 
 	/**
-	 * Expanded Entry Meta Styling
+	 * Alias for Entry Meta Styling
+	 */
+	protected function register_entry_meta_controls() {
+		$this->register_entry_meta_styling();
+	}
+
+	/**
+	 * Entry Meta Styling
 	 */
 	protected function register_entry_meta_styling() {
 		$this->start_controls_section(
@@ -228,7 +242,52 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 	}
 
 	/**
-	 * Deeper Dark Mode Styling
+	 * Box Selection Style
+	 */
+	protected function register_box_style_controls() {
+		$this->start_controls_section(
+			'section_box_style',
+			[
+				'label' => 'Box Styling',
+				'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->add_control(
+			'is_boxed',
+			[
+				'label' => 'Enable Boxed Style',
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'default' => '',
+			]
+		);
+
+		$this->add_control(
+			'item_bg',
+			[
+				'label' => 'Item Background',
+				'type' => \Elementor\Controls_Manager::COLOR,
+				'selectors' => [ '{{WRAPPER}} .ke-card' => 'background-color: {{VALUE}};' ],
+				'condition' => [ 'is_boxed' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
+			'item_padding',
+			[
+				'label' => 'Item Padding',
+				'type' => \Elementor\Controls_Manager::DIMENSIONS,
+				'size_units' => [ 'px', '%', 'em' ],
+				'selectors' => [ '{{WRAPPER}} .ke-card' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
+				'condition' => [ 'is_boxed' => 'yes' ],
+			]
+		);
+
+		$this->end_controls_section();
+	}
+
+	/**
+	 * Dark Mode Styling
 	 */
 	protected function register_dark_mode_overrides() {
 		$this->start_controls_section(
@@ -282,7 +341,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 	}
 
 	protected function get_post_options( $cpt ) {
-		$posts = get_posts( [ 'post_type' => $cpt, 'numberposts' => -1 ] );
+		$posts = get_posts( [ 'post_type' => $cpt, 'numberposts' => -1, 'post_status' => 'publish' ] );
 		$options = [];
 		foreach ( $posts as $p ) { $options[ $p->ID ] = $p->post_title; }
 		return $options;
