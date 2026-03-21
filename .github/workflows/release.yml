@@ -3,40 +3,44 @@ name: Create Release ZIP
 on:
   push:
     tags:
-      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+      - 'v*'
+      - '[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   build:
     name: Build & Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Create release folder and ZIP
         run: |
-          mkdir kontentainment-events
-          rsync -av --progress . kontentainment-events --exclude kontentainment-events --exclude .git --exclude .github --exclude .gitignore
-          zip -r kontentainment-events.zip kontentainment-events
+          # Define plugin slug
+          PLUGIN_SLUG="kontentainment-events"
+          
+          # Clean up any potential artifacts
+          rm -rf $PLUGIN_SLUG $PLUGIN_SLUG.zip
+          
+          # Create fresh folder
+          mkdir $PLUGIN_SLUG
+          
+          # Sync files (excluding git, github, and the destination folder itself)
+          rsync -rc . $PLUGIN_SLUG/ --exclude=".git*" --exclude=".github" --exclude="$PLUGIN_SLUG" --exclude="*.zip" --exclude="node_modules" --exclude="composer.json" --exclude="composer.lock" --exclude="RELEASE_GUIDE.md"
+          
+          # Create the ZIP
+          zip -r $PLUGIN_SLUG.zip $PLUGIN_SLUG/
           
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          files: kontentainment-events.zip
+          name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
-
-      - name: Upload Release Asset
-        id: upload-release-asset 
-        uses: actions/upload-release-asset@v1
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://developer.github.com/v3/repos/releases/#upload-a-release-asset
-          asset_path: ./kontentainment-events.zip
-          asset_name: kontentainment-events.zip
-          asset_content_type: application/zip

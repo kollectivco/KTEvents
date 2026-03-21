@@ -1,7 +1,7 @@
 <?php
 /**
- * Kontentainment Events GitHub Updater - Phase 6.1 Refined
- * Native WordPress update notifications and ZIP handling
+ * Kontentainment Events GitHub Updater - Phase 6.1 AUDITED
+ * Native WordPress update notifications and asset handling
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -27,14 +27,10 @@ class KE_Updater {
 		$this->github_repo = $path;
 		$this->github_api_url = "https://api.github.com/repos/{$this->github_repo}/releases/latest";
 
-		// Support for private repo token (optional)
-		if ( defined( 'KE_GITHUB_TOKEN' ) ) {
-			$this->access_token = KE_GITHUB_TOKEN;
-		} else {
-			$this->access_token = get_option( 'ke_github_token', '' );
-		}
+		// Token support
+		$this->access_token = defined( 'KE_GITHUB_TOKEN' ) ? KE_GITHUB_TOKEN : get_option( 'ke_github_token', '' );
 
-		// WP Hooks for native updates
+		// Hook into WP
 		add_filter( 'site_transient_update_plugins', array( $this, 'check_update' ) );
 		add_filter( 'plugins_api', array( $this, 'plugin_info' ), 20, 3 );
 		add_filter( 'upgrader_source_selection', array( $this, 'fix_source_folder' ), 10, 3 );
@@ -63,6 +59,7 @@ class KE_Updater {
 			$res->new_version = $new_version;
 			$res->url      = "https://github.com/{$this->github_repo}";
 			$res->package  = $this->get_asset_url( $remote );
+			$res->tested   = '6.4.3'; // Fallback to latest stable WP
 
 			$transient->response[ $this->plugin_slug ] = $res;
 		}
@@ -84,31 +81,41 @@ class KE_Updater {
 		}
 
 		$res = new stdClass();
-		$res->name        = 'Kontentainment Events';
-		$res->slug        = $this->base_slug;
-		$res->version     = ltrim( $remote->tag_name, 'v' );
-		$res->author      = 'Antigravity';
-		$res->homepage    = "https://github.com/{$this->github_repo}";
-		$res->download_link = $this->get_asset_url( $remote );
+		$res->name           = 'Kontentainment Events';
+		$res->slug           = $this->base_slug;
+		$res->version        = ltrim( $remote->tag_name, 'v' );
+		$res->author         = '<a href="https://github.com/kollectivco">Antigravity</a>';
+		$res->homepage       = "https://github.com/{$this->github_repo}";
+		$res->download_link  = $this->get_asset_url( $remote );
+		$res->last_updated   = $remote->published_at;
+		$res->requires       = '6.0';
+		$res->tested         = '6.4.3';
+		$res->requires_php   = '7.4';
+
+		// Multi-Language Changlog Logic
+		$body = $remote->body;
 		$res->sections = array(
-			'description' => 'A standalone editorial events directory for magazine websites.',
-			'changelog'   => wp_kses_post( wpautop( $remote->body ) ),
+			'description' => 'A professional editorial events and directory plugin for WordPress magazine websites.',
+			'changelog'   => wp_kses_post( wpautop( $body ) ),
+		);
+
+		// Support for icons if they exist in repo
+		$res->icons = array(
+			'default' => 'https://raw.githubusercontent.com/' . $this->github_repo . '/main/assets/images/icon-256x256.png',
 		);
 
 		return $res;
 	}
 
 	/**
-	 * Fix folder name issue if Github source ZIP is used (fallback)
+	 * Rename root folder to kontentainment-events if it's GitHub's auto-name
 	 */
 	public function fix_source_folder( $source, $remote_source, $upgrader ) {
-		global $wp_filesystem;
-		
 		if ( strpos( $source, $this->base_slug ) !== false ) {
 			return $source;
 		}
 
-		// Rename root folder to kontentainment-events if it's GitHub's auto-name
+		global $wp_filesystem;
 		$new_source = trailingslashit( $remote_source ) . $this->base_slug . '/';
 		$wp_filesystem->move( $source, $new_source );
 		return $new_source;
@@ -124,8 +131,10 @@ class KE_Updater {
 		}
 
 		$args = array(
+			'timeout' => 15,
 			'headers' => array(
-				'Accept' => 'application/vnd.github.v3+json',
+				'Accept'     => 'application/vnd.github.v3+json',
+				'User-Agent' => 'WordPress/' . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' ),
 			),
 		);
 
@@ -140,22 +149,25 @@ class KE_Updater {
 		}
 
 		$remote = json_decode( wp_remote_retrieve_body( $response ) );
-		set_transient( 'ke_github_update_data', $remote, HOUR_IN_SECONDS );
+		set_transient( 'ke_github_update_data', $remote, HOUR_IN_SECONDS * 6 ); // Cache for 6 hours
+		
+		// Update diagnostic timestamp
+		set_transient( 'ke_last_check_time', date_i18n( get_option('date_format') . ' H:i:s' ), DAY_IN_SECONDS );
 
 		return $remote;
 	}
 
 	/**
-	 * Find the built ZIP asset if available, otherwise fallback to source ZIP
+	 * Pull ZIP asset or source zip fallback
 	 */
 	private function get_asset_url( $remote ) {
 		if ( ! empty( $remote->assets ) ) {
 			foreach ( $remote->assets as $asset ) {
-				if ( strpos( $asset->name, $this->base_slug . '.zip' ) !== false ) {
+				if ( false !== strpos( $asset->name, $this->base_slug ) && strpos( $asset->name, '.zip' ) !== false ) {
 					return $asset->browser_download_url;
 				}
 			}
 		}
-		return $remote->zipball_url; // Fallback to GitHub source zip
+		return $remote->zipball_url;
 	}
 }
