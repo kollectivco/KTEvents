@@ -75,21 +75,29 @@ class KE_Admin_Tools {
 
 			<div class="ke-tool-card">
 				<h3>Updates / Diagnostics</h3>
-				<p>Current Version: <strong><?php echo KE_PLUGIN_VERSION; ?></strong></p>
+				<p>Current Plugin Version: <strong><?php echo KE_PLUGIN_VERSION; ?></strong></p>
 				<?php 
 					$last_check = get_transient( 'ke_last_check_time' );
 					$remote = get_transient( 'ke_github_update_data' );
 				?>
-				<p>Last Check: <?php echo $last_check ?: 'Never'; ?></p>
+				<p>Last Sync Check: <span class="ke-meta-value"><?php echo $last_check ?: 'Never'; ?></span></p>
+				
 				<?php if ( $remote && ! empty($remote->tag_name) ) : ?>
-					<p>Latest on GitHub: <a href="<?php echo esc_url($remote->html_url); ?>" target="_blank"><?php echo esc_html($remote->tag_name); ?></a></p>
+					<div class="ke-update-info-plate">
+						<p>Latest on GitHub: <a href="<?php echo esc_url($remote->html_url); ?>" target="_blank" class="ke-tag-version"><?php echo esc_html($remote->tag_name); ?></a></p>
+						<p class="description">Published on: <?php echo date_i18n( get_option('date_format'), strtotime($remote->published_at) ); ?></p>
+					</div>
+				<?php elseif ( $remote === false ) : ?>
+					<p class="ke-notice-warning">GitHub API could not be reached or no releases exist.</p>
+				<?php else : ?>
+					<p class="ke-notice-info">No update data cached yet.</p>
 				<?php endif; ?>
 
-				<form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+				<form method="post" action="<?php echo admin_url('admin-post.php'); ?>" style="margin-top: 20px;">
 					<input type="hidden" name="action" value="ke_run_tool">
 					<input type="hidden" name="tool_id" value="check_updates">
 					<?php wp_nonce_field( 'ke_tools_action' ); ?>
-					<button type="submit" class="button button-secondary">Check for Updates Now</button>
+					<button type="submit" class="button button-secondary">Force Check for Updates Now</button>
 				</form>
 			</div>
 		</div>
@@ -99,6 +107,11 @@ class KE_Admin_Tools {
 				margin-bottom: 20px; border-radius: 4px; box-shadow: 0 1px 1px rgba(0,0,0,0.04);
 			}
 			.ke-tool-card h3 { margin-top: 0; }
+			.ke-tag-version { background: #3b82f6; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: bold; text-decoration: none; }
+			.ke-tag-version:hover { background: #1d4ed8; color: #fff; }
+			.ke-notice-warning { color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 4px; }
+			.ke-notice-info { color: #0c5460; background-color: #d1ecf1; border: 1px solid #bee5eb; padding: 10px; border-radius: 4px; }
+			.ke-meta-value { color: #111827; font-weight: 600; }
 		</style>
 		<?php
 	}
