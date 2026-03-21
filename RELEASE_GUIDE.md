@@ -1,33 +1,73 @@
-# Kontentainment Events Release & Update Guide
+# Kontentainment Events - Release & Versioning Policy
 
-This plugin supports native WordPress updates via GitHub Releases. Follow these steps to publish a new version.
+This document outlines the **Mandatory** steps for each plugin release to ensure version consistency and native WordPress update detection.
 
-## 1. Prepare the Code
-- Update the `Version` header in `kontentainment-events.php`.
-- Update `KE_PLUGIN_VERSION` constant in `kontentainment-events.php`.
-- Ensure all changes are committed and pushed to the `main` branch.
+## 1. Version Governance Policy
 
-## 2. Create a Tag
-Create a semantic version tag (e.g., `v1.0.1` or `1.0.1`):
+Every code change must include a version bump in the main plugin file.
+
+**Targets for update**:
+
+- `kontentainment-events.php` header: `Version: x.x.x`
+- `kontentainment-events.php` constant: `define( 'KE_PLUGIN_VERSION', 'x.x.x' );`
+
+**The "Golden Rule"**:
+
+The `plugin header version`, `KE_PLUGIN_VERSION`, `git tag`, and `GitHub Release version` must match **exactly**.
+
+---
+
+## 2. Mandatory Release Workflow
+
+Follow these steps for every single release:
+
+### 1. Version Bump (Pre-Commit)
+
+Update `kontentainment-events.php` with the new version number.
+
 ```bash
-git tag v1.0.1
-git push origin v1.0.1
+# Example: Bump to 1.1.2
+# 1. Edit File Header to: Version: 1.1.2
+# 2. Edit Constant to: define( 'KE_PLUGIN_VERSION', '1.1.2' );
 ```
 
-## 3. Automatic Build (GitHub Actions)
-Once the tag is pushed, a GitHub Action (`.github/workflows/release.yml`) will:
-1. Build a clean distribution folder named `kontentainment-events/`.
-2. ZIP the folder into `kontentainment-events.zip`.
-3. Create a GitHub Release.
-4. Attach `kontentainment-events.zip` to the release.
+### 2. Commit the Bump
 
-## 4. WordPress Detection
-- WordPress checks for updates every 12 hours.
-- To force a check, go to **KE Events > Maintenance Tools** and click **Check for Updates Now**.
-- If a newer version is found, an "Update Now" notice will appear in the **Plugins** screen.
-- "View details" will show the release notes from GitHub as the changelog.
+Commit the version change to the repository.
 
-## 5. Technical Requirements for Updates
-- The Root ZIP folder **MUST** be `kontentainment-events/`.
-- The plugin uses `site_transient_update_plugins` and `plugins_api` hooks.
-- If the repository is private, define `KE_GITHUB_TOKEN` in `wp-config.php` or set it in **KE Events > Settings**.
+```bash
+git add .
+git commit -m "Global Version Bump to 1.1.2"
+git push
+```
+
+### 3. Tag and Push Tag
+
+Only create the tag **after** the commit containing the version bump is pushed.
+
+```bash
+git tag v1.1.2
+git push origin v1.1.2
+```
+
+---
+
+## 3. Automated Build Validation
+
+The GitHub Actions workflow (`release.yml`) includes a `Validate Plugin Version` step that will **FAIL** the build if:
+
+1. The Tag (e.g., `v1.1.2`) does not match the Plugin Header Version (`1.1.2`).
+2. The Tag does not match the `KE_PLUGIN_VERSION` constant.
+
+**If the validation fails**: No ZIP asset will be attached to the release, and the update will not show up in WordPress.
+
+---
+
+## 4. Manual Verification
+
+After a release, verify:
+
+- Download the `kontentainment-events.zip` from GitHub.
+- Unzip and check `kontentainment-events.php`.
+- Version should be the NEW version (e.g., `1.1.2`).
+- Check `KEA Events > Maintenance Tools` in WordPress to confirm the update Handshake is successful.
