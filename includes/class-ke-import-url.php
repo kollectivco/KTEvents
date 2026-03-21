@@ -110,7 +110,7 @@ class KE_Import_URL {
 			'phone'          => sanitize_text_field( $_POST['phone'] ),
 			'official_url'   => esc_url_raw( $_POST['official_url'] ),
 			'source_url'     => esc_url_raw( $_POST['source_url'] ),
-			'image_url'      => esc_url_raw( $_POST['image_url'] ),
+			'image_url'      => esc_url_raw( ! empty( $_POST['manual_image_url'] ) ? $_POST['manual_image_url'] : $_POST['image_url'] ),
 			'category'       => intval( $_POST['category_id'] ),
 			'city'           => intval( $_POST['city_id'] ),
 			'area'           => intval( $_POST['area_id'] ),

@@ -103,10 +103,13 @@ class KE_Parser_Generic implements KE_Parser_Interface {
 		// 3. Extract JSON-LD (Schema.org)
 		$scripts = $dom->getElementsByTagName( 'script' );
 		foreach ( $scripts as $script ) {
-			if ( 'application/ld+json' === $script->getAttribute( 'type' ) ) {
-				$json = json_decode( $script->nodeValue, true );
-				if ( $json ) {
-					$this->extract_from_json_ld( $json, $result );
+			if ( strpos( $script->getAttribute( 'type' ), 'application/ld+json' ) !== false ) {
+				$script_content = $script->nodeValue;
+				if ( ! empty( $script_content ) ) {
+					$json = json_decode( $script_content, true );
+					if ( $json ) {
+						$this->extract_from_json_ld( $json, $result );
+					}
 				}
 			}
 		}
@@ -131,23 +134,44 @@ class KE_Parser_Generic implements KE_Parser_Interface {
 		$items = isset( $json['@type'] ) ? array( $json ) : ( isset( $json['@graph'] ) ? $json['@graph'] : array() );
 
 		foreach ( $items as $item ) {
-			if ( isset( $item['@type'] ) && 'Event' === $item['@type'] ) {
-				$result['fields']['title'] = $item['name'] ?? $result['fields']['title'];
-				$result['fields']['description'] = $item['description'] ?? $result['fields']['description'];
-				$result['fields']['event_date'] = isset( $item['startDate'] ) ? gmdate( 'Y-m-d', strtotime( $item['startDate'] ) ) : $result['fields']['event_date'];
-				$result['fields']['event_time'] = isset( $item['startDate'] ) ? gmdate( 'H:i', strtotime( $item['startDate'] ) ) : $result['fields']['event_time'];
-				$result['fields']['event_end_date'] = isset( $item['endDate'] ) ? gmdate( 'Y-m-d', strtotime( $item['endDate'] ) ) : $result['fields']['event_end_date'];
-				$result['fields']['event_end_time'] = isset( $item['endDate'] ) ? gmdate( 'H:i', strtotime( $item['endDate'] ) ) : $result['fields']['event_end_time'];
+			if ( isset( $item['@type'] ) && ( $item['@type'] === 'Event' || $item['@type'] === 'MusicEvent' || $item['@type'] === 'Festival' ) ) {
+				$result['fields']['title'] = $this->clean_text( $item['name'] ?? $result['fields']['title'] );
+				$result['fields']['description'] = $this->clean_text( $item['description'] ?? $result['fields']['description'] );
+				
+				if ( ! empty( $item['startDate'] ) ) {
+					$ts = strtotime( $item['startDate'] );
+					if ( $ts && $ts > 100000 ) { // Avoid 1970
+						$result['fields']['event_date'] = date( 'Y-m-d', $ts );
+						$result['fields']['event_time'] = date( 'H:i', $ts );
+					}
+				}
+
+				if ( ! empty( $item['endDate'] ) ) {
+					$ts = strtotime( $item['endDate'] );
+					if ( $ts && $ts > 100000 ) {
+						$result['fields']['event_end_date'] = date( 'Y-m-d', $ts );
+						$result['fields']['event_end_time'] = date( 'H:i', $ts );
+					}
+				}
 
 				if ( isset( $item['location'] ) ) {
-					$result['fields']['venue_name'] = $item['location']['name'] ?? '';
-					if ( isset( $item['location']['address'] ) ) {
-						if ( is_array( $item['location']['address'] ) ) {
-							$result['fields']['address'] = $item['location']['address']['streetAddress'] ?? '';
+					$result['fields']['venue_name'] = $this->clean_text( $item['location']['name'] ?? $result['fields']['venue_name'] );
+					$address_obj = $item['location']['address'] ?? null;
+					if ( $address_obj ) {
+						if ( is_array( $address_obj ) ) {
+							$parts = [];
+							if ( ! empty( $address_obj['streetAddress'] ) ) $parts[] = $address_obj['streetAddress'];
+							if ( ! empty( $address_obj['addressLocality'] ) ) $parts[] = $address_obj['addressLocality'];
+							if ( ! empty( $address_obj['addressRegion'] ) ) $parts[] = $address_obj['addressRegion'];
+							$result['fields']['address'] = implode( ', ', $parts );
 						} else {
-							$result['fields']['address'] = $item['location']['address'];
+							$result['fields']['address'] = $this->clean_text( $address_obj );
 						}
 					}
+				}
+
+				if ( isset( $item['organizer'] ) ) {
+					$result['fields']['organizer_name'] = $this->clean_text( $item['organizer']['name'] ?? $result['fields']['organizer_name'] );
 				}
 
 				if ( isset( $item['image'] ) ) {
@@ -155,15 +179,28 @@ class KE_Parser_Generic implements KE_Parser_Interface {
 					$result['fields']['image_url'] = is_string( $image ) ? $image : ( $image['url'] ?? '' );
 				}
 
-				$result['parser_confidence'] = 80; // High confidence if schema found
+				if ( isset( $item['url'] ) ) {
+					$result['fields']['official_url'] = esc_url_raw( $item['url'] );
+				}
+
+				$result['parser_confidence'] = 90; // High confidence if structured schema found
 			}
 		}
 	}
 
 	private function clean_text( $text ) {
 		if ( ! is_string( $text ) ) return '';
+		
+		// 1. Force strip script and style blocks if they leaked into the string
+		$text = preg_replace( array( '/<script\b[^>]*>([\s\S]*?)<\/script>/i', '/<style\b[^>]*>([\s\S]*?)<\/style>/i' ), '', $text );
+		
+		// 2. Strip standard HTML tags
+		$text = wp_strip_all_tags( $text );
+		
+		// 3. Decode entities and normalize whitespace
 		$text = html_entity_decode( $text, ENT_QUOTES, 'UTF-8' );
 		$text = preg_replace( '/\s+/', ' ', $text );
+		
 		return trim( $text );
 	}
 }

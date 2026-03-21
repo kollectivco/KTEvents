@@ -67,7 +67,7 @@ jQuery(document).ready(function($) {
         // Description (WP Editor)
         if (typeof tinyMCE !== 'undefined' && tinyMCE.get('preview_description')) {
             tinyMCE.get('preview_description').setContent(fields.description);
-        } else {
+        } else if ($('#preview_description').length) {
             $('#preview_description').val(fields.description);
         }
 
@@ -76,7 +76,7 @@ jQuery(document).ready(function($) {
         $('#preview_event_time').val(fields.event_time);
         $('#preview_event_end_date').val(fields.event_end_date);
         $('#preview_event_end_time').val(fields.event_end_time);
-        $('#ke-raw-date-suggestion').text(fields.raw_date_text ? 'Source raw date: ' + fields.raw_date_text : '');
+        $('#ke-raw-date-suggestion').text(fields.raw_date_text ? 'Source raw date string: ' + fields.raw_date_text : '');
 
         // Image
         if (fields.image_url) {
@@ -96,22 +96,37 @@ jQuery(document).ready(function($) {
 
         if (matched_venue_id) {
             $('#preview_venue_id').val(matched_venue_id);
-            $('#ke-venue-status').html('<span style="color:green;">✓ Matched existing venue.</span>');
+            $('#ke-venue-status').html('<span style="color:#10b981; font-weight:600;">✓ Exact match found in library.</span>');
         } else {
             $('#preview_venue_id').val('');
-            $('#ke-venue-status').html('<span style="color:orange;">⚠ Venue not found (will be created if enabled).</span>');
+            $('#ke-venue-status').html('<span style="color:#f59e0b; font-weight:600;">⚠ New venue (library entry will be created).</span>');
         }
 
         // Defaults from Fetch Form
         const defaultCat = fetchForm.find('select[name="default_category_id"]').val();
-        if (defaultCat) $('#preview_category_id').val(defaultCat);
+        if (defaultCat && !fields.category) $('#preview_category_id').val(defaultCat);
         
         const defaultCity = fetchForm.find('select[name="default_city_id"]').val();
-        if (defaultCity) $('#preview_city_id').val(defaultCity);
+        if (defaultCity && !fields.city) $('#preview_city_id').val(defaultCity);
 
-        // Parser Meta
+        // Diagnostics
         $('#ke-parser-name').text(data.parser_name);
-        $('#ke-parser-confidence').text(data.parser_confidence);
+        $('#ke-parser-confidence').text(data.parser_confidence + '%');
+        $('#ke-confidence-fill').css('width', data.parser_confidence + '%');
+        
+        // Change color based on confidence
+        if (data.parser_confidence < 50) $('#ke-confidence-fill').css('background', '#ef4444');
+        else if (data.parser_confidence < 80) $('#ke-confidence-fill').css('background', '#f59e0b');
+        else $('#ke-confidence-fill').css('background', '#10b981');
+
+        // Warnings List
+        const warnList = $('#ke-parser-warnings');
+        warnList.empty();
+        if (data.warnings && data.warnings.length > 0) {
+            data.warnings.forEach(msg => {
+                warnList.append(`<div class="ke-warning-item">${msg}</div>`);
+            });
+        }
 
         // Duplicates
         const duplicateNotice = $('#ke-duplicate-notice');
@@ -119,25 +134,23 @@ jQuery(document).ready(function($) {
         $('#ke_import_action').val('create');
         $('#ke_existing_post_id').val('');
 
-        if (duplicates.exact.length > 0) {
+        if (duplicates.exact && duplicates.exact.length > 0) {
             const dup = duplicates.exact[0];
             duplicateNotice.html(`
-                <p><strong>⚠ EXACT DUPLICATE DETECTED:</strong> This event already exists based on source URL.</p>
-                <p>Existing Event: <a href="${dup.guid}" target="_blank">View Post</a></p>
-                <button type="button" class="button ke-update-btn" data-id="${dup.ID}">Update Existing Event Instead</button>
+                <strong>⚠ EXACT DUPLICATE:</strong> Already imported.
+                <button type="button" class="button ke-update-btn button-small" data-id="${dup.ID}" style="margin-left:10px;">Switch to Update Mode</button>
             `).show();
-        } else if (duplicates.possible.length > 0) {
+        } else if (duplicates.possible && duplicates.possible.length > 0) {
             const dup = duplicates.possible[0];
             duplicateNotice.html(`
-                <p><strong>ℹ POSSIBLE DUPLICATE DETECTED:</strong> An event with same title/date/venue found.</p>
-                <p>Possible Match: <a href="${dup.guid}" target="_blank">View Post</a></p>
-                <button type="button" class="button ke-update-btn" data-id="${dup.ID}">Update This Post</button>
+                <strong>ℹ SIMILAR FOUND:</strong> Title/Date match.
+                <button type="button" class="button ke-update-btn button-small" data-id="${dup.ID}" style="margin-left:10px;">Update Match</button>
             `).show();
         }
 
         // Finalize Transition
         previewWrapper.fadeIn();
-        $('html, body').animate({ scrollTop: previewWrapper.offset().top - 50 }, 500);
+        $('html, body').animate({ scrollTop: previewWrapper.offset().top - 30 }, 500);
     }
 
     /**

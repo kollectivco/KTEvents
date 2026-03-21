@@ -84,7 +84,7 @@ class KE_Admin {
 							</td>
 						</tr>
 						<tr>
-							<th scope="row">Defaults (Optional)</th>
+							<th scope="row">Import Logic</th>
 							<td>
 								<div class="ke-inline-fields">
 									<select name="default_category_id">
@@ -99,13 +99,8 @@ class KE_Admin {
 											<option value="<?php echo $term->term_id; ?>"><?php echo $term->name; ?></option>
 										<?php endforeach; ?>
 									</select>
+									<label style="margin-left:15px;"><input type="checkbox" name="auto_create_venue" value="1" checked> Auto-create missing venues</label>
 								</div>
-							</td>
-						</tr>
-						<tr>
-							<th scope="row">Options</th>
-							<td>
-								<label><input type="checkbox" name="auto_create_venue" value="1" checked> Auto-create venue if not found</label>
 							</td>
 						</tr>
 					</table>
@@ -117,10 +112,13 @@ class KE_Admin {
 
 				<div id="ke-import-error" class="notice notice-error" style="display:none;"></div>
 
-				<!-- Preview Container (Target for JS) -->
 				<div id="ke-import-preview-wrapper" style="display:none;">
 					<hr>
-					<h2 id="ke-preview-heading">Import Preview</h2>
+					<div class="ke-preview-header">
+						<h2 id="ke-preview-heading">Import Preview</h2>
+						<div id="ke-duplicate-notice" class="notice notice-warning inline" style="display:none;"></div>
+					</div>
+
 					<form action="<?php echo admin_url( 'admin-post.php' ); ?>" method="post">
 						<?php wp_nonce_field( 'ke_save_import', 'ke_import_save_nonce' ); ?>
 						<input type="hidden" name="action" value="ke_save_imported_event">
@@ -135,107 +133,161 @@ class KE_Admin {
 						<input type="hidden" name="ke_import_action" id="ke_import_action" value="create">
 						<input type="hidden" name="ke_existing_post_id" id="ke_existing_post_id" value="">
 
-						<div id="ke-duplicate-notice" class="notice notice-warning" style="display:none;"></div>
-
 						<div class="ke-preview-grid">
+							<!-- Main Content Area -->
 							<div class="ke-preview-main">
-								<table class="form-table">
-									<tr>
-										<th scope="row">Title</th>
-										<td><input type="text" name="title" id="preview_title" class="large-text" required></td>
-									</tr>
-									<tr>
-										<th scope="row">Description</th>
-										<td><?php wp_editor( '', 'preview_description', array( 'textarea_name' => 'description', 'textarea_rows' => 10 ) ); ?></td>
-									</tr>
-									<tr>
-										<th scope="row">Short Summary</th>
-										<td><textarea name="excerpt" id="preview_excerpt" rows="2" class="large-text"></textarea></td>
-									</tr>
-									<tr>
-										<th scope="row">Status</th>
-										<td>
-											<select name="status" id="preview_status">
+								<div class="ke-card-box">
+									<h3>Event Details</h3>
+									<div class="ke-field-group">
+										<label>Event Title</label>
+										<input type="text" name="title" id="preview_title" class="large-text" required>
+									</div>
+
+									<div class="ke-field-group">
+										<label>Description</label>
+										<?php wp_editor( '', 'preview_description', array( 'textarea_name' => 'description', 'textarea_rows' => 12, 'media_buttons' => false ) ); ?>
+									</div>
+
+									<div class="ke-field-group">
+										<label>Short Summary</label>
+										<textarea name="excerpt" id="preview_excerpt" rows="2" class="large-text"></textarea>
+									</div>
+
+									<div class="ke-field-row">
+										<div class="ke-field-item">
+											<label>Status</label>
+											<select name="status" id="preview_status" class="widefat">
 												<option value="upcoming">Upcoming</option>
 												<option value="ongoing">Ongoing</option>
 												<option value="past">Past</option>
 												<option value="cancelled">Cancelled</option>
-												<option value="postponed">Postponed</option>
 											</select>
-										</td>
-									</tr>
-									<tr>
-										<th scope="row">Dates & Times</th>
-										<td>
-											<div class="ke-inline-fields">
-												Date: <input type="date" name="event_date" id="preview_event_date">
-												Time: <input type="time" name="event_time" id="preview_event_time">
-											</div>
-											<div class="ke-inline-fields" style="margin-top:10px;">
-												End Date: <input type="date" name="event_end_date" id="preview_event_end_date">
-												End Time: <input type="time" name="event_end_time" id="preview_event_end_time">
-											</div>
-											<p class="description" id="ke-raw-date-suggestion"></p>
-										</td>
-									</tr>
-								</table>
+										</div>
+										<div class="ke-field-item">
+											<label>Event Category</label>
+											<select name="category_id" id="preview_category_id" class="widefat">
+												<option value="">Select Category</option>
+												<?php foreach ( get_terms('event_category', array('hide_empty' => false)) as $term ) : ?>
+													<option value="<?php echo $term->term_id; ?>"><?php echo $term->name; ?></option>
+												<?php endforeach; ?>
+											</select>
+										</div>
+									</div>
+								</div>
+
+								<div class="ke-card-box">
+									<h3>Schedule / Timing</h3>
+									<div class="ke-field-row">
+										<div class="ke-field-item">
+											<label>Start Date</label>
+											<input type="date" name="event_date" id="preview_event_date" class="widefat">
+										</div>
+										<div class="ke-field-item">
+											<label>Start Time</label>
+											<input type="time" name="event_time" id="preview_event_time" class="widefat">
+										</div>
+									</div>
+									<div class="ke-field-row">
+										<div class="ke-field-item">
+											<label>End Date</label>
+											<input type="date" name="event_end_date" id="preview_event_end_date" class="widefat">
+										</div>
+										<div class="ke-field-item">
+											<label>End Time</label>
+											<input type="time" name="event_end_time" id="preview_event_end_time" class="widefat">
+										</div>
+									</div>
+									<p class="description" id="ke-raw-date-suggestion"></p>
+								</div>
 							</div>
 
+							<!-- Sidebar Area -->
 							<div class="ke-preview-sidebar">
-								<div class="ke-preview-image-box">
-									<img id="ke-preview-img-src" src="" style="max-width:100%; display:none;">
-									<p id="ke-no-image">No image found</p>
-									<label><input type="checkbox" name="sideload_image" value="1" checked> Sideload Image</label>
+								<div class="ke-card-box">
+									<h3>Featured Image</h3>
+									<div class="ke-image-preview-area">
+										<div id="ke-preview-image-wrap">
+											<img id="ke-preview-img-src" src="" style="width:100%; border-radius:4px; display:none;">
+											<div id="ke-no-image" class="ke-placeholder-box">No image found</div>
+										</div>
+										<div style="margin-top:10px;">
+											<label><input type="checkbox" name="sideload_image" value="1" checked> Sideload this image</label>
+											<input type="url" name="manual_image_url" id="preview_manual_image_url" placeholder="Paste custom image URL..." class="widefat" style="margin-top:5px; font-size:11px;">
+										</div>
+									</div>
 								</div>
 
-								<div class="ke-preview-block">
-									<h3>Venue & Location</h3>
-									<label>Venue Name</label>
-									<input type="text" name="venue_name" id="preview_venue_name" class="widefat">
-									<input type="hidden" name="venue_id" id="preview_venue_id">
-									<p id="ke-venue-status" class="description"></p>
+								<div class="ke-card-box">
+									<h3>Venue Information</h3>
+									<div class="ke-field-group">
+										<label>Venue Name</label>
+										<input type="text" name="venue_name" id="preview_venue_name" class="widefat">
+										<input type="hidden" name="venue_id" id="preview_venue_id">
+										<div id="ke-venue-status" class="ke-mini-notice"></div>
+									</div>
 
-									<label style="margin-top:10px; display:block;">City</label>
-									<select name="city_id" id="preview_city_id" class="widefat">
-										<option value="">Select City</option>
-										<?php foreach ( get_terms('event_city', array('hide_empty' => false)) as $term ) : ?>
-											<option value="<?php echo $term->term_id; ?>"><?php echo $term->name; ?></option>
-										<?php endforeach; ?>
-									</select>
+									<div class="ke-field-group">
+										<label>City</label>
+										<select name="city_id" id="preview_city_id" class="widefat">
+											<option value="">Select City</option>
+											<?php foreach ( get_terms('event_city', array('hide_empty' => false)) as $term ) : ?>
+												<option value="<?php echo $term->term_id; ?>"><?php echo $term->name; ?></option>
+											<?php endforeach; ?>
+										</select>
+									</div>
 
-									<label style="margin-top:10px; display:block;">Area</label>
-									<select name="area_id" id="preview_area_id" class="widefat">
-										<option value="">Select Area</option>
-										<?php foreach ( get_terms('event_area', array('hide_empty' => false)) as $term ) : ?>
-											<option value="<?php echo $term->term_id; ?>"><?php echo $term->name; ?></option>
-										<?php endforeach; ?>
-									</select>
+									<div class="ke-field-group">
+										<label>Area</label>
+										<select name="area_id" id="preview_area_id" class="widefat">
+											<option value="">Select Area</option>
+											<?php foreach ( get_terms('event_area', array('hide_empty' => false)) as $term ) : ?>
+												<option value="<?php echo $term->term_id; ?>"><?php echo $term->name; ?></option>
+											<?php endforeach; ?>
+										</select>
+									</div>
+
+									<div class="ke-field-group">
+										<label>Address</label>
+										<input type="text" name="address" id="preview_address" class="widefat">
+									</div>
 								</div>
 
-								<div class="ke-preview-block">
-									<h3>Contact Info</h3>
-									<label>Organizer</label>
-									<input type="text" name="organizer_name" id="preview_organizer_name" class="widefat">
-									<label>Address</label>
-									<input type="text" name="address" id="preview_address" class="widefat">
-									<label>Phone</label>
-									<input type="text" name="phone" id="preview_phone" class="widefat">
-									<label>Official URL</label>
-									<input type="url" name="official_url" id="preview_official_url" class="widefat">
+								<div class="ke-card-box">
+									<h3>Additional Info</h3>
+									<div class="ke-field-group">
+										<label>Organizer</label>
+										<input type="text" name="organizer_name" id="preview_organizer_name" class="widefat">
+									</div>
+									<div class="ke-field-group">
+										<label>Phone / Contact</label>
+										<input type="text" name="phone" id="preview_phone" class="widefat">
+									</div>
+									<div class="ke-field-group">
+										<label>Official URL</label>
+										<input type="url" name="official_url" id="preview_official_url" class="widefat">
+									</div>
 								</div>
 
-								<div class="ke-preview-meta">
+								<div class="ke-card-box ke-diagnostics-box">
+									<h3>Diagnostics</h3>
 									<p><strong>Parser:</strong> <span id="ke-parser-name">-</span></p>
-									<p><strong>Confidence:</strong> <span id="ke-parser-confidence">0</span>%</p>
+									<div class="ke-confidence-wrap">
+										<label>Confidence Score</label>
+										<div class="ke-confidence-bar"><div id="ke-confidence-fill" style="width: 0%"></div></div>
+										<span id="ke-parser-confidence">0%</span>
+									</div>
+									<div id="ke-parser-warnings" class="ke-warnings-list"></div>
 								</div>
 
-								<p class="submit">
-									<button type="submit" class="button button-primary button-large" id="ke-save-import-btn">Finalize Import</button>
-								</p>
+								<div class="ke-actions-box">
+									<button type="submit" class="button button-primary button-hero widefat" id="ke-save-import-btn">Finalize Import</button>
+								</div>
 							</div>
 						</div>
 					</form>
 				</div>
+			</div>
+		</div>
 			</div>
 		</div>
 		<?php
