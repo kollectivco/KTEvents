@@ -163,10 +163,23 @@ class KE_Query {
 	 * Optimized Render Events Loop
 	 */
 	public function render_events_loop( $query, $settings = array() ) {
-		$display = wp_parse_args( $settings, array( 'layout_preset' => 'classic', 'columns' => 3, 'columns_tablet' => 2, 'columns_mobile' => 1 ) );
+		$display = wp_parse_args( $settings, array( 
+			'layout_preset'  => 'classic', 
+			'columns'        => 3, 
+			'columns_tablet' => 2, 
+			'columns_mobile' => 1,
+			'gap'            => 'medium' 
+		) );
 		ob_start();
 		if ( $query->have_posts() ) {
-			$classes = array( 'ke-loop-wrapper', 'ke-preset-' . esc_attr($display['layout_preset']), 'ke-columns-' . esc_attr($display['columns']) );
+			$classes = array( 
+				'ke-loop-wrapper', 
+				'ke-preset-' . esc_attr($display['layout_preset']), 
+				'ke-columns-' . esc_attr($display['columns']),
+				'ke-columns-tablet-' . esc_attr($display['columns_tablet']),
+				'ke-columns-mobile-' . esc_attr($display['columns_mobile'])
+			);
+			if ( ! empty( $display['gap'] ) ) $classes[] = 'ke-gap-' . esc_attr( $display['gap'] );
 			if ( isset($display['horizontal_scroll']) && 'yes' === $display['horizontal_scroll'] ) $classes[] = 'ke-horizontal-scroll';
 			if ( isset($display['is_boxed']) && 'yes' === $display['is_boxed'] ) $classes[] = 'ke-boxed';
 			if ( isset($display['color_scheme']) && 'dark' === $display['color_scheme'] ) $classes[] = 'ke-scheme-dark';

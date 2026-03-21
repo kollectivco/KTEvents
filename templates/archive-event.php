@@ -68,10 +68,15 @@ get_header(); ?>
 				</header>
 
 				<!-- Event Grid -->
-				<div id="ke-archive-loop" class="ke-card-grid">
+				<div id="ke-archive-loop" class="ke-archive-grid-wrapper">
 					<?php
 					$query = KE_Query::get_instance()->get_events();
-					echo KE_Query::get_instance()->render_events_loop( $query );
+					echo KE_Query::get_instance()->render_events_loop( $query, array(
+						'columns'        => 3,
+						'columns_tablet' => 2,
+						'columns_mobile' => 1,
+						'gap'            => 'large'
+					) );
 					?>
 				</div>
 

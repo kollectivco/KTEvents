@@ -446,11 +446,46 @@
     transform: translateY(-1px);
 }
 
-/* Archive Grid Fix */
+/* --- ARCHIVE GRID & LAYOUT REFINEMENTS --- */
+.post-type-archive-event .rb-container {
+    max-width: 1320px; /* Expands container for larger archive cards */
+}
+
+.ke-archive-grid-wrapper {
+    margin-top: 50px;
+}
+
+/* Fallback for legacy grids */
 .ke-card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 30px;
+}
+
+/* Ensure the main column has enough breathing room */
+.ke-main-col {
+    flex: 1;
+    min-width: 0; /* Prevents flex items from overflowing */
+}
+
+/* Header Tweaks */
+.ke-rb-archive-header {
+    margin-bottom: 40px;
+}
+
+.ke-rb-archive-header .ke-foxiz-section-title {
+    margin-top: 0;
+    font-size: 28px;
+    letter-spacing: -0.02em;
+}
+
+.ke-filters-bar {
+    background: #ffffff;
+    padding: 32px;
+    border-radius: 16px;
+    border: 1px solid #eef0f3;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    margin-bottom: 50px;
 }
 
 @media (max-width: 768px) {
@@ -715,30 +750,49 @@
 .ke-status-past { background: #9ca3af; }
 .ke-status-cancelled { background: #ef4444; }
 
-/* Grid & Layout */
+/* --- GRID & SHARED LAYOUT SYSTEM --- */
 .ke-loop-wrapper {
     display: grid;
-    gap: 32px;
+    gap: 30px;
+    width: 100%;
 }
 
+/* Gap Variations */
+.ke-gap-large { gap: 40px; }
+.ke-gap-medium { gap: 30px; }
+.ke-gap-small { gap: 20px; }
+.ke-gap-none { gap: 0; }
+
+/* 1 Column */
 .ke-columns-1 { grid-template-columns: 1fr; }
+
+/* 2 Columns */
 .ke-columns-2 { grid-template-columns: repeat(2, 1fr); }
+
+/* 3 Columns (Archive Default) */
 .ke-columns-3 { grid-template-columns: repeat(3, 1fr); }
+
+/* 4 Columns */
 .ke-columns-4 { grid-template-columns: repeat(4, 1fr); }
 
+/* Tablet Overrides (max-width: 1024px) */
 @media (max-width: 1024px) {
-    .ke-columns-tablet-1 { grid-template-columns: 1fr; }
-    .ke-columns-tablet-2 { grid-template-columns: repeat(2, 1fr); }
+    .ke-loop-wrapper[class*="ke-columns-tablet-2"] { grid-template-columns: repeat(2, 1fr); }
+    .ke-loop-wrapper[class*="ke-columns-tablet-1"] { grid-template-columns: 1fr; }
+    
+    /* Force 2-col if it is a 3+ col grid but no explicit tablet class */
+    .ke-columns-3:not([class*="ke-columns-tablet-"]) { grid-template-columns: repeat(2, 1fr); }
+    .ke-columns-4:not([class*="ke-columns-tablet-"]) { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* Mobile Overrides (max-width: 768px) */
 @media (max-width: 768px) {
-    .ke-columns-mobile-1 { grid-template-columns: 1fr; }
+    .ke-loop-wrapper[class*="ke-columns-mobile-1"] { grid-template-columns: 1fr; }
+    
+    /* Default everything to 1-col on mobile unless explicitly overriden */
+    .ke-loop-wrapper:not([class*="ke-columns-mobile-"]) { grid-template-columns: 1fr; }
+    .ke-columns-2, .ke-columns-3, .ke-columns-4 { grid-template-columns: 1fr; }
 }
-
-/* Gap Presets */
-.ke-gap-small .ke-loop-wrapper { gap: 16px; }
-.ke-gap-large .ke-loop-wrapper { gap: 48px; }
-.ke-gap-none .ke-loop-wrapper { gap: 0; }
 
 /* Boxed Mode */
 .ke-boxed .ke-card {

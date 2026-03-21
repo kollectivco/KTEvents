@@ -140,11 +140,12 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 							: new WP_Query([ 'p' => $event_id, 'post_type' => 'event' ]);
 
 						if ( $venue_query->have_posts() ) :
-							echo '<div class="ke-card-grid">';
-							while ( $venue_query->have_posts() ) : $venue_query->the_post();
-								include KE_PLUGIN_DIR . 'templates/partials/loop-event-card.php';
-							endwhile;
-							echo '</div>';
+							echo KE_Query::get_instance()->render_events_loop( $venue_query, array(
+								'columns'        => 4,
+								'columns_tablet' => 2,
+								'columns_mobile' => 1,
+								'gap'            => 'medium'
+							) );
 						endif;
 						wp_reset_postdata();
 						?>
@@ -166,11 +167,12 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 							: new WP_Query([ 'p' => $event_id, 'post_type' => 'event' ]);
 
 						if ( $cat_query->have_posts() ) :
-							echo '<div class="ke-card-grid">';
-							while ( $cat_query->have_posts() ) : $cat_query->the_post();
-								include KE_PLUGIN_DIR . 'templates/partials/loop-event-card.php';
-							endwhile;
-							echo '</div>';
+							echo KE_Query::get_instance()->render_events_loop( $cat_query, array(
+								'columns'        => 4,
+								'columns_tablet' => 2,
+								'columns_mobile' => 1,
+								'gap'            => 'medium'
+							) );
 						endif;
 						wp_reset_postdata();
 						?>
@@ -187,11 +189,12 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 							'orderby' => 'rand'
 						]);
 						if ( $rec_query->have_posts() ) :
-							echo '<div class="ke-card-grid">';
-							while ( $rec_query->have_posts() ) : $rec_query->the_post();
-								include KE_PLUGIN_DIR . 'templates/partials/loop-event-card.php';
-							endwhile;
-							echo '</div>';
+							echo KE_Query::get_instance()->render_events_loop( $rec_query, array(
+								'columns'        => 4,
+								'columns_tablet' => 2,
+								'columns_mobile' => 1,
+								'gap'            => 'medium'
+							) );
 						endif;
 						wp_reset_postdata();
 						?>
