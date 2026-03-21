@@ -49,6 +49,29 @@ class KE_Taxonomies {
 			'show_in_rest'      => true,
 		) );
 
+		// Event Governorates (Shared)
+		register_taxonomy( 'event_governorate', array( 'event', 'venue' ), array(
+			'labels'            => array(
+				'name'          => 'Governorates',
+				'singular_name' => 'Governorate',
+				'search_items'  => 'Search Governorates',
+				'all_items'     => 'All Governorates',
+				'parent_item'   => 'Parent Governorate',
+				'parent_item_colon' => 'Parent Governorate:',
+				'edit_item'     => 'Edit Governorate',
+				'update_item'   => 'Update Governorate',
+				'add_new_item'  => 'Add New Governorate',
+				'new_item_name' => 'New Governorate Name',
+				'menu_name'     => 'Governorates',
+			),
+			'hierarchical'      => true,
+			'show_ui'           => true,
+			'show_admin_column' => true,
+			'query_var'         => true,
+			'rewrite'           => array( 'slug' => 'event-governorate' ),
+			'show_in_rest'      => true,
+		) );
+
 		// Event Cities (Shared)
 		register_taxonomy( 'event_city', array( 'event', 'venue' ), array(
 			'labels'            => array(

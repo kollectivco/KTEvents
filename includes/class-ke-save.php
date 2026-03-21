@@ -87,6 +87,14 @@ class KE_Save {
 				update_post_meta( $post_id, $field, call_user_func( $sanitize_callback, $_POST[ $field ] ) );
 			}
 		}
+
+		// Handle Taxonomies from Meta Box
+		if ( isset( $_POST['ke_venue_governorate'] ) ) {
+			wp_set_object_terms( $post_id, intval( $_POST['ke_venue_governorate'] ), 'event_governorate' );
+		}
+		if ( isset( $_POST['ke_venue_city'] ) ) {
+			wp_set_object_terms( $post_id, intval( $_POST['ke_venue_city'] ), 'event_city' );
+		}
 	}
 
 	/**

@@ -92,6 +92,7 @@ class KE_Events {
 		// Phase 6 Production Hardening
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-cache.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-query.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-egypt-locations.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-schema.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-admin-tools.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-diagnostics.php';
@@ -151,6 +152,11 @@ class KE_Events {
 	public function activate() {
 		KE_Taxonomies::get_instance()->register();
 		KE_Post_Types::get_instance()->register();
+		
+		// Seed Egypt Data
+		KE_Egypt_Locations::seed_categories();
+		KE_Egypt_Locations::seed_locations();
+		
 		flush_rewrite_rules();
 
 		// Set initial DB version

@@ -103,22 +103,39 @@ class KE_Import_URL {
 			'event_end_date' => sanitize_text_field( $_POST['event_end_date'] ),
 			'event_time'     => sanitize_text_field( $_POST['event_time'] ),
 			'event_end_time' => sanitize_text_field( $_POST['event_end_time'] ),
-			'venue_name'     => sanitize_text_field( $_POST['venue_name'] ),
-			'venue_id'       => intval( $_POST['venue_id'] ),
-			'organizer_name' => sanitize_text_field( $_POST['organizer_name'] ),
+			'venue_mode'     => sanitize_text_field( $_POST['venue_mode'] ?? 'existing' ),
+			'venue_name'     => sanitize_text_field( $_POST['new_venue_name'] ?? '' ), // Use new name if provided
+			'venue_id'       => intval( $_POST['venue_id'] ?? 0 ),
+			'organizer_name' => sanitize_text_field( $_POST['organizer_name'] ?? '' ),
 			'address'        => sanitize_text_field( $_POST['address'] ),
 			'phone'          => sanitize_text_field( $_POST['phone'] ),
 			'official_url'   => esc_url_raw( $_POST['official_url'] ),
 			'source_url'     => esc_url_raw( $_POST['source_url'] ),
-			'image_url'      => esc_url_raw( ! empty( $_POST['manual_image_url'] ) ? $_POST['manual_image_url'] : $_POST['image_url'] ),
-			'category'       => intval( $_POST['category_id'] ),
-			'city'           => intval( $_POST['city_id'] ),
-			'area'           => intval( $_POST['area_id'] ),
+			'image_url'      => esc_url_raw( ! empty( $_POST['manual_image_url'] ) ? $_POST['manual_image_url'] : ( $_POST['image_url'] ?? '' ) ),
+			'category_id'    => intval( $_POST['category_id'] ),
+			'governorate_id' => intval( $_POST['governorate_id'] ),
+			'city_val'       => sanitize_text_field( $_POST['city_id'] ?? '' ), // Might be ID or Name
 		);
 
-		// Handle Venue Creation if needed
+		// Resolve City Value to Term ID
+		$city_id = 0;
+		if ( ! empty( $fields['city_val'] ) ) {
+			if ( is_numeric( $fields['city_val'] ) ) {
+				$city_id = intval( $fields['city_val'] );
+			} else {
+				$term = get_term_by( 'name', $fields['city_val'], 'event_city' );
+				if ( ! $term ) {
+					$new_term = wp_insert_term( $fields['city_val'], 'event_city' );
+					$city_id = ! is_wp_error( $new_term ) ? $new_term['term_id'] : 0;
+				} else {
+					$city_id = $term->term_id;
+				}
+			}
+		}
+
+		// Handle Venue Creation
 		$final_venue_id = $fields['venue_id'];
-		if ( ! $final_venue_id && ! empty( $fields['venue_name'] ) && isset( $_POST['auto_create_venue'] ) ) {
+		if ( 'new' === $fields['venue_mode'] && ! empty( $fields['venue_name'] ) ) {
 			$final_venue_id = wp_insert_post( array(
 				'post_type'   => 'venue',
 				'post_title'  => $fields['venue_name'],
@@ -128,10 +145,11 @@ class KE_Import_URL {
 			if ( $final_venue_id && ! is_wp_error( $final_venue_id ) ) {
 				update_post_meta( $final_venue_id, 'KE_venue_address', $fields['address'] );
 				update_post_meta( $final_venue_id, 'KE_venue_phone', $fields['phone'] );
+				update_post_meta( $final_venue_id, 'KE_venue_website', $fields['official_url'] );
 				
-				// Assign city/area to venue too
-				if ( $fields['city'] ) wp_set_object_terms( $final_venue_id, $fields['city'], 'event_city' );
-				if ( $fields['area'] ) wp_set_object_terms( $final_venue_id, $fields['area'], 'event_area' );
+				// Assign locations to venue
+				if ( $fields['governorate_id'] ) wp_set_object_terms( $final_venue_id, $fields['governorate_id'], 'event_governorate' );
+				if ( $city_id ) wp_set_object_terms( $final_venue_id, $city_id, 'event_city' );
 			}
 		}
 
@@ -187,10 +205,10 @@ class KE_Import_URL {
 		) );
 		update_post_meta( $event_id, 'KE_event_import_hash', $hash );
 
-		// Assign Taxonomies
-		if ( $fields['category'] ) wp_set_object_terms( $event_id, $fields['category'], 'event_category' );
-		if ( $fields['city'] ) wp_set_object_terms( $event_id, $fields['city'], 'event_city' );
-		if ( $fields['area'] ) wp_set_object_terms( $event_id, $fields['area'], 'event_area' );
+		// Assign Taxonomies to Event
+		if ( $fields['category_id'] ) wp_set_object_terms( $event_id, $fields['category_id'], 'event_category' );
+		if ( $fields['governorate_id'] ) wp_set_object_terms( $event_id, $fields['governorate_id'], 'event_governorate' );
+		if ( $city_id ) wp_set_object_terms( $event_id, $city_id, 'event_city' );
 
 		// Image Sideloading
 		if ( ! empty( $fields['image_url'] ) && ( isset( $_POST['sideload_image'] ) || get_option('ke_import_settings')['auto_sideload_image'] ) ) {

@@ -67,229 +67,295 @@ class KE_Admin {
 	 * Render Import from URL Page
 	 */
 	public function render_import_page() {
+		$categories = get_terms('event_category', array('hide_empty' => false));
+		$governorates = get_terms('event_governorate', array('hide_empty' => false));
+		$venues = get_posts(array('post_type' => 'venue', 'posts_per_page' => -1, 'post_status' => 'publish'));
 		?>
 		<div class="wrap ke-admin-wrapper">
-			<h1>Import Event from URL</h1>
-			<p>Paste a source URL (e.g., from an event site) to fetch and preview event data before importing.</p>
+			<div class="ke-admin-header">
+				<h1>Import Event from URL</h1>
+				<p class="description">Paste a source URL to audit and import event data into your library.</p>
+			</div>
 
-			<div class="ke-import-container">
-				<form id="ke-fetch-preview-form">
+			<!-- STEP 1: URL Input Card -->
+			<div class="ke-card ke-card-full">
+				<form id="ke-fetch-preview-form" class="ke-fetch-form">
 					<?php wp_nonce_field( 'ke_import_nonce', 'ke_import_nonce' ); ?>
-					<table class="form-table">
-						<tr>
-							<th scope="row"><label for="source_url">Source URL</label></th>
-							<td>
-								<input type="url" id="source_url" name="source_url" class="large-text" placeholder="https://example.com/events/concert-2026" required>
-								<p class="description">Paste the full URL of the event page.</p>
-							</td>
-						</tr>
-						<tr>
-							<th scope="row">Import Logic</th>
-							<td>
-								<div class="ke-inline-fields">
-									<select name="default_category_id">
-										<option value="">Default Category</option>
-										<?php foreach ( get_terms('event_category', array('hide_empty' => false)) as $term ) : ?>
-											<option value="<?php echo $term->term_id; ?>"><?php echo $term->name; ?></option>
-										<?php endforeach; ?>
-									</select>
-									<select name="default_city_id">
-										<option value="">Default City</option>
-										<?php foreach ( get_terms('event_city', array('hide_empty' => false)) as $term ) : ?>
-											<option value="<?php echo $term->term_id; ?>"><?php echo $term->name; ?></option>
-										<?php endforeach; ?>
-									</select>
-									<label style="margin-left:15px;"><input type="checkbox" name="auto_create_venue" value="1" checked> Auto-create missing venues</label>
-								</div>
-							</td>
-						</tr>
-					</table>
-					<p class="submit">
-						<button type="submit" class="button button-primary" id="ke-fetch-btn">Fetch & Preview</button>
-						<span class="spinner" id="ke-fetch-spinner"></span>
-					</p>
-				</form>
-
-				<div id="ke-import-error" class="notice notice-error" style="display:none;"></div>
-
-				<div id="ke-import-preview-wrapper" style="display:none;">
-					<hr>
-					<div class="ke-preview-header">
-						<h2 id="ke-preview-heading">Import Preview</h2>
-						<div id="ke-duplicate-notice" class="notice notice-warning inline" style="display:none;"></div>
+					<div class="ke-fetch-input-wrap">
+						<div class="ke-input-group">
+							<label for="source_url">Source Event URL</label>
+							<div class="ke-input-with-button">
+								<input type="url" id="source_url" name="source_url" placeholder="https://scenenow.com/Events/Detail/..." required>
+								<button type="submit" class="button button-primary button-hero" id="ke-fetch-btn">Fetch & Audit Data</button>
+							</div>
+							<p class="description">We support SceneNow, Cairo Jazz Club, and generic schema.org sources.</p>
+						</div>
 					</div>
+					
+					<div class="ke-fetch-options">
+						<div class="ke-mini-field">
+							<label>Default Category</label>
+							<select name="default_category_id">
+								<option value="">Auto-detect</option>
+								<?php foreach ( $categories as $term ) : ?>
+									<option value="<?php echo $term->term_id; ?>"><?php echo $term->name; ?></option>
+								<?php endforeach; ?>
+							</select>
+						</div>
+						<div class="ke-mini-field">
+							<label><input type="checkbox" name="auto_create_venue" value="1" checked> Auto-create missing venues</label>
+						</div>
+						<div class="spinner" id="ke-fetch-spinner"></div>
+					</div>
+				</form>
+			</div>
 
-					<form action="<?php echo admin_url( 'admin-post.php' ); ?>" method="post">
-						<?php wp_nonce_field( 'ke_save_import', 'ke_import_save_nonce' ); ?>
-						<input type="hidden" name="action" value="ke_save_imported_event">
-						<input type="hidden" name="source_url" id="preview_source_url">
-						<input type="hidden" name="source_name" id="preview_source_name">
-						<input type="hidden" name="parser_name" id="preview_parser_name">
-						<input type="hidden" name="parser_confidence" id="preview_parser_confidence_field">
-						<input type="hidden" name="canonical_url" id="preview_canonical_url">
-						<input type="hidden" name="image_url" id="preview_image_url">
-						<input type="hidden" name="raw_date_text" id="preview_raw_date_text">
-						<input type="hidden" name="raw_location_text" id="preview_raw_location_text">
-						<input type="hidden" name="ke_import_action" id="ke_import_action" value="create">
-						<input type="hidden" name="ke_existing_post_id" id="ke_existing_post_id" value="">
+			<div id="ke-import-error" class="notice notice-error" style="display:none; margin: 20px 0;"></div>
 
-						<div class="ke-preview-grid">
-							<!-- Main Content Area -->
-							<div class="ke-preview-main">
-								<div class="ke-card-box">
-									<h3>Event Details</h3>
-									<div class="ke-field-group">
+			<!-- STEP 2: Preview Area (Card Based) -->
+			<div id="ke-import-preview-wrapper" style="display:none;" class="ke-preview-container">
+				<form action="<?php echo admin_url( 'admin-post.php' ); ?>" method="post">
+					<?php wp_nonce_field( 'ke_save_import', 'ke_import_save_nonce' ); ?>
+					<input type="hidden" name="action" value="ke_save_imported_event">
+					<input type="hidden" name="source_url" id="preview_source_url">
+					<input type="hidden" name="source_name" id="preview_source_name">
+					<input type="hidden" name="parser_name" id="preview_parser_name">
+					<input type="hidden" name="parser_confidence" id="preview_parser_confidence_field">
+					<input type="hidden" name="canonical_url" id="preview_canonical_url">
+					<input type="hidden" name="image_url" id="preview_image_url">
+					<input type="hidden" name="raw_date_text" id="preview_raw_date_text">
+					<input type="hidden" name="raw_location_text" id="preview_raw_location_text">
+					<input type="hidden" name="ke_import_action" id="ke_import_action" value="create">
+					<input type="hidden" name="ke_existing_post_id" id="ke_existing_post_id" value="">
+
+					<div class="ke-dashboard-layout">
+						<!-- Main Content Column -->
+						<div class="ke-main-col">
+							
+							<!-- Event Content Card -->
+							<div class="ke-card">
+								<div class="ke-card-header">
+									<h2><span class="dashicons dashicons-edit"></span> Event Details</h2>
+									<div id="ke-duplicate-notice" class="ke-badge-notice" style="display:none;"></div>
+								</div>
+								<div class="ke-card-body">
+									<div class="ke-form-row">
 										<label>Event Title</label>
 										<input type="text" name="title" id="preview_title" class="large-text" required>
 									</div>
 
-									<div class="ke-field-group">
+									<div class="ke-form-row">
 										<label>Description</label>
-										<?php wp_editor( '', 'preview_description', array( 'textarea_name' => 'description', 'textarea_rows' => 12, 'media_buttons' => false ) ); ?>
+										<?php wp_editor( '', 'preview_description', array( 'textarea_name' => 'description', 'textarea_rows' => 10, 'media_buttons' => false ) ); ?>
 									</div>
 
-									<div class="ke-field-group">
-										<label>Short Summary</label>
+									<div class="ke-form-row">
+										<label>Extended Summary (Excerpt)</label>
 										<textarea name="excerpt" id="preview_excerpt" rows="2" class="large-text"></textarea>
 									</div>
-
-									<div class="ke-field-row">
-										<div class="ke-field-item">
-											<label>Status</label>
-											<select name="status" id="preview_status" class="widefat">
-												<option value="upcoming">Upcoming</option>
-												<option value="ongoing">Ongoing</option>
-												<option value="past">Past</option>
-												<option value="cancelled">Cancelled</option>
-											</select>
-										</div>
-										<div class="ke-field-item">
-											<label>Event Category</label>
-											<select name="category_id" id="preview_category_id" class="widefat">
-												<option value="">Select Category</option>
-												<?php foreach ( get_terms('event_category', array('hide_empty' => false)) as $term ) : ?>
-													<option value="<?php echo $term->term_id; ?>"><?php echo $term->name; ?></option>
-												<?php endforeach; ?>
-											</select>
-										</div>
-									</div>
 								</div>
+							</div>
 
-								<div class="ke-card-box">
-									<h3>Schedule / Timing</h3>
-									<div class="ke-field-row">
-										<div class="ke-field-item">
+							<!-- Schedule Card -->
+							<div class="ke-card">
+								<div class="ke-card-header">
+									<h2><span class="dashicons dashicons-calendar-alt"></span> Schedule & Timing</h2>
+								</div>
+								<div class="ke-card-body">
+									<div class="ke-grid-2">
+										<div class="ke-form-row">
 											<label>Start Date</label>
 											<input type="date" name="event_date" id="preview_event_date" class="widefat">
 										</div>
-										<div class="ke-field-item">
+										<div class="ke-form-row">
 											<label>Start Time</label>
 											<input type="time" name="event_time" id="preview_event_time" class="widefat">
 										</div>
-									</div>
-									<div class="ke-field-row">
-										<div class="ke-field-item">
+										<div class="ke-form-row">
 											<label>End Date</label>
 											<input type="date" name="event_end_date" id="preview_event_end_date" class="widefat">
 										</div>
-										<div class="ke-field-item">
+										<div class="ke-form-row">
 											<label>End Time</label>
 											<input type="time" name="event_end_time" id="preview_event_end_time" class="widefat">
 										</div>
 									</div>
-									<p class="description" id="ke-raw-date-suggestion"></p>
+									<div id="ke-date-source-alert" class="ke-info-note"></div>
 								</div>
 							</div>
 
-							<!-- Sidebar Area -->
-							<div class="ke-preview-sidebar">
-								<div class="ke-card-box">
-									<h3>Featured Image</h3>
-									<div class="ke-image-preview-area">
-										<div id="ke-preview-image-wrap">
-											<img id="ke-preview-img-src" src="" style="width:100%; border-radius:4px; display:none;">
-											<div id="ke-no-image" class="ke-placeholder-box">No image found</div>
+							<!-- Venue Card: SELECT OR CREATE -->
+							<div class="ke-card ke-venue-card">
+								<div class="ke-card-header">
+									<h2><span class="dashicons dashicons-location"></span> Venue Assignment</h2>
+								</div>
+								<div class="ke-card-body">
+									<div class="ke-venue-toggle-wrap">
+										<label class="ke-radio-label">
+											<input type="radio" name="venue_mode" value="existing" checked> 
+											<span>Use Existing Venue</span>
+										</label>
+										<label class="ke-radio-label">
+											<input type="radio" name="venue_mode" value="new"> 
+											<span>Create New Venue Inline</span>
+										</label>
+									</div>
+
+									<!-- Mode: Existing -->
+									<div id="ke-venue-mode-existing" class="ke-venue-mode-content">
+										<div class="ke-form-row">
+											<label>Select Venue from Library</label>
+											<select name="venue_id" id="preview_venue_id" class="widefat ke-select2">
+												<option value="">-- Search for a venue --</option>
+												<?php foreach ($venues as $v) : ?>
+													<option value="<?php echo $v->ID; ?>"><?php echo esc_html($v->post_title); ?></option>
+												<?php endforeach; ?>
+											</select>
+											<div id="ke-venue-match-status"></div>
 										</div>
-										<div style="margin-top:10px;">
-											<label><input type="checkbox" name="sideload_image" value="1" checked> Sideload this image</label>
-											<input type="url" name="manual_image_url" id="preview_manual_image_url" placeholder="Paste custom image URL..." class="widefat" style="margin-top:5px; font-size:11px;">
+									</div>
+
+									<!-- Mode: New -->
+									<div id="ke-venue-mode-new" class="ke-venue-mode-content" style="display:none;">
+										<div class="ke-grid-2">
+											<div class="ke-form-row">
+												<label>Venue Name</label>
+												<input type="text" name="new_venue_name" id="preview_venue_name" class="widefat">
+											</div>
+											<div class="ke-form-row">
+												<label>Phone / Contact</label>
+												<input type="text" name="phone" id="preview_phone" class="widefat">
+											</div>
+										</div>
+										<div class="ke-form-row">
+											<label>Address</label>
+											<input type="text" name="address" id="preview_address" class="widefat">
+										</div>
+										<div class="ke-form-row">
+											<label>Google Maps Link</label>
+											<input type="url" name="official_url" id="preview_official_url" placeholder="https://maps.google.com/..." class="widefat">
 										</div>
 									</div>
-								</div>
-
-								<div class="ke-card-box">
-									<h3>Venue Information</h3>
-									<div class="ke-field-group">
-										<label>Venue Name</label>
-										<input type="text" name="venue_name" id="preview_venue_name" class="widefat">
-										<input type="hidden" name="venue_id" id="preview_venue_id">
-										<div id="ke-venue-status" class="ke-mini-notice"></div>
-									</div>
-
-									<div class="ke-field-group">
-										<label>City</label>
-										<select name="city_id" id="preview_city_id" class="widefat">
-											<option value="">Select City</option>
-											<?php foreach ( get_terms('event_city', array('hide_empty' => false)) as $term ) : ?>
-												<option value="<?php echo $term->term_id; ?>"><?php echo $term->name; ?></option>
-											<?php endforeach; ?>
-										</select>
-									</div>
-
-									<div class="ke-field-group">
-										<label>Area</label>
-										<select name="area_id" id="preview_area_id" class="widefat">
-											<option value="">Select Area</option>
-											<?php foreach ( get_terms('event_area', array('hide_empty' => false)) as $term ) : ?>
-												<option value="<?php echo $term->term_id; ?>"><?php echo $term->name; ?></option>
-											<?php endforeach; ?>
-										</select>
-									</div>
-
-									<div class="ke-field-group">
-										<label>Address</label>
-										<input type="text" name="address" id="preview_address" class="widefat">
-									</div>
-								</div>
-
-								<div class="ke-card-box">
-									<h3>Additional Info</h3>
-									<div class="ke-field-group">
-										<label>Organizer</label>
-										<input type="text" name="organizer_name" id="preview_organizer_name" class="widefat">
-									</div>
-									<div class="ke-field-group">
-										<label>Phone / Contact</label>
-										<input type="text" name="phone" id="preview_phone" class="widefat">
-									</div>
-									<div class="ke-field-group">
-										<label>Official URL</label>
-										<input type="url" name="official_url" id="preview_official_url" class="widefat">
-									</div>
-								</div>
-
-								<div class="ke-card-box ke-diagnostics-box">
-									<h3>Diagnostics</h3>
-									<p><strong>Parser:</strong> <span id="ke-parser-name">-</span></p>
-									<div class="ke-confidence-wrap">
-										<label>Confidence Score</label>
-										<div class="ke-confidence-bar"><div id="ke-confidence-fill" style="width: 0%"></div></div>
-										<span id="ke-parser-confidence">0%</span>
-									</div>
-									<div id="ke-parser-warnings" class="ke-warnings-list"></div>
-								</div>
-
-								<div class="ke-actions-box">
-									<button type="submit" class="button button-primary button-hero widefat" id="ke-save-import-btn">Finalize Import</button>
 								</div>
 							</div>
 						</div>
-					</form>
-				</div>
+
+						<!-- Sidebar Column -->
+						<div class="ke-sidebar-col">
+							
+							<!-- Action Card -->
+							<div class="ke-card ke-card-primary">
+								<div class="ke-card-body">
+									<button type="submit" class="button button-primary button-hero widefat" id="ke-save-import-btn">Finalize & Import Event</button>
+									<p class="ke-safe-note"><span class="dashicons dashicons-shield"></span> All fields can be edited after import.</p>
+								</div>
+							</div>
+
+							<!-- Image Card -->
+							<div class="ke-card">
+								<div class="ke-card-header"><h3>Featured Image</h3></div>
+								<div class="ke-card-body">
+									<div class="ke-image-preview">
+										<img id="ke-preview-img-src" src="" style="display:none;">
+										<div id="ke-no-image" class="ke-img-placeholder">No image detected</div>
+									</div>
+									<div class="ke-image-controls">
+										<label><input type="checkbox" name="sideload_image" value="1" checked> Sideload Image</label>
+										<input type="url" name="manual_image_url" id="preview_manual_image_url" placeholder="Paste custom URL..." class="widefat">
+									</div>
+								</div>
+							</div>
+
+							<!-- Location & Category Card -->
+							<div class="ke-card">
+								<div class="ke-card-header"><h3>Event Settings</h3></div>
+								<div class="ke-card-body">
+									<div class="ke-form-row">
+										<label>Event Status</label>
+										<select name="status" id="preview_status" class="widefat">
+											<option value="upcoming" selected>Upcoming</option>
+											<option value="ongoing">Ongoing</option>
+											<option value="past">Past</option>
+											<option value="cancelled">Cancelled</option>
+										</select>
+									</div>
+
+									<div class="ke-form-row" style="display:flex; gap:15px; margin-bottom:15px;">
+										<label class="ke-radio-label">
+											<input type="checkbox" name="featured" value="1"> Featured
+										</label>
+										<label class="ke-radio-label">
+											<input type="checkbox" name="editor_pick" value="1"> Editor Pick
+										</label>
+									</div>
+
+									<div class="ke-form-row">
+										<label>Category</label>
+										<select name="category_id" id="preview_category_id" class="widefat">
+											<option value="">-- Choose Category --</option>
+											<?php foreach ($categories as $term) : ?>
+												<option value="<?php echo $term->term_id; ?>"><?php echo $term->name; ?></option>
+											<?php endforeach; ?>
+										</select>
+									</div>
+
+									<div class="ke-form-row">
+										<label>Governorate</label>
+										<select name="governorate_id" id="preview_governorate_id" class="widefat">
+											<option value="">-- Choose Governorate --</option>
+											<?php foreach ($governorates as $term) : ?>
+												<option value="<?php echo $term->term_id; ?>"><?php echo $term->name; ?></option>
+											<?php endforeach; ?>
+										</select>
+									</div>
+
+									<div class="ke-form-row">
+										<label>City / Town</label>
+										<select name="city_id" id="preview_city_id" class="widefat">
+											<option value="">-- Choose City --</option>
+											<?php foreach (get_terms('event_city', array('hide_empty' => false)) as $term) : ?>
+												<option value="<?php echo $term->term_id; ?>"><?php echo $term->name; ?></option>
+											<?php endforeach; ?>
+										</select>
+									</div>
+
+									<div class="ke-form-row">
+										<label>Status</label>
+										<select name="status" id="preview_status" class="widefat">
+											<option value="upcoming" selected>Upcoming</option>
+											<option value="ongoing">Ongoing</option>
+											<option value="past">Past</option>
+											<option value="cancelled">Cancelled</option>
+										</select>
+									</div>
+								</div>
+							</div>
+
+							<!-- Diagnostics Card -->
+							<div class="ke-card ke-diagnostics-card">
+								<div class="ke-card-header"><h3>Diagnostics</h3></div>
+								<div class="ke-card-body">
+									<div class="ke-diag-meta">
+										<span>Parser: <strong id="ke-parser-name">-</strong></span>
+									</div>
+									<div class="ke-confidence-section">
+										<div class="ke-confidence-label">Confidence: <span id="ke-parser-confidence">0%</span></div>
+										<div class="ke-confidence-bar"><div id="ke-confidence-fill"></div></div>
+									</div>
+									<div id="ke-parser-warnings" class="ke-warnings-list"></div>
+								</div>
+							</div>
+
+						</div>
+					</div>
+				</form>
 			</div>
 		</div>
-			</div>
-		</div>
+
+		<!-- Egypt Data Bridge -->
+		<script id="ke-egypt-data" type="application/json">
+			<?php echo json_encode(KE_Egypt_Locations::get_governorates()); ?>
+		</script>
 		<?php
 	}
 

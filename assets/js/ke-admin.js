@@ -1,7 +1,3 @@
-/**
- * Kontentainment Events Admin Scripts - Phase 3
- * Handle Import From URL AJAX logic
- */
 jQuery(document).ready(function($) {
     const fetchForm = $('#ke-fetch-preview-form');
     const fetchBtn = $('#ke-fetch-btn');
@@ -9,8 +5,40 @@ jQuery(document).ready(function($) {
     const errorNotice = $('#ke-import-error');
     const previewWrapper = $('#ke-import-preview-wrapper');
 
+    // Load Egypt Data
+    const egyptDataEl = $('#ke-egypt-data');
+    const egyptData = egyptDataEl.length ? JSON.parse(egyptDataEl.text()) : {};
+
     if (!fetchForm.length) return;
 
+    /**
+     * Handle Governorate -> City Change
+     */
+    $(document).on('change', '#preview_governorate_id', function() {
+        const govName = $(this).find('option:selected').text();
+        const citySelect = $('#preview_city_id');
+        
+        citySelect.find('option').not(':first').remove();
+        
+        if (egyptData[govName]) {
+            egyptData[govName].forEach(city => {
+                citySelect.append(`<option value="${city}">${city}</option>`);
+            });
+        }
+    });
+
+    /**
+     * Venue Mode Toggle
+     */
+    $(document).on('change', 'input[name="venue_mode"]', function() {
+        const mode = $(this).val();
+        $('.ke-venue-mode-content').hide();
+        $(`#ke-venue-mode-${mode}`).fadeIn();
+    });
+
+    /**
+     * Fetch Audit Action
+     */
     fetchForm.on('submit', function(e) {
         e.preventDefault();
         
@@ -32,11 +60,12 @@ jQuery(document).ready(function($) {
                 if (response.success) {
                     populatePreview(response.data);
                 } else {
-                    errorNotice.show().text(response.data.message || 'An unknown error occurred.');
+                    errorNotice.fadeIn().text(response.data.message || 'An unknown error occurred.');
+                    $('html, body').animate({ scrollTop: errorNotice.offset().top - 100 }, 500);
                 }
             },
             error: function() {
-                errorNotice.show().text('Connection error. Please try again.');
+                errorNotice.fadeIn().text('Connection error. Please try again.');
             },
             complete: function() {
                 fetchBtn.prop('disabled', false);
@@ -46,13 +75,13 @@ jQuery(document).ready(function($) {
     });
 
     /**
-     * Fill the preview form with parsed data
+     * Fill the preview form with audited data
      */
     function populatePreview(payload) {
         const { data, duplicates, matched_venue_id } = payload;
         const fields = data.fields;
 
-        // Core Fields
+        // Core Meta
         $('#preview_title').val(fields.title);
         $('#preview_source_url').val(data.source_url);
         $('#preview_canonical_url').val(data.canonical_url);
@@ -64,104 +93,83 @@ jQuery(document).ready(function($) {
         $('#preview_image_url').val(fields.image_url);
         $('#preview_excerpt').val(fields.description.substring(0, 160));
         
-        // Description (WP Editor)
+        // Description (Editor Support)
         if (typeof tinyMCE !== 'undefined' && tinyMCE.get('preview_description')) {
             tinyMCE.get('preview_description').setContent(fields.description);
-        } else if ($('#preview_description').length) {
+        } else {
             $('#preview_description').val(fields.description);
         }
 
-        // Dates & Times
+        // Timing
         $('#preview_event_date').val(fields.event_date);
         $('#preview_event_time').val(fields.event_time);
         $('#preview_event_end_date').val(fields.event_end_date);
         $('#preview_event_end_time').val(fields.event_end_time);
-        $('#ke-raw-date-suggestion').text(fields.raw_date_text ? 'Source raw date string: ' + fields.raw_date_text : '');
+        $('#ke-date-source-alert').html(fields.raw_date_text ? '<strong>Detected Date Source:</strong> ' + fields.raw_date_text : '');
 
-        // Image
+        // Image Handling
+        const imgPreview = $('#ke-preview-img-src');
+        const imgPlaceholder = $('#ke-no-image');
         if (fields.image_url) {
-            $('#ke-preview-img-src').attr('src', fields.image_url).show();
-            $('#ke-no-image').hide();
+            imgPreview.attr('src', fields.image_url).show();
+            imgPlaceholder.hide();
         } else {
-            $('#ke-preview-img-src').hide();
-            $('#ke-no-image').show();
+            imgPreview.hide();
+            imgPlaceholder.show();
         }
 
-        // Venue
-        $('#preview_venue_name').val(fields.venue_name);
-        $('#preview_address').val(fields.address);
-        $('#preview_phone').val(fields.phone);
-        $('#preview_official_url').val(fields.official_url);
-        $('#preview_organizer_name').val(fields.organizer_name);
-
-        if (matched_venue_id) {
-            $('#preview_venue_id').val(matched_venue_id);
-            $('#ke-venue-status').html('<span style="color:#10b981; font-weight:600;">✓ Exact match found in library.</span>');
-        } else {
-            $('#preview_venue_id').val('');
-            $('#ke-venue-status').html('<span style="color:#f59e0b; font-weight:600;">⚠ New venue (library entry will be created).</span>');
-        }
-
-        // Defaults from Fetch Form
-        const defaultCat = fetchForm.find('select[name="default_category_id"]').val();
-        if (defaultCat && !fields.category) $('#preview_category_id').val(defaultCat);
+        // Venue Assignment Logic
+        const venueIdSelect = $('#preview_venue_id');
+        const venueMatchLabel = $('#ke-venue-match-status');
         
-        const defaultCity = fetchForm.find('select[name="default_city_id"]').val();
-        if (defaultCity && !fields.city) $('#preview_city_id').val(defaultCity);
+        if (matched_venue_id) {
+            $('input[name="venue_mode"][value="existing"]').prop('checked', true).trigger('change');
+            venueIdSelect.val(matched_venue_id);
+            venueMatchLabel.html('<div class="ke-info-note" style="background:#dcfce7; color:#166534; border:none; margin-top:10px;">✓ Automatic Match Found: ' + fields.venue_name + '</div>');
+        } else {
+            $('input[name="venue_mode"][value="new"]').prop('checked', true).trigger('change');
+            $('#preview_venue_name').val(fields.venue_name);
+            $('#preview_address').val(fields.address);
+            $('#preview_phone').val(fields.phone);
+            $('#preview_official_url').val(fields.official_url);
+            venueMatchLabel.html('');
+        }
+
+        // Category & Locations
+        if (fields.category) {
+            $('#preview_category_id').val(fields.category); 
+        }
 
         // Diagnostics
         $('#ke-parser-name').text(data.parser_name);
         $('#ke-parser-confidence').text(data.parser_confidence + '%');
-        $('#ke-confidence-fill').css('width', data.parser_confidence + '%');
-        
-        // Change color based on confidence
-        if (data.parser_confidence < 50) $('#ke-confidence-fill').css('background', '#ef4444');
-        else if (data.parser_confidence < 80) $('#ke-confidence-fill').css('background', '#f59e0b');
-        else $('#ke-confidence-fill').css('background', '#10b981');
+        $('#ke-confidence-fill').css({
+            'width': data.parser_confidence + '%',
+            'background': data.parser_confidence < 50 ? '#ef4444' : (data.parser_confidence < 80 ? '#f59e0b' : '#10b981')
+        });
 
-        // Warnings List
-        const warnList = $('#ke-parser-warnings');
-        warnList.empty();
+        // Warnings
+        const warnList = $('#ke-parser-warnings').empty();
         if (data.warnings && data.warnings.length > 0) {
-            data.warnings.forEach(msg => {
-                warnList.append(`<div class="ke-warning-item">${msg}</div>`);
-            });
+            data.warnings.forEach(msg => warnList.append(`<div class="ke-warning-item">⚠ ${msg}</div>`));
         }
 
-        // Duplicates
-        const duplicateNotice = $('#ke-duplicate-notice');
-        duplicateNotice.hide();
+        // Duplicate Notification
+        const dupBadge = $('#ke-duplicate-notice').hide();
         $('#ke_import_action').val('create');
         $('#ke_existing_post_id').val('');
 
         if (duplicates.exact && duplicates.exact.length > 0) {
-            const dup = duplicates.exact[0];
-            duplicateNotice.html(`
-                <strong>⚠ EXACT DUPLICATE:</strong> Already imported.
-                <button type="button" class="button ke-update-btn button-small" data-id="${dup.ID}" style="margin-left:10px;">Switch to Update Mode</button>
-            `).show();
+            dupBadge.html('EXACT DUPLICATE FOUND').css('background', '#ef4444').fadeIn();
+            $('#ke_import_action').val('update');
+            $('#ke_existing_post_id').val(duplicates.exact[0].ID);
+            $('#ke-save-import-btn').text('Update Existing Event');
         } else if (duplicates.possible && duplicates.possible.length > 0) {
-            const dup = duplicates.possible[0];
-            duplicateNotice.html(`
-                <strong>ℹ SIMILAR FOUND:</strong> Title/Date match.
-                <button type="button" class="button ke-update-btn button-small" data-id="${dup.ID}" style="margin-left:10px;">Update Match</button>
-            `).show();
+            dupBadge.html('SIMILAR EVENT FOUND').css('background', '#f59e0b').fadeIn();
         }
 
-        // Finalize Transition
-        previewWrapper.fadeIn();
-        $('html, body').animate({ scrollTop: previewWrapper.offset().top - 30 }, 500);
+        // Final Show
+        previewWrapper.fadeIn(600);
+        $('html, body').animate({ scrollTop: previewWrapper.offset().top - 40 }, 800);
     }
-
-    /**
-     * Handle Update Choice
-     */
-    $(document).on('click', '.ke-update-btn', function() {
-        const postId = $(this).data('id');
-        $('#ke_import_action').val('update');
-        $('#ke_existing_post_id').val(postId);
-        $('#ke-save-import-btn').text('Update Existing Event');
-        $(this).parent().css('background', '#dbeafe');
-        alert('Action changed to UPDATE. Source fields will overwrite existing event data upon saving.');
-    });
 });

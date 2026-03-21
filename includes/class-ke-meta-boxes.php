@@ -202,6 +202,13 @@ class KE_Meta_Boxes {
 		$lat = isset( $values['KE_venue_lat'] ) ? $values['KE_venue_lat'][0] : '';
 		$lng = isset( $values['KE_venue_lng'] ) ? $values['KE_venue_lng'][0] : '';
 		$short_desc = isset( $values['KE_venue_short_description'] ) ? $values['KE_venue_short_description'][0] : '';
+
+		// Get terms for the venue
+		$assigned_gov = wp_get_object_terms( $post->ID, 'event_governorate', array( 'fields' => 'ids' ) );
+		$assigned_city = wp_get_object_terms( $post->ID, 'event_city', array( 'fields' => 'ids' ) );
+		
+		$governorates = get_terms( 'event_governorate', array( 'hide_empty' => false ) );
+		$cities = get_terms( 'event_city', array( 'hide_empty' => false ) );
 		?>
 		<div class="ke-admin-form">
 			<div style="display: flex; gap: 20px;">
@@ -212,6 +219,27 @@ class KE_Meta_Boxes {
 				<p style="flex: 1;">
 					<label for="KE_venue_english_name"><strong>English Name</strong></label><br>
 					<input type="text" name="KE_venue_english_name" id="KE_venue_english_name" value="<?php echo esc_attr( $english_name ); ?>" class="widefat">
+				</p>
+			</div>
+
+			<div style="display: flex; gap: 20px;">
+				<p style="flex: 1;">
+					<label for="ke_venue_governorate"><strong>Governorate (Egypt)</strong></label><br>
+					<select name="ke_venue_governorate" id="ke_venue_governorate" class="widefat ke-governorate-select">
+						<option value="">-- Select Governorate --</option>
+						<?php foreach ( $governorates as $gov ) : ?>
+							<option value="<?php echo $gov->term_id; ?>" <?php selected( in_array( $gov->term_id, $assigned_gov ), true ); ?>><?php echo esc_html( $gov->name ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</p>
+				<p style="flex: 1;">
+					<label for="ke_venue_city"><strong>City / Region</strong></label><br>
+					<select name="ke_venue_city" id="ke_venue_city" class="widefat ke-city-select">
+						<option value="">-- Select City --</option>
+						<?php foreach ( $cities as $city ) : ?>
+							<option value="<?php echo $city->term_id; ?>" <?php selected( in_array( $city->term_id, $assigned_city ), true ); ?>><?php echo esc_html( $city->name ); ?></option>
+						<?php endforeach; ?>
+					</select>
 				</p>
 			</div>
 
