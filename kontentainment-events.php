@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment Events
  * Plugin URI:  #
  * Description: A standalone editorial events directory for magazine websites.
- * Version:     1.0.0
+ * Version:     1.0.1
  * Author:      Antigravity
  * Author URI:  #
  * Text Domain: kontentainment-events
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Define constants
 define( 'KE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'KE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'KE_PLUGIN_VERSION', '1.0.0' );
+define( 'KE_PLUGIN_VERSION', '1.0.1' );
 
 /**
  * Main Kontentainment Events Class
