@@ -1,10 +1,10 @@
 <?php
 /**
  * Plugin Name: Kontentainment Events
- * Plugin URI:  #
- * Description: A standalone editorial events directory for magazine websites.
+ * Plugin URI:  https://github.com/kollectivco/KTEvents
+ * Description: A professional editorial events directory for magazine websites.
  * Version:     1.0.1
- * Author:      Antigravity
+ * Author:      Kollectiv
  * Author URI:  #
  * Text Domain: kontentainment-events
  * Domain Path: /languages
