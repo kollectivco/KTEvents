@@ -10,10 +10,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 
 	public function get_categories() {
+		$cats = [ 'ke-events' ];
 		if ( did_action( 'foxiz_loaded' ) || did_action( 'foxiz_core_loaded' ) ) {
-			return [ 'foxiz', 'foxiz_flex', 'ke-events' ];
+			$cats[] = 'foxiz';
+			$cats[] = 'foxiz_flex';
 		}
-		return [ 'ke-events' ];
+		return $cats;
 	}
 
 	/**

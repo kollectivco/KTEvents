@@ -32,9 +32,10 @@ class KE_Elementor {
 		$elements_manager->add_category(
 			'ke-events',
 			array(
-				'title' => 'KE Events',
-				'icon'  => 'fa fa-calendar',
-			)
+				'title' => 'KT Events',
+				'icon'  => 'eicon-calendar',
+			),
+			1 // High priority if supported
 		);
 	}
 
