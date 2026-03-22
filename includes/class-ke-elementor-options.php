@@ -100,6 +100,7 @@ class KE_Elementor_Options {
 			'16-9'  => '16:9 Wide',
 			'3-4'   => '3:4 Portrait',
 			'2-1'   => '2:1 Banner',
+			'9-16'  => '9:16 Vertical',
 			'custom' => 'Custom Ratio...',
 		];
 	}
