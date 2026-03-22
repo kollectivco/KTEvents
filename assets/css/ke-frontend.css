@@ -710,6 +710,30 @@
     }
 }
 
+@media (max-width: 768px) {
+    /* Hide Sidebar on Mobile */
+    .ke-sidebar-col {
+        display: none !important;
+    }
+    .ke-main-col {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Add Horizontal Gutter / Breathing Room */
+    .rb-container,
+    .ke-container {
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Hero Title Alignment */
+    .ke-hero-title {
+        font-size: 30px !important;
+    }
+}
+
 @media (max-width: 1024px) {
     .ke-single-hero-foxiz .ke-poster-box { flex: 0 0 100%; }
 }
