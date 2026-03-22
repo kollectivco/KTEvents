@@ -1,7 +1,7 @@
 <?php
 /**
- * Kontentainment Events GitHub Updater - v6.8 (STRICT AUDIT)
- * Native WordPress update notifications with specific error reporting.
+ * Kontentainment Events GitHub Updater - v1.3.19 (FIXED - ISOLATED IDENTITY)
+ * Orchestrates plugin updates specifically for this plugin only.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -18,27 +18,35 @@ class KE_Updater {
 
 	public function __construct( $plugin_file, $github_url ) {
 		$this->plugin_file = $plugin_file;
-		$this->plugin_slug = plugin_basename( $plugin_file );
-		$this->base_slug   = dirname( $this->plugin_slug );
+		$this->plugin_slug = plugin_basename( $plugin_file ); // kontentainment-events/kontentainment-events.php
+		$this->base_slug   = dirname( $this->plugin_slug );  // kontentainment-events
 		
 		// Parse repo path
 		$path = trim( wp_parse_url( $github_url, PHP_URL_PATH ), '/' );
 		$this->github_repo = $path;
 
-		// Token support
+		// Token support (for private repo testing)
 		$this->access_token = defined( 'KE_GITHUB_TOKEN' ) ? KE_GITHUB_TOKEN : get_option( 'ke_github_token', '' );
 
-		add_filter( 'site_transient_update_plugins', array( $this, 'check_update' ) );
-		add_filter( 'plugins_api', array( $this, 'plugin_info' ), 20, 3 );
-		add_filter( 'upgrader_source_selection', array( $this, 'fix_source_folder' ), 10, 3 );
-		add_filter( 'auto_update_plugin', array( $this, 'maybe_auto_update' ), 20, 2 );
+		// Only register hooks if we have valid slugs
+		if ( ! empty( $this->plugin_slug ) && ! empty( $this->base_slug ) ) {
+			add_filter( 'site_transient_update_plugins', array( $this, 'check_update' ) );
+			add_filter( 'plugins_api', array( $this, 'plugin_info' ), 20, 3 );
+			add_filter( 'upgrader_source_selection', array( $this, 'fix_source_folder' ), 10, 4 );
+			add_filter( 'auto_update_plugin', array( $this, 'maybe_auto_update' ), 20, 2 );
+		}
 	}
 
+	/**
+	 * Inject our plugin into the update transient
+	 */
 	public function check_update( $transient ) {
 		if ( empty( $transient->checked ) ) return $transient;
 
 		$remote = $this->get_remote_data();
-		if ( ! $remote || is_wp_error( $remote ) ) return $transient;
+		if ( ! $remote || is_wp_error( $remote ) || empty( $remote->version ) || '0.0.0' === $remote->version ) {
+			return $transient;
+		}
 
 		$new_version = ltrim( $remote->version, 'v' );
 		if ( version_compare( KE_PLUGIN_VERSION, $new_version, '<' ) ) {
@@ -55,6 +63,9 @@ class KE_Updater {
 		return $transient;
 	}
 
+	/**
+	 * Provide plugin information for the "View Details" modal
+	 */
 	public function plugin_info( $res, $action, $args ) {
 		if ( 'plugin_information' !== $action || $args->slug !== $this->base_slug ) return $res;
 
@@ -81,21 +92,49 @@ class KE_Updater {
 		return $update;
 	}
 
-	public function fix_source_folder( $source, $remote_source, $upgrader ) {
+	/**
+	 * CRITICAL FIX: Ensure the source folder selection ONLY targets this plugin.
+	 * Hijacking unrelated zip uploads was caused by lack of scope checking here.
+	 */
+	public function fix_source_folder( $source, $remote_source, $upgrader, $hook_extra ) {
 		if ( ! $source || ! $this->base_slug ) return $source;
-		if ( strpos( $source, $this->base_slug ) !== false ) return $source;
 		
+		// 1. Isolate to plugin skip if it already contains our slug correctly
+		if ( strpos( basename($source), $this->base_slug ) === 0 && basename($source) === $this->base_slug ) {
+			return $source;
+		}
+
+		// 2. STRICTOR CHECK: Is this upgrader actually targeting OUR plugin?
+		// Check skin->plugin (standard for single updates)
+		$target_item = '';
+		if ( isset( $upgrader->skin->plugin ) ) {
+			$target_item = $upgrader->skin->plugin;
+		} elseif ( isset( $hook_extra['plugin'] ) ) {
+			$target_item = $hook_extra['plugin'];
+		}
+
+		// If we can't confirm this is our plugin, bail immediately.
+		if ( $target_item !== $this->plugin_slug ) {
+			return $source;
+		}
+
+		// 3. Perform the rename only for our plugin
 		global $wp_filesystem;
 		$new_source = trailingslashit( $remote_source ) . $this->base_slug . '/';
-		$wp_filesystem->move( $source, $new_source );
-		return $new_source;
+		
+		if ( $wp_filesystem->move( $source, $new_source ) ) {
+			return $new_source;
+		}
+
+		return $source;
 	}
 
 	/**
 	 * Fetch remote data with granular error tracking
 	 */
 	public function get_remote_data( $force = false ) {
-		$cached = get_transient( 'ke_github_update_data' );
+		$cache_key = 'ke_gh_' . md5($this->github_repo) . '_data';
+		$cached = get_transient( $cache_key );
 		if ( false !== $cached && ! $force ) return $cached;
 
 		$remote = new stdClass();
@@ -156,25 +195,30 @@ class KE_Updater {
 	}
 
 	private function api_get( $url ) {
-		return wp_remote_get( $url, array(
+		$args = array(
 			'timeout' => 20,
 			'headers' => array(
 				'Accept'     => 'application/vnd.github.v3+json',
 				'User-Agent' => 'KTEvents-Updater/1.0; ' . get_bloginfo( 'url' ),
 			),
-		));
+		);
+		if ( $this->access_token ) {
+			$args['headers']['Authorization'] = 'token ' . $this->access_token;
+		}
+		return wp_remote_get( $url, $args );
 	}
 
 	private function cache_remote( $remote ) {
-		set_transient( 'ke_github_update_data', $remote, HOUR_IN_SECONDS * 6 );
-		set_transient( 'ke_last_check_time', date_i18n( get_option('date_format') . ' H:i:s' ), DAY_IN_SECONDS );
+		$cache_key = 'ke_gh_' . md5($this->github_repo) . '_data';
+		set_transient( $cache_key, $remote, HOUR_IN_SECONDS * 6 );
+		set_transient( 'ke_last_check_' . md5($this->github_repo), date_i18n( get_option('date_format') . ' H:i:s' ), DAY_IN_SECONDS );
 	}
 
 	private function get_asset_url( $data ) {
 		if ( ! empty( $data->assets ) ) {
 			foreach ( $data->assets as $asset ) {
 				// Match any ZIP file in the release assets
-				if ( strpos( $asset->name, '.zip' ) !== false ) {
+				if ( strpos( strtolower($asset->name), '.zip' ) !== false ) {
 					return $asset->browser_download_url;
 				}
 			}

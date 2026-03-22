@@ -10,6 +10,7 @@
  * Domain Path: /languages
  * GitHub Plugin URI: https://github.com/kollectivco/KTEvents
  * Primary Branch: main
+ * Update URI: false
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
