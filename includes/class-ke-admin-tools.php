@@ -48,7 +48,7 @@ class KE_Admin_Tools {
 	 */
 	public function add_plugin_row_action( $links ) {
 		$url = wp_nonce_url( admin_url( 'admin-post.php?action=ke_check_update' ), 'ke_check_update_nonce' );
-		$check_link = '<a href="' . esc_url( $url ) . '" style="color: #3b82f6; font-weight: 600;">Check for updates</a>';
+		$check_link = '<a href="' . esc_url( $url ) . '" style="color: #111827; font-weight: 700; text-decoration: underline;">Check for updates</a>';
 		array_unshift( $links, $check_link );
 		return $links;
 	}
@@ -187,7 +187,7 @@ class KE_Admin_Tools {
 		</div>
 		<style>
 			.ke-tool-card { background: #fff; border: 1px solid #ccd0d4; padding: 20px; margin-bottom: 20px; border-radius: 4px; }
-			.ke-tag-version { background: #3b82f6; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
+			.ke-tag-version { background: #111827; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
 			.ke-notice-warning { color: #856404; background-color: #fff3cd; padding: 10px; border-radius: 4px; border: 1px solid #ffeeba; }
 			.ke-notice-info { color: #0c5460; background-color: #d1ecf1; padding: 10px; border-radius: 4px; border: 1px solid #bee5eb; }
 			.ke-meta-value { color: #111827; font-weight: 600; }

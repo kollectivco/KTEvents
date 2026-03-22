@@ -5,7 +5,7 @@
 :root {
     --ke-primary: #1b212c;
     --ke-secondary: #606770;
-    --ke-accent: #33a7e0; /* Foxiz Blue */
+    --ke-accent: #111827; /* Rich Monochrome Black */
     --ke-bg-soft: #f4f6f8;
     --ke-border: #eaedf2;
     --ke-radius: 8px;
@@ -158,9 +158,9 @@
 }
 
 .ke-register-btn:hover {
-    background: var(--ke-accent);
+    background: #4b5563; /* Medium grey hover for buttons */
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(51, 167, 224, 0.2);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 /*
@@ -213,7 +213,7 @@
 .ke-title-divider {
     width: 60px;
     height: 3px;
-    background: var(--ke-accent);
+    background: #111827; /* Monochrome Divider */
     margin-bottom: 40px;
 }
 
@@ -271,7 +271,7 @@
 .ke-event-card-rb:hover {
     transform: translateY(-8px);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
-    border-color: var(--ke-accent);
+    border-color: #111827;
 }
 
 .ke-rb-img {
@@ -533,10 +533,10 @@
 }
 
 .ke-pill-item.active {
-    background: var(--ke-accent);
+    background: #111827; /* Monochrome Active Pill */
     color: #ffffff;
-    border-color: var(--ke-accent);
-    box-shadow: 0 8px 20px rgba(51, 167, 224, 0.25);
+    border-color: #111827;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 /* Layer 3: Refinement Control Area */
@@ -1208,9 +1208,9 @@
 }
 
 .ke-show-more-btn:hover {
-    background: var(--ke-accent);
+    background: #4b5563; /* Neutral grey hover */
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(51, 167, 224, 0.25);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 .ke-item-revealed {
