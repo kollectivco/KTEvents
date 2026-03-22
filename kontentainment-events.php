@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment Events
  * Plugin URI:  https://github.com/kollectivco/KTEvents
  * Description: A professional editorial events directory for magazine websites.
- * Version:     1.3.18
+ * Version:     1.3.19
  * Author:      Kollectiv
  * Author URI:  https://github.com/kollectivco
  * Text Domain: kontentainment-events
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Define constants
 define( 'KE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'KE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'KE_PLUGIN_VERSION', '1.3.18' );
+define( 'KE_PLUGIN_VERSION', '1.3.19' );
 
 /**
  * Main Kontentainment Events Class
@@ -100,6 +100,9 @@ class KE_Events {
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-diagnostics.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-upgrades.php';
 
+		// SEO Module
+		require_once KE_PLUGIN_DIR . 'includes/SEO/class-ke-seo-manager.php';
+
 		// Elementor integration is now deferred to init hook for reliability
 	}
 
@@ -117,8 +120,18 @@ class KE_Events {
 		// Delayed Elementor Load
 		add_action( 'init', array( $this, 'init_elementor' ) );
 		
+		// Initialize SEO
+		add_action( 'init', array( $this, 'init_seo' ) );
+		
 		// Cache Invalidation Hook
 		add_action( 'save_post', array( KE_Cache::get_instance(), 'invalidate_post_cache' ) );
+	}
+
+	/**
+	 * Initialize SEO Module
+	 */
+	public function init_seo() {
+		KE_SEO_Manager::get_instance();
 	}
 
 	/**
