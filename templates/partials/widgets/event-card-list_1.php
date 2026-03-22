@@ -20,13 +20,10 @@ $date       = ke_get_event_date_display( $event_id );
 				<img src="<?php echo KE_PLUGIN_URL . 'assets/images/event-placeholder.jpg'; ?>" alt="<?php the_title(); ?>">
 			<?php endif; ?>
 		</a>
-		<div class="ke-card-badge ke-status-tag-sm"><?php echo ke_get_event_status_label(); ?></div>
+		<div class="ke-card-badge ke-card-category-badge"><?php echo esc_html( $cat_name ); ?></div>
 	</div>
 
 	<div class="ke-card-content">
-		<?php if ( 'yes' === ($settings['meta_category'] ?? 'yes') ) : ?>
-			<div class="ke-card-cat"><?php echo esc_html( $cat_name ); ?></div>
-		<?php endif; ?>
 
 		<h3 class="ke-card-title">
 			<a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>

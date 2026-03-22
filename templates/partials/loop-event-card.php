@@ -29,12 +29,11 @@ $icon_venue    = '<svg class="ke-svg-icon" fill="none" stroke="currentColor" vie
 			<img src="<?php echo KE_PLUGIN_URL . 'assets/images/event-placeholder.jpg'; ?>" alt="<?php the_title(); ?>">
 		<?php endif; ?>
 		
-		<div class="ke-status-badge"><?php echo esc_html( $status ); ?></div>
+		<div class="ke-card-category-badge"><?php echo esc_html( $cat_name ); ?></div>
 	</div>
 
 	<!-- Bottom Content Area -->
 	<div class="ke-rb-body">
-		<div class="ke-card-cat"><?php echo esc_html( $cat_name ); ?></div>
 		
 		<h3 class="ke-card-title">
 			<a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
