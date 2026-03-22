@@ -49,13 +49,7 @@ $icon_venue    = '<svg class="ke-svg-icon" fill="none" stroke="currentColor" vie
 				<div class="ke-rb-meta-node">
 					<span class="ke-meta-icon"><?php echo $icon_venue; ?></span>
 					<span class="ke-card-venue">
-						<?php 
-						echo esc_html( $venue_name ); 
-						$cities = wp_get_object_terms( $venue_id, 'event_city' );
-						if ( ! empty( $cities ) && ! is_wp_error( $cities ) ) {
-							echo ' • ' . esc_html( $cities[0]->name );
-						}
-						?>
+						<?php echo esc_html( $venue_name ); ?>
 					</span>
 				</div>
 			<?php endif; ?>
