@@ -67,6 +67,33 @@ class KE_Query {
 	/**
 	 * Build Event Query Args
 	 */
+	/**
+	 * Get upcoming or past events for a venue
+	 */
+	public function get_venue_events( $venue_id, $type = 'upcoming', $limit = -1 ) {
+		$args = array(
+			'venue_id'       => $venue_id,
+			'posts_per_page' => $limit,
+			'show_past'      => ( 'past' === $type )
+		);
+		
+		if ( 'past' === $type ) {
+			$args['meta_query'] = array(
+				array(
+					'key'     => 'KE_event_date',
+					'value'   => current_time( 'Y-m-d' ),
+					'compare' => '<',
+					'type'    => 'DATE'
+				)
+			);
+			$args['ke_sort'] = 'date_desc';
+		} else {
+			$args['ke_sort'] = 'date_asc';
+		}
+
+		return $this->get_events( $args );
+	}
+
 	public function get_filtered_events_args( $overrides = array() ) {
 		$input = empty( $overrides ) || (isset( $overrides['paged'] ) && !isset($overrides['is_widget'])) ? $_GET : $overrides;
 		
