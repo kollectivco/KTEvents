@@ -444,15 +444,18 @@ class KE_Admin {
 		switch ( $column ) {
 			case 'ke_date':
 				$date = get_post_meta( $post_id, 'KE_event_date', true );
-				echo esc_html( $date ? date_i18n( get_option( 'date_format' ), strtotime( $date ) ) : '—' );
+				if ( is_array( $date ) ) $date = reset( $date );
+				echo esc_html( ( $date && is_string( $date ) ) ? date_i18n( get_option( 'date_format' ), strtotime( $date ) ) : '—' );
 				break;
 			case 'ke_status':
 				$status = get_post_meta( $post_id, 'KE_event_status', true );
-				echo esc_html( ucfirst( $status ?: 'Upcoming' ) );
+				if ( is_array( $status ) ) $status = reset( $status );
+				echo esc_html( ucfirst( (string)$status ?: 'Upcoming' ) );
 				break;
 			case 'ke_venue':
 				$venue_id = get_post_meta( $post_id, 'KE_event_venue_id', true );
-				if ( $venue_id ) {
+				if ( is_array( $venue_id ) ) $venue_id = reset( $venue_id );
+				if ( $venue_id && get_post_status( $venue_id ) ) {
 					echo '<a href="' . get_edit_post_link( $venue_id ) . '">' . esc_html( get_the_title( $venue_id ) ) . '</a>';
 				} else {
 					echo '—';
@@ -460,11 +463,11 @@ class KE_Admin {
 				break;
 			case 'ke_city':
 				$cities = get_the_term_list( $post_id, 'event_city', '', ', ', '' );
-				echo $cities ?: '—';
+				echo ( ! is_wp_error( $cities ) && ! empty( $cities ) ) ? $cities : '—';
 				break;
 			case 'ke_governorate':
 				$govs = get_the_term_list( $post_id, 'event_governorate', '', ', ', '' );
-				echo $govs ?: '—';
+				echo ( ! is_wp_error( $govs ) && ! empty( $govs ) ) ? $govs : '—';
 				break;
 			case 'ke_featured':
 				$featured = get_post_meta( $post_id, 'KE_event_featured', true );
@@ -489,17 +492,22 @@ class KE_Admin {
 	public function venue_column_content( $column, $post_id ) {
 		switch ( $column ) {
 			case 'ke_city':
-				echo get_the_term_list( $post_id, 'event_city', '', ', ', '' ) ?: '—';
+				$terms = get_the_term_list( $post_id, 'event_city', '', ', ', '' );
+				echo ( ! is_wp_error( $terms ) && ! empty( $terms ) ) ? $terms : '—';
 				break;
 			case 'ke_area':
-				echo get_the_term_list( $post_id, 'event_area', '', ', ', '' ) ?: '—';
+				$terms = get_the_term_list( $post_id, 'event_area', '', ', ', '' );
+				echo ( ! is_wp_error( $terms ) && ! empty( $terms ) ) ? $terms : '—';
 				break;
 			case 'ke_phone':
-				echo esc_html( get_post_meta( $post_id, 'KE_venue_phone', true ) ?: '—' );
+				$phone = get_post_meta( $post_id, 'KE_venue_phone', true );
+				if ( is_array( $phone ) ) $phone = reset( $phone );
+				echo esc_html( (string)$phone ?: '—' );
 				break;
 			case 'ke_website':
 				$website = get_post_meta( $post_id, 'KE_venue_website', true );
-				if ( $website ) {
+				if ( is_array( $website ) ) $website = reset( $website );
+				if ( $website && is_string( $website ) ) {
 					echo '<a href="' . esc_url( $website ) . '" target="_blank">Visit Site</a>';
 				} else {
 					echo '—';
