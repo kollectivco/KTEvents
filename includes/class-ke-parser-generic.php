@@ -51,14 +51,20 @@ class KE_Parser_Generic implements KE_Parser_Interface {
 			'errors'            => array(),
 		);
 
-		if ( empty( $html ) ) {
-			$result['errors'][] = 'Empty HTML provided.';
+		if ( empty( $html ) || strlen( $html ) < 10 ) {
+			$result['errors'][] = 'Invalid or empty HTML provided.';
 			return $result;
 		}
 
 		// Use PHP's built-in DOMDocument for basic parsing
+		libxml_use_internal_errors( true );
 		$dom = new DOMDocument();
-		@$dom->loadHTML( mb_convert_encoding( $html, 'HTML-ENTITIES', 'UTF-8' ) );
+		
+		// Attempt to load. Convert encoding to entities to handle UTF-8 correctly in DOMDocument
+		$encoded_html = mb_convert_encoding( $html, 'HTML-ENTITIES', 'UTF-8' );
+		@$dom->loadHTML( $encoded_html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+		
+		libxml_clear_errors();
 		$xpath = new DOMXPath( $dom );
 
 		// 1. Extract Title

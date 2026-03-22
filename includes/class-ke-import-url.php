@@ -38,73 +38,84 @@ class KE_Import_URL {
 			wp_send_json_error( array( 'message' => 'URL is required.' ) );
 		}
 
-		// 1. Fetch HTML
-		$fetch_result = KE_Scraper::get_instance()->fetch( $url );
-		if ( is_wp_error( $fetch_result ) ) {
-			wp_send_json_error( array( 'message' => $fetch_result->get_error_message() ) );
-		}
+		try {
+			// Clear any possible early output that could break JSON
+			if ( ob_get_length() ) ob_clean();
 
-		// 2. Select Parser
-		$parser = KE_Parser_Registry::get_instance()->get_parser_for_url( $url );
-		if ( ! $parser ) {
-			wp_send_json_error( array( 'message' => 'No suitable parser found for this URL.' ) );
-		}
-
-		// 3. Parse Data
-		$parsed_data = $parser->parse( $fetch_result['html'], $url );
-
-		// 4. Duplicate Check
-		$duplicates = KE_Duplicates::get_instance()->check( $parsed_data['fields'] );
-
-		// 5. Venue Match & Location Detection
-		$venue_id = 0;
-		$detected_location = array();
-		
-		if ( ! empty( $parsed_data['fields']['venue_name'] ) ) {
-			$venue = get_page_by_title( $parsed_data['fields']['venue_name'], OBJECT, 'venue' );
-			if ( $venue ) {
-				$venue_id = $venue->ID;
-				
-				// Optional: get saved locations from existing venue
-				$govs   = wp_get_object_terms( $venue_id, 'event_governorate' );
-				$cities = wp_get_object_terms( $venue_id, 'event_city' );
-				
-				$detected_location = array(
-					'gov_id'     => ! empty( $govs ) ? $govs[0]->term_id : 0,
-					'city_id'    => ! empty( $cities ) ? $cities[0]->term_id : 0,
-					'confidence' => 100,
-					'source'     => 'existing_venue'
-				);
+			// 1. Fetch HTML
+			$fetch_result = KE_Scraper::get_instance()->fetch( $url );
+			if ( is_wp_error( $fetch_result ) ) {
+				wp_send_json_error( array( 'message' => $fetch_result->get_error_message() ) );
 			}
-		}
 
-		// Fallback to address parsing if confidence is low or venue not found
-		if ( empty( $detected_location['gov_id'] ) && ! empty( $parsed_data['fields']['address'] ) ) {
-			$detected_location = KE_Location_Matcher::get_instance()->detect( $parsed_data['fields']['address'] );
+			// 2. Select Parser
+			$parser = KE_Parser_Registry::get_instance()->get_parser_for_url( $url );
+			if ( ! $parser ) {
+				wp_send_json_error( array( 'message' => 'No suitable parser found for this URL.' ) );
+			}
+
+			// 3. Parse Data
+			$parsed_data = $parser->parse( $fetch_result['html'], $url );
+			if ( empty( $parsed_data ) || ! is_array( $parsed_data ) ) {
+				throw new Exception( 'Parser returned invalid data structure.' );
+			}
+
+			// 4. Duplicate Check
+			$duplicates = KE_Duplicates::get_instance()->check( $parsed_data['fields'] );
+
+			// 5. Venue Match & Location Detection
+			$venue_id = 0;
+			$detected_location = array();
 			
-			// Use the scrubbed address for the preview if we detected something
-			if ( ! empty( $detected_location['cleaned_address'] ) ) {
-				$parsed_data['fields']['address'] = $detected_location['cleaned_address'];
+			if ( ! empty( $parsed_data['fields']['venue_name'] ) ) {
+				$venue = get_page_by_title( $parsed_data['fields']['venue_name'], OBJECT, 'venue' );
+				if ( $venue ) {
+					$venue_id = $venue->ID;
+					
+					// Optional: get saved locations from existing venue
+					$govs   = wp_get_object_terms( $venue_id, 'event_governorate' );
+					$cities = wp_get_object_terms( $venue_id, 'event_city' );
+					
+					$detected_location = array(
+						'gov_id'     => ! empty( $govs ) ? $govs[0]->term_id : 0,
+						'city_id'    => ! empty( $cities ) ? $cities[0]->term_id : 0,
+						'confidence' => 100,
+						'source'     => 'existing_venue'
+					);
+				}
 			}
-		}
-		
-		// Log fetching/parsing
-		KE_Logs::get_instance()->log( array(
-			'source_url'        => $url,
-			'canonical_url'     => $parsed_data['canonical_url'],
-			'source_name'       => $parsed_data['source_name'],
-			'parser_used'       => $parsed_data['parser_name'],
-			'parser_confidence' => $parsed_data['parser_confidence'],
-			'status'            => 'previewed',
-			'message'           => 'Event successfully fetched and parsed for preview.',
-		) );
 
-		wp_send_json_success( array(
-			'data'              => $parsed_data,
-			'duplicates'        => $duplicates,
-			'matched_venue_id'  => $venue_id,
-			'detected_location' => $detected_location,
-		) );
+			// Fallback to address parsing if confidence is low or venue not found
+			if ( ( empty( $detected_location ) || empty( $detected_location['gov_id'] ) ) && ! empty( $parsed_data['fields']['address'] ) ) {
+				$detected_location = KE_Location_Matcher::get_instance()->detect( $parsed_data['fields']['address'] );
+				
+				// Use the scrubbed address for the preview if we detected something
+				if ( ! empty( $detected_location['cleaned_address'] ) ) {
+					$parsed_data['fields']['address'] = $detected_location['cleaned_address'];
+				}
+			}
+			
+			// Log fetching/parsing
+			KE_Logs::get_instance()->log( array(
+				'source_url'        => $url,
+				'canonical_url'     => $parsed_data['canonical_url'] ?? '',
+				'source_name'       => $parsed_data['source_name'] ?? '',
+				'parser_used'       => $parsed_data['parser_name'] ?? 'unknown',
+				'parser_confidence' => $parsed_data['parser_confidence'] ?? 0,
+				'status'            => 'previewed',
+				'message'           => 'Event successfully fetched and parsed for preview.',
+			) );
+
+			wp_send_json_success( array(
+				'data'              => $parsed_data,
+				'duplicates'        => $duplicates,
+				'matched_venue_id'  => $venue_id,
+				'detected_location' => $detected_location,
+			) );
+
+		} catch ( Exception $e ) {
+			wp_send_json_error( array( 'message' => 'Import Error: ' . $e->getMessage() ) );
+		}
 	}
 
 	/**

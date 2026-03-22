@@ -255,31 +255,10 @@ class KE_Admin {
 											<label>Address</label>
 											<input type="text" name="address" id="preview_address" class="widefat">
 										</div>
-										<div class="ke-grid-2">
-											<div class="ke-form-row">
-												<label>Governorate</label>
-												<select name="governorate_id" id="preview_governorate_id" class="widefat">
-													<option value="">-- Choose Governorate --</option>
-													<?php foreach ($governorates as $term) : ?>
-														<option value="<?php echo $term->term_id; ?>"><?php echo $term->name; ?></option>
-													<?php endforeach; ?>
-												</select>
-											</div>
-											<div class="ke-form-row">
-												<label>City / Town</label>
-												<select name="city_id" id="preview_city_id" class="widefat">
-													<option value="">-- Choose City --</option>
-													<?php foreach (get_terms('event_city', array('hide_empty' => false)) as $term) : ?>
-														<option value="<?php echo $term->term_id; ?>"><?php echo $term->name; ?></option>
-													<?php endforeach; ?>
-												</select>
-											</div>
-										</div>
 										<div class="ke-form-row">
 											<label>Google Maps Link</label>
 											<input type="url" name="official_url" id="preview_official_url" placeholder="https://maps.google.com/..." class="widefat">
 										</div>
-										<div id="ke-location-match-status"></div>
 									</div>
 								</div>
 							</div>

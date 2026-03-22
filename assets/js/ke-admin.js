@@ -57,15 +57,25 @@ jQuery(document).ready(function($) {
             type: 'POST',
             data: Object.fromEntries(formData),
             success: function(response) {
+                console.log('KE Import: Response received', response);
+                
                 if (response.success) {
-                    populatePreview(response.data);
+                    try {
+                        populatePreview(response.data);
+                    } catch (e) {
+                        console.error('KE Import: Population Error', e);
+                        errorNotice.fadeIn().text('Data parsing error: ' + e.message);
+                        fetchSpinner.removeClass('is-active');
+                    }
                 } else {
-                    errorNotice.fadeIn().text(response.data.message || 'An unknown error occurred.');
+                    const msg = response.data && response.data.message ? response.data.message : 'Remote fetch failed.';
+                    errorNotice.fadeIn().text(msg);
                     $('html, body').animate({ scrollTop: errorNotice.offset().top - 100 }, 500);
                 }
             },
-            error: function() {
-                errorNotice.fadeIn().text('Connection error. Please try again.');
+            error: function(xhr, status, error) {
+                console.error('KE Import: AJAX Error', {status, error, response: xhr.responseText});
+                errorNotice.fadeIn().text('Connection error (' + (error || status) + '). Check console for details.');
             },
             complete: function() {
                 fetchBtn.prop('disabled', false);
@@ -78,7 +88,7 @@ jQuery(document).ready(function($) {
      * Fill the preview form with audited data
      */
     function populatePreview(payload) {
-        const { data, duplicates, matched_venue_id } = payload;
+        const { data, duplicates, matched_venue_id, detected_location } = payload;
         const fields = data.fields;
 
         // Core Meta
