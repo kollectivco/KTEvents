@@ -50,7 +50,7 @@ class KE_Taxonomies {
 		) );
 
 		// Event Governorates (Shared)
-		register_taxonomy( 'event_governorate', array( 'event', 'venue' ), array(
+		register_taxonomy( 'event_governorate', 'venue', array(
 			'labels'            => array(
 				'name'          => 'Governorates',
 				'singular_name' => 'Governorate',
@@ -73,7 +73,7 @@ class KE_Taxonomies {
 		) );
 
 		// Event Cities (Shared)
-		register_taxonomy( 'event_city', array( 'event', 'venue' ), array(
+		register_taxonomy( 'event_city', 'venue', array(
 			'labels'            => array(
 				'name'          => 'Cities',
 				'singular_name' => 'City',

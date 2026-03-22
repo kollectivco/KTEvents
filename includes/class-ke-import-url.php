@@ -81,6 +81,11 @@ class KE_Import_URL {
 		// Fallback to address parsing if confidence is low or venue not found
 		if ( empty( $detected_location['gov_id'] ) && ! empty( $parsed_data['fields']['address'] ) ) {
 			$detected_location = KE_Location_Matcher::get_instance()->detect( $parsed_data['fields']['address'] );
+			
+			// Use the scrubbed address for the preview if we detected something
+			if ( ! empty( $detected_location['cleaned_address'] ) ) {
+				$parsed_data['fields']['address'] = $detected_location['cleaned_address'];
+			}
 		}
 		
 		// Log fetching/parsing
@@ -152,7 +157,7 @@ class KE_Import_URL {
 			}
 		}
 
-		// Handle Venue Creation
+		// Handle Venue Creation or Update Location
 		$final_venue_id = $fields['venue_id'];
 		if ( 'new' === $fields['venue_mode'] && ! empty( $fields['venue_name'] ) ) {
 			$final_venue_id = wp_insert_post( array(
@@ -165,11 +170,13 @@ class KE_Import_URL {
 				update_post_meta( $final_venue_id, 'KE_venue_address', $fields['address'] );
 				update_post_meta( $final_venue_id, 'KE_venue_phone', $fields['phone'] );
 				update_post_meta( $final_venue_id, 'KE_venue_website', $fields['official_url'] );
-				
-				// Assign locations to venue
-				if ( $fields['governorate_id'] ) wp_set_object_terms( $final_venue_id, $fields['governorate_id'], 'event_governorate' );
-				if ( $city_id ) wp_set_object_terms( $final_venue_id, $city_id, 'event_city' );
 			}
+		}
+
+		// Assign locations to venue (Always, to support override/sync)
+		if ( $final_venue_id && ! is_wp_error( $final_venue_id ) ) {
+			if ( $fields['governorate_id'] ) wp_set_object_terms( $final_venue_id, $fields['governorate_id'], 'event_governorate' );
+			if ( $city_id ) wp_set_object_terms( $final_venue_id, $city_id, 'event_city' );
 		}
 
 		// Create or Update Event
@@ -226,8 +233,6 @@ class KE_Import_URL {
 
 		// Assign Taxonomies to Event
 		if ( $fields['category_id'] ) wp_set_object_terms( $event_id, $fields['category_id'], 'event_category' );
-		if ( $fields['governorate_id'] ) wp_set_object_terms( $event_id, $fields['governorate_id'], 'event_governorate' );
-		if ( $city_id ) wp_set_object_terms( $event_id, $city_id, 'event_city' );
 
 		// Image Sideloading
 		if ( ! empty( $fields['image_url'] ) && ( isset( $_POST['sideload_image'] ) || get_option('ke_import_settings')['auto_sideload_image'] ) ) {

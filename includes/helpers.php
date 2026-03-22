@@ -87,3 +87,29 @@ function ke_count_venue_upcoming_events( $venue_id ) {
 
 	return $count;
 }
+
+/**
+ * Get full location display for a venue (Address, City, Gov)
+ */
+function ke_get_venue_location_display( $venue_id ) {
+	if ( ! $venue_id ) {
+		return '';
+	}
+
+	$address = get_post_meta( $venue_id, 'KE_venue_address', true );
+	$cities  = wp_get_object_terms( $venue_id, 'event_city' );
+	$govs    = wp_get_object_terms( $venue_id, 'event_governorate' );
+
+	$parts = array();
+	if ( $address ) {
+		$parts[] = $address;
+	}
+	if ( ! empty( $cities ) && ! is_wp_error( $cities ) ) {
+		$parts[] = $cities[0]->name;
+	}
+	if ( ! empty( $govs ) && ! is_wp_error( $govs ) ) {
+		$parts[] = $govs[0]->name;
+	}
+
+	return implode( ', ', $parts );
+}

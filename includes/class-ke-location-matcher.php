@@ -19,6 +19,38 @@ class KE_Location_Matcher {
 	}
 
 	/**
+	 * Scrub detected locations from address to keep it clean
+	 */
+	public function scrub_location_from_address( $address, $gov_name, $city_name ) {
+		if ( empty( $address ) ) return '';
+
+		$clean = $address;
+
+		// Normalize comparison
+		$gov_q = preg_quote( $gov_name, '/' );
+		$city_q = preg_quote( $city_name, '/' );
+
+		// 1. Remove Gov if it appears at the end or as a segment
+		if ( ! empty( $gov_name ) ) {
+			// Try trailing segment: "Somabay, Hurghada, Red Sea" -> "Somabay, Hurghada"
+			$clean = preg_replace( '/,\s*' . $gov_q . '\s*$/i', '', $clean );
+			// Try space: "Cairo Egypt"
+			$clean = preg_replace( '/\s+' . $gov_q . '\s*$/i', '', $clean );
+		}
+
+		// 2. Remove City
+		if ( ! empty( $city_name ) ) {
+			$clean = preg_replace( '/,\s*' . $city_q . '\s*$/i', '', $clean );
+			$clean = preg_replace( '/\s+' . $city_q . '\s*$/i', '', $clean );
+		}
+
+		// Final trim
+		$clean = rtrim( trim( $clean ), ',' );
+
+		return $clean;
+	}
+
+	/**
 	 * Detect Governorate and City from an address string
 	 * 
 	 * @param string $address The raw address string
@@ -27,26 +59,23 @@ class KE_Location_Matcher {
 	public function detect( $address ) {
 		if ( empty( $address ) ) {
 			return array(
-				'gov_id'     => 0,
-				'gov_name'   => '',
-				'city_id'    => 0,
-				'city_name'  => '',
-				'confidence' => 0
+				'gov_id'          => 0,
+				'gov_name'        => '',
+				'city_id'         => 0,
+				'city_name'       => '',
+				'confidence'      => 0,
+				'cleaned_address' => ''
 			);
 		}
 
-		// 1. Normalize address
+		// ... (keep normalization logic)
 		$clean_address = html_entity_decode( $address, ENT_QUOTES, 'UTF-8' );
 		$clean_address = preg_replace( '/\s+/', ' ', $clean_address );
-		
-		// Strip postal codes (Egypt usually 5 digits)
 		$clean_address = preg_replace( '/\b\d{5}\b/', '', $clean_address );
 		
-		// Strip repeat words (often happens in messy imports)
 		$parts = array_map( 'trim', explode( ',', $clean_address ) );
 		$parts = array_unique( $parts );
-		$clean_address = implode( ' ', $parts );
-		$clean_address = strtolower( $clean_address );
+		$search_pool = strtolower( implode( ' ', $parts ) );
 
 		$governorates = get_terms( array(
 			'taxonomy'   => 'event_governorate',
@@ -56,28 +85,21 @@ class KE_Location_Matcher {
 		$detected_gov = null;
 		$detected_city = null;
 
-		// 2. Map of "Noise" vs "Signal"
-		// If address contains "Red Sea", prioritize it over "Cairo" if both appear
-		// (Generic logic: longer names or specific regions might have higher signal)
 		$gov_hits = array();
 		foreach ( $governorates as $gov ) {
 			$name = strtolower( $gov->name );
-			if ( preg_match( '/\b' . preg_quote( $name, '/' ) . '\b/i', $clean_address ) ) {
+			if ( preg_match( '/\b' . preg_quote( $name, '/' ) . '\b/i', $search_pool ) ) {
 				$gov_hits[] = $gov;
 			}
 		}
 
-		// Heuristic: If multiple Govs found, pick the most specific/longer name? 
-		// Or if "Red Sea" and "Cairo" both exist, and Hurghada is there, Red Sea is the winner.
 		if ( ! empty( $gov_hits ) ) {
-			// Sort by length desc: "South Sinai" before "Sinai"
 			usort( $gov_hits, function($a, $b) {
 				return strlen($b->name) - strlen($a->name);
 			});
 			$detected_gov = $gov_hits[0];
 		}
 
-		// 3. Find City
 		if ( $detected_gov ) {
 			$cities = get_terms( array(
 				'taxonomy'   => 'event_city',
@@ -93,14 +115,13 @@ class KE_Location_Matcher {
 
 			foreach ( $cities as $city ) {
 				$name = strtolower( $city->name );
-				if ( preg_match( '/\b' . preg_quote( $name, '/' ) . '\b/i', $clean_address ) ) {
+				if ( preg_match( '/\b' . preg_quote( $name, '/' ) . '\b/i', $search_pool ) ) {
 					$detected_city = $city;
 					break;
 				}
 			}
 		}
 
-		// 4. Backtrack: If no Gov found, but City found
 		if ( ! $detected_gov ) {
 			$all_cities = get_terms( array(
 				'taxonomy'   => 'event_city',
@@ -109,7 +130,7 @@ class KE_Location_Matcher {
 
 			foreach ( $all_cities as $city ) {
 				$name = strtolower( $city->name );
-				if ( preg_match( '/\b' . preg_quote( $name, '/' ) . '\b/i', $clean_address ) ) {
+				if ( preg_match( '/\b' . preg_quote( $name, '/' ) . '\b/i', $search_pool ) ) {
 					$detected_city = $city;
 					$gov_id = get_term_meta( $city->term_id, 'parent_governorate_id', true );
 					if ( $gov_id ) {
@@ -120,19 +141,22 @@ class KE_Location_Matcher {
 			}
 		}
 
-		// 5. Final result and confidence
 		$confidence = 0;
 		if ( $detected_gov && $detected_city ) $confidence = 100;
 		elseif ( $detected_gov ) $confidence = 60;
 		elseif ( $detected_city ) $confidence = 40;
 
+		$gov_name = $detected_gov ? $detected_gov->name : '';
+		$city_name = $detected_city ? $detected_city->name : '';
+
 		return array(
-			'gov_id'     => $detected_gov ? $detected_gov->term_id : 0,
-			'gov_name'   => $detected_gov ? $detected_gov->name : '',
-			'city_id'    => $detected_city ? $detected_city->term_id : 0,
-			'city_name'  => $detected_city ? $detected_city->name : '',
-			'confidence' => $confidence,
-			'source'     => 'address_parsing'
+			'gov_id'          => $detected_gov ? $detected_gov->term_id : 0,
+			'gov_name'        => $gov_name,
+			'city_id'         => $detected_city ? $detected_city->term_id : 0,
+			'city_name'       => $city_name,
+			'confidence'      => $confidence,
+			'source'          => 'address_parsing',
+			'cleaned_address' => $this->scrub_location_from_address( $address, $gov_name, $city_name )
 		);
 	}
 }

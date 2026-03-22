@@ -59,14 +59,6 @@ class KE_Save {
 				}
 			}
 		}
-
-		// Handle Taxonomies from Meta Box
-		if ( isset( $_POST['ke_event_governorate'] ) && ! empty( $_POST['ke_event_governorate'] ) ) {
-			wp_set_object_terms( $post_id, intval( $_POST['ke_event_governorate'] ), 'event_governorate' );
-		}
-		if ( isset( $_POST['ke_event_city'] ) && ! empty( $_POST['ke_event_city'] ) ) {
-			wp_set_object_terms( $post_id, intval( $_POST['ke_event_city'] ), 'event_city' );
-		}
 	}
 
 	/**

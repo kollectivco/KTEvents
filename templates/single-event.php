@@ -94,12 +94,15 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 										<?php endif; ?>
 
 										<!-- 4. LOCATION -->
-										<?php if ( $address ) : ?>
+										<?php 
+										$full_location = ke_get_venue_location_display( $venue_id );
+										if ( $full_location ) : 
+										?>
 										<div class="ke-meta-block">
 											<div class="ke-meta-icon-box"><?php echo $icon_location; ?></div>
 											<div class="ke-meta-info">
 												<label>Location</label>
-												<strong><?php echo esc_html($address); ?></strong>
+												<strong><?php echo esc_html($full_location); ?></strong>
 											</div>
 										</div>
 										<?php endif; ?>

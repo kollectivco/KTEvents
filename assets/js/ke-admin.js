@@ -129,7 +129,7 @@ jQuery(document).ready(function($) {
         } else {
             $('input[name="venue_mode"][value="new"]').prop('checked', true).trigger('change');
             $('#preview_venue_name').val(fields.venue_name);
-            $('#preview_address').val(fields.address);
+            $('#preview_address').val(detected_location && detected_location.cleaned_address ? detected_location.cleaned_address : fields.address);
             $('#preview_phone').val(fields.phone);
             $('#preview_official_url').val(fields.official_url);
             venueMatchLabel.html('');
@@ -141,7 +141,6 @@ jQuery(document).ready(function($) {
         }
 
         // Smart Location Pre-fill
-        const { detected_location } = payload;
         const locMatchLabel = $('#ke-location-match-status');
         
         if (detected_location && detected_location.gov_id) {
@@ -159,7 +158,7 @@ jQuery(document).ready(function($) {
             if (detected_location.source === 'existing_venue') {
                 locMatchLabel.html('<div class="ke-info-note" style="background:#eff6ff; color:#1e40af; border:none; margin-top:10px;">ℹ Location inherited from existing venue.</div>');
             } else if (detected_location.confidence >= 80) {
-                locMatchLabel.html('<div class="ke-info-note" style="background:#dcfce7; color:#166534; border:none; margin-top:10px;">✓ Location auto-detected from address.</div>');
+                locMatchLabel.html('<div class="ke-info-note" style="background:#dcfce7; color:#166534; border:none; margin-top:10px;">✓ Location auto-detected and address cleaned.</div>');
             } else {
                 locMatchLabel.html('<div class="ke-info-note" style="background:#fef3c7; color:#92400e; border:none; margin-top:10px;">⚠ Location detected with low confidence. Please verify.</div>');
             }
