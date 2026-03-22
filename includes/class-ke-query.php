@@ -154,7 +154,8 @@ class KE_Query {
 			'ke_city'     => 'event_city', 
 			'ke_gov'      => 'event_governorate',
 			'event_category' => 'event_category', // Compatibility
-			'event_city'     => 'event_city'      // Compatibility
+			'event_city'     => 'event_city',      // Compatibility
+			'event_area'     => 'event_area'       // Elementor Advanced Filter
 		);
 		foreach ( $tax_map as $key => $taxonomy ) {
 			$val = $input[ $key ] ?? '';

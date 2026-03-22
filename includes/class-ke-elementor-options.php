@@ -26,13 +26,16 @@ class KE_Elementor_Options {
 	 */
 	public static function get_event_layout_presets() {
 		return [
-			'classic'      => 'Classic Grid',
-			'grid_1'       => 'Grid 1 (Clean)',
-			'grid_2'       => 'Grid 2 (Boxed)',
-			'list_1'       => 'List 1 (Horizontal)',
-			'list_2'       => 'List 2 (Compact)',
-			'flex_overlay' => 'Flex Overlay',
-			'small_list'   => 'Small List / Minimal',
+			'classic'        => 'Classic Grid',
+			'grid_1'         => 'Grid 1 (Clean)',
+			'grid_2'         => 'Grid 2 (Boxed)',
+			'minimal_grid'   => 'Minimal Grid',
+			'editorial_grid' => 'Editorial Grid',
+			'list_1'         => 'List 1 (Horizontal)',
+			'list_2'         => 'List 2 (Compact)',
+			'flex_overlay'   => 'Flex Overlay',
+			'small_list'     => 'Small List / Minimal',
+			'highlight'      => 'Highlight / Hero',
 		];
 	}
 

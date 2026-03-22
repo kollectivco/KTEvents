@@ -129,9 +129,52 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 		);
 
 		$this->add_control(
+			'event_city',
+			[
+				'label' => 'Filter City',
+				'type' => \Elementor\Controls_Manager::SELECT2,
+				'options' => $this->get_tax_options( 'event_city' ),
+				'multiple' => true,
+				'condition' => [ 'query_mode' => 'standard' ],
+			]
+		);
+
+		$this->add_control(
+			'event_area',
+			[
+				'label' => 'Filter Area',
+				'type' => \Elementor\Controls_Manager::SELECT2,
+				'options' => $this->get_tax_options( 'event_area' ),
+				'multiple' => true,
+				'condition' => [ 'query_mode' => 'standard' ],
+			]
+		);
+
+		$this->add_control(
+			'venue_id',
+			[
+				'label' => 'Filter by Venue',
+				'type' => \Elementor\Controls_Manager::SELECT2,
+				'options' => $this->get_post_options( 'venue' ),
+				'multiple' => false,
+				'condition' => [ 'query_mode' => 'standard' ],
+			]
+		);
+
+		$this->add_control(
 			'featured',
 			[
 				'label' => 'Featured Only',
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'default' => '',
+				'condition' => [ 'query_mode' => 'standard' ],
+			]
+		);
+
+		$this->add_control(
+			'editor_pick',
+			[
+				'label' => 'Editor Pick / Recommended',
 				'type' => \Elementor\Controls_Manager::SWITCHER,
 				'default' => '',
 				'condition' => [ 'query_mode' => 'standard' ],
