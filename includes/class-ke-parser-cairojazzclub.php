@@ -51,18 +51,32 @@ class KE_Parser_CairoJazzClub implements KE_Parser_Interface {
 			}
 		}
 
-		// 2. Event Date (Fallback)
-		if ( empty( $result['fields']['event_date'] ) ) {
-			$date_nodes = $xpath->query( "//div[contains(@class, 'event-date')] | //span[contains(@class, 'date')]" );
+		// 2. Event Date & Time (Fallback)
+		if ( empty( $result['fields']['event_date'] ) || empty( $result['fields']['event_time'] ) ) {
+			$date_nodes = $xpath->query( "//div[contains(@class, 'event-date')] | //span[contains(@class, 'date')] | //div[contains(@class, 'event-time')]" );
 			if ( $date_nodes->length > 0 ) {
-				$raw_val = $date_nodes->item(0)->nodeValue;
-				$clean_val = $generic->clean_text( $raw_val );
-				
-				if ( ! empty( $clean_val ) && ! $generic->is_code_garbage( $clean_val ) ) {
-					$result['fields']['raw_date_text'] = $clean_val;
-					$timestamp = strtotime( $clean_val );
-					if ( $timestamp && $timestamp > 100000 ) {
-						$result['fields']['event_date'] = date( 'Y-m-d', $timestamp );
+				foreach ( $date_nodes as $node ) {
+					$raw_val = $node->nodeValue;
+					$clean_val = $generic->clean_text( $raw_val );
+					
+					if ( ! empty( $clean_val ) && ! $generic->is_code_garbage( $clean_val ) ) {
+						// Try to extract date if missing
+						if ( empty( $result['fields']['event_date'] ) ) {
+							$timestamp = strtotime( $clean_val );
+							if ( $timestamp && $timestamp > 100000 ) {
+								$result['fields']['event_date'] = date( 'Y-m-d', $timestamp );
+								$result['fields']['raw_date_text'] = $clean_val;
+							}
+						}
+						
+						// Try to extract time if missing
+						if ( empty( $result['fields']['event_time'] ) ) {
+							$extracted = $generic->extract_times_from_string( $clean_val );
+							if ( ! empty( $extracted['start'] ) ) {
+								$result['fields']['event_time'] = $extracted['start'];
+								$result['fields']['event_end_time'] = $extracted['end'] ?: $result['fields']['event_end_time'];
+							}
+						}
 					}
 				}
 			}

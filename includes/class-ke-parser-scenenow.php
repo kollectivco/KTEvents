@@ -61,8 +61,13 @@ class KE_Parser_SceneNow implements KE_Parser_Interface {
 		if ( empty( $result['fields']['event_time'] ) ) {
 			$time_val = $this->get_value_by_label( $xpath, 'Time' );
 			if ( $time_val ) {
-				$ts = strtotime( $time_val );
-				if ( $ts ) $result['fields']['event_time'] = date( 'H:i', $ts );
+				$extracted = $generic->extract_times_from_string( $time_val );
+				$result['fields']['event_time'] = $extracted['start'] ?: $result['fields']['event_time'];
+				$result['fields']['event_end_time'] = $extracted['end'] ?: $result['fields']['event_end_time'];
+				
+				if ( empty( $result['fields']['raw_date_text'] ) ) {
+					$result['fields']['raw_date_text'] = $time_val;
+				}
 			}
 		}
 

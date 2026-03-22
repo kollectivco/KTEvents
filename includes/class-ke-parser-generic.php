@@ -150,11 +150,15 @@ class KE_Parser_Generic implements KE_Parser_Interface {
 					$ts = strtotime( $item['startDate'] );
 					if ( $ts && $ts > 100000 ) { // Avoid 1970
 						$result['fields']['event_date'] = date( 'Y-m-d', $ts );
-						$result['fields']['event_time'] = date( 'H:i', $ts );
+						
+						// Only set time if the input string actually contains a time component (T or :)
+						if ( strpos( $item['startDate'], 'T' ) !== false || strpos( $item['startDate'], ':' ) !== false ) {
+							$result['fields']['event_time'] = date( 'H:i', $ts );
+						}
 						
 						// Provide a clean raw string baseline from the structured data
 						if ( empty( $result['fields']['raw_date_text'] ) ) {
-							$result['fields']['raw_date_text'] = date( 'l, j F Y', $ts ) . ' at ' . date( 'g:i A', $ts );
+							$result['fields']['raw_date_text'] = date( 'l, j F Y', $ts ) . ( ! empty( $result['fields']['event_time'] ) ? ' at ' . date( 'g:i A', $ts ) : '' );
 						}
 					}
 				}
@@ -163,7 +167,10 @@ class KE_Parser_Generic implements KE_Parser_Interface {
 					$ts = strtotime( $item['endDate'] );
 					if ( $ts && $ts > 100000 ) {
 						$result['fields']['event_end_date'] = date( 'Y-m-d', $ts );
-						$result['fields']['event_end_time'] = date( 'H:i', $ts );
+						
+						if ( strpos( $item['endDate'], 'T' ) !== false || strpos( $item['endDate'], ':' ) !== false ) {
+							$result['fields']['event_end_time'] = date( 'H:i', $ts );
+						}
 					}
 				}
 
@@ -199,6 +206,47 @@ class KE_Parser_Generic implements KE_Parser_Interface {
 				$result['parser_confidence'] = 90; // High confidence if structured schema found
 			}
 		}
+	}
+
+	/**
+	 * Extracts start and end time from a string (handles ranges like 8pm - 12am)
+	 */
+	public function extract_times_from_string( $text ) {
+		if ( empty( $text ) ) return array( 'start' => '', 'end' => '' );
+
+		// Normalize range separators
+		$text = str_replace( array( '–', '—', ' to ', ' until ' ), ' - ', $text );
+		
+		$parts = explode( ' - ', $text );
+		$start_raw = trim( $parts[0] );
+		$end_raw   = isset( $parts[1] ) ? trim( $parts[1] ) : '';
+
+		return array(
+			'start' => $this->normalize_time( $start_raw ),
+			'end'   => $this->normalize_time( $end_raw )
+		);
+	}
+
+	/**
+	 * Normalize a single time string to H:i
+	 */
+	public function normalize_time( $time_str ) {
+		if ( empty( $time_str ) ) return '';
+		
+		// Basic cleanup
+		$time_str = trim( $time_str );
+		
+		// Handle formats like "1800"
+		if ( is_numeric( $time_str ) && strlen( $time_str ) === 4 ) {
+			$time_str = substr( $time_str, 0, 2 ) . ':' . substr( $time_str, 2 );
+		}
+
+		$ts = strtotime( $time_str );
+		if ( $ts ) {
+			return date( 'H:i', $ts );
+		}
+		
+		return '';
 	}
 
 	public function clean_text( $text ) {
