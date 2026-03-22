@@ -19,11 +19,13 @@ $cat_id   = ! empty( $categories ) ? $categories[0]->term_id : 0;
 
 $shown_ids = [ $event_id ];
 
+$phone       = $venue_id ? ke_get_venue_meta( $venue_id, 'phone' ) : '';
+
 // Icons
 $icon_calendar = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>';
 $icon_clock = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
 $icon_venue = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>';
-$icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>';
+$icon_phone = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>';
 ?>
 
 <div class="ke-frontend-main">
@@ -82,27 +84,27 @@ $icon_location = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 										</div>
 										<?php endif; ?>
 
-										<!-- 3. VENUE -->
+										<!-- 3. VENUE & ADDRESS -->
 										<?php if ( $venue_id ) : ?>
 										<div class="ke-meta-block">
 											<div class="ke-meta-icon-box"><?php echo $icon_venue; ?></div>
 											<div class="ke-meta-info">
 												<label>Venue</label>
-												<strong><a href="<?php echo get_permalink($venue_id); ?>"><?php echo get_the_title($venue_id); ?></a></strong>
+												<strong><?php echo esc_html(get_the_title($venue_id)); ?></strong>
+												<?php if ( $address ) : ?>
+													<span class="ke-venue-address"><?php echo esc_html($address); ?></span>
+												<?php endif; ?>
 											</div>
 										</div>
 										<?php endif; ?>
 
-										<!-- 4. LOCATION -->
-										<?php 
-										$full_location = ke_get_venue_location_display( $venue_id );
-										if ( $full_location ) : 
-										?>
+										<!-- 4. PHONE -->
+										<?php if ( $phone ) : ?>
 										<div class="ke-meta-block">
-											<div class="ke-meta-icon-box"><?php echo $icon_location; ?></div>
+											<div class="ke-meta-icon-box"><?php echo $icon_phone; ?></div>
 											<div class="ke-meta-info">
-												<label>Location</label>
-												<strong><?php echo esc_html($full_location); ?></strong>
+												<label>Phone</label>
+												<strong><?php echo esc_html($phone); ?></strong>
 											</div>
 										</div>
 										<?php endif; ?>
