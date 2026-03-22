@@ -131,6 +131,7 @@
     font-weight: 700;
     color: #1a1e26;
     line-height: 1.3;
+    display: block;
 }
 
 .ke-meta-info strong a {
@@ -714,11 +715,96 @@
 }
 
 @media (max-width: 768px) {
-    .ke-hero-title { font-size: 32px; line-height: 1.2; }
-    .ke-hero-upper { margin-bottom: 25px; }
-    .ke-hero-split { gap: 30px; }
-    .ke-hero-poster-col { flex: 0 0 100%; }
-    .ke-hero-meta-col { flex: 0 0 100%; min-width: 0; }
+    .ke-hero-title { 
+        font-size: 32px; 
+        line-height: 1.2; 
+        margin-bottom: 25px !important;
+    }
+    .ke-hero-upper { 
+        margin-bottom: 20px; 
+    }
+    .ke-hero-split { 
+        display: flex;
+        flex-direction: column;
+        gap: 0; 
+    }
+    .ke-hero-poster-col { 
+        flex: 0 0 100%; 
+        order: 1;
+        margin-bottom: 25px;
+    }
+    .ke-poster-image {
+        border-radius: 16px;
+    }
+    .ke-hero-meta-col { 
+        flex: 0 0 100%; 
+        min-width: 0; 
+        order: 2;
+    }
+    
+    /* 2x2 Mobile Meta Grid */
+    .ke-meta-stack {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 16px;
+    }
+    .ke-meta-block {
+        gap: 12px;
+    }
+    .ke-meta-info strong {
+        font-size: 14px;
+    }
+    .ke-meta-info label {
+        font-size: 9px;
+    }
+    .ke-meta-icon-box {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .ke-hero-actions {
+        grid-column: span 2;
+        margin-top: 10px !important;
+    }
+    .ke-register-btn {
+        width: 100%;
+    }
+
+    /* Related Sections - 2 Columns on Mobile */
+    .ke-loop-wrapper.ke-columns-3,
+    .ke-loop-wrapper.ke-columns-tablet-2,
+    .ke-card-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 15px !important;
+    }
+
+    /* Mobile Card Refinements */
+    .ke-rb-body {
+        padding: 12px 10px 15px 10px !important;
+    }
+    .ke-card-cat {
+        font-size: 9px !important;
+        margin-bottom: 6px !important;
+    }
+    .ke-card-title {
+        font-size: 14px !important;
+        line-height: 1.3 !important;
+        margin-bottom: 8px !important;
+    }
+    .ke-rb-meta-footer {
+        padding-top: 10px !important;
+        gap: 8px !important;
+    }
+    .ke-rb-meta-node {
+        font-size: 11px !important;
+    }
+    .ke-svg-icon {
+        width: 12px !important;
+        height: 12px !important;
+    }
 }
 
 @media (max-width: 639px) {
