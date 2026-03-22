@@ -245,6 +245,153 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 	}
 
 	/**
+	 * Carousel Settings Section
+	 */
+	protected function register_carousel_section() {
+		$this->start_controls_section(
+			'section_carousel',
+			[
+				'label' => 'Carousel Settings',
+			]
+		);
+
+		$this->add_control(
+			'carousel',
+			[
+				'label' => 'Enable Carousel Mode',
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'default' => '',
+				'description' => 'Converts the layout into a swipeable carousel.',
+			]
+		);
+
+		$this->add_responsive_control(
+			'carousel_items',
+			[
+				'label' => 'Slides Per View',
+				'type' => \Elementor\Controls_Manager::NUMBER,
+				'default' => 3,
+				'tablet_default' => 2,
+				'mobile_default' => 1,
+				'condition' => [ 'carousel' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
+			'carousel_gap',
+			[
+				'label' => 'Gap (px)',
+				'type' => \Elementor\Controls_Manager::NUMBER,
+				'default' => 24,
+				'condition' => [ 'carousel' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
+			'carousel_autoplay',
+			[
+				'label' => 'Autoplay',
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'default' => '',
+				'condition' => [ 'carousel' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
+			'carousel_autoplay_speed',
+			[
+				'label' => 'Autoplay Speed (ms)',
+				'type' => \Elementor\Controls_Manager::NUMBER,
+				'default' => 5000,
+				'condition' => [ 'carousel' => 'yes', 'carousel_autoplay' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
+			'carousel_speed',
+			[
+				'label' => 'Transition Speed (ms)',
+				'type' => \Elementor\Controls_Manager::NUMBER,
+				'default' => 400,
+				'condition' => [ 'carousel' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
+			'carousel_loop',
+			[
+				'label' => 'Infinite Loop',
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'default' => 'yes',
+				'condition' => [ 'carousel' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
+			'carousel_center',
+			[
+				'label' => 'Center Mode',
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'default' => '',
+				'condition' => [ 'carousel' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
+			'carousel_pause_hover',
+			[
+				'label' => 'Pause on Hover',
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'default' => 'yes',
+				'condition' => [ 'carousel' => 'yes', 'carousel_autoplay' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
+			'carousel_arrows',
+			[
+				'label' => 'Show Navigation Arrows',
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'default' => 'yes',
+				'condition' => [ 'carousel' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
+			'carousel_hide_arrows_mobile',
+			[
+				'label' => 'Hide Arrows on Mobile',
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'default' => 'yes',
+				'condition' => [ 'carousel' => 'yes', 'carousel_arrows' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
+			'carousel_dots',
+			[
+				'label' => 'Show Pagination Dots',
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'default' => '',
+				'condition' => [ 'carousel' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
+			'carousel_free_scroll',
+			[
+				'label' => 'Free Scroll Mode',
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'default' => '',
+				'description' => 'Scroll freely without snapping to slides.',
+				'condition' => [ 'carousel' => 'yes' ],
+			]
+		);
+
+		$this->end_controls_section();
+	}
+
+	/**
 	 * Alias for Entry Meta Styling
 	 */
 	protected function register_entry_meta_controls() {

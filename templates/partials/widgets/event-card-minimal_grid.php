@@ -1,7 +1,7 @@
 <?php
 /**
- * Flex Overlay – Full-bleed image with gradient overlay and text at the bottom.
- * Great for featured events, carousels, hero areas.
+ * Minimal Grid – Ultra-light. No badge overlay. Category as plain uppercase text above title.
+ * Great for content-forward layouts.
  */
 
 $event_id   = get_the_ID();
@@ -11,24 +11,25 @@ $date       = ke_get_event_date_display( $event_id );
 $venue_id   = ke_get_event_meta( $event_id, 'venue_id' );
 $venue_name = $venue_id ? get_the_title( $venue_id ) : '';
 ?>
-<div class="ke-card ke-card-overlay">
-	<a href="<?php the_permalink(); ?>" class="ke-card-link-mask" aria-label="<?php the_title_attribute(); ?>"></a>
-	<div class="ke-card-bg-image">
+<div class="ke-card ke-card-minimal">
+	<div class="ke-card-image">
+		<a href="<?php the_permalink(); ?>" class="ke-card-link-mask" aria-label="<?php the_title_attribute(); ?>"></a>
 		<?php if ( has_post_thumbnail() ) : ?>
-			<?php the_post_thumbnail( 'large' ); ?>
+			<?php the_post_thumbnail( 'medium_large' ); ?>
 		<?php else : ?>
 			<img src="<?php echo KE_PLUGIN_URL . 'assets/images/event-placeholder.jpg'; ?>" alt="<?php the_title(); ?>">
 		<?php endif; ?>
 	</div>
-	<div class="ke-card-overlay-gradient"></div>
 	<div class="ke-card-content">
 		<?php if ( $cat_name ) : ?>
 			<p class="ke-card-cat-eyebrow"><?php echo esc_html( strtoupper( $cat_name ) ); ?></p>
 		<?php endif; ?>
 		<h3 class="ke-card-title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
-		<div class="ke-card-meta ke-card-meta-light">
-			<?php if ( $date ) : ?><span class="ke-card-date"><?php echo esc_html( $date ); ?></span><?php endif; ?>
-			<?php if ( $venue_name ) : ?><span class="ke-card-venue"><?php echo esc_html( $venue_name ); ?></span><?php endif; ?>
-		</div>
+		<?php if ( $date || $venue_name ) : ?>
+			<div class="ke-card-meta">
+				<?php if ( $date ) : ?><span class="ke-card-date"><?php echo esc_html( $date ); ?></span><?php endif; ?>
+				<?php if ( $venue_name ) : ?><span class="ke-card-venue"><?php echo esc_html( $venue_name ); ?></span><?php endif; ?>
+			</div>
+		<?php endif; ?>
 	</div>
 </div>

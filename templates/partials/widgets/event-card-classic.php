@@ -1,7 +1,6 @@
 <?php
 /**
- * Modern Editorial Classic Card Preset
- * Redirects to the master partial for consistency.
+ * Classic Grid Card - delegates to the shared master card template.
+ * This is the default. No override needed — just include the master.
  */
-
-include KE_PLUGIN_DIR . 'templates/partials/loop-event-card.php';
+include dirname(__DIR__) . '/loop-event-card.php';

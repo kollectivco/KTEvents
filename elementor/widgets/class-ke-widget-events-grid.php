@@ -65,6 +65,9 @@ class KE_Widget_Events_Grid extends KE_Widget_Base {
 		// 2. Advanced Query (from Base)
 		$this->register_advanced_query_section();
 
+		// 2.5 Carousel Mode (from Base)
+		$this->register_carousel_section();
+
 		// 3. Ajax Pagination (from Base)
 		$this->register_pagination_section();
 

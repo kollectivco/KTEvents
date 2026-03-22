@@ -23,6 +23,21 @@ class KE_Elementor {
 		add_action( 'elementor/widgets/register', array( $this, 'register_widgets' ) );
 		// Register widget categories
 		add_action( 'elementor/elements/categories_registered', array( $this, 'register_categories' ) );
+		// Enqueue Swiper when Elementor frontend scripts load
+		add_action( 'elementor/frontend/after_enqueue_scripts', array( $this, 'enqueue_swiper' ) );
+	}
+
+	/**
+	 * Enqueue Swiper (reuse Elementor's bundled version)
+	 */
+	public function enqueue_swiper() {
+		// Elementor bundles Swiper. We just need to make sure the handle is enqueued.
+		if ( wp_script_is( 'swiper', 'registered' ) ) {
+			wp_enqueue_script( 'swiper' );
+		}
+		if ( wp_style_is( 'swiper', 'registered' ) ) {
+			wp_enqueue_style( 'swiper' );
+		}
 	}
 
 	/**

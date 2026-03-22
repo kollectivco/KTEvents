@@ -255,8 +255,13 @@ class KE_Query {
 			'columns_mobile' => 1,
 			'gap'            => 'medium' 
 		) );
+		
 		ob_start();
 		if ( $query->have_posts() ) {
+			
+			$is_carousel = isset($display['carousel']) && 'yes' === $display['carousel'];
+			$carousel_uid = uniqid('ke_carousel_');
+			
 			$classes = array( 
 				'ke-loop-wrapper', 
 				'ke-preset-' . esc_attr($display['layout_preset']), 
@@ -264,6 +269,7 @@ class KE_Query {
 				'ke-columns-tablet-' . esc_attr($display['columns_tablet']),
 				'ke-columns-mobile-' . esc_attr($display['columns_mobile'])
 			);
+			
 			if ( ! empty( $display['gap'] ) ) $classes[] = 'ke-gap-' . esc_attr( $display['gap'] );
 			if ( isset($display['horizontal_scroll']) && 'yes' === $display['horizontal_scroll'] ) $classes[] = 'ke-horizontal-scroll';
 			if ( isset($display['is_boxed']) && 'yes' === $display['is_boxed'] ) $classes[] = 'ke-boxed';
@@ -272,19 +278,71 @@ class KE_Query {
 			$count = 0;
 			$max_initial = $display['max_initial'] ?? 0;
 
+			// Carousel Wrapper Open
+			if ( $is_carousel ) {
+				$classes[] = 'swiper-wrapper'; // Internal wrapper acts as swiper wrapper
+				
+				$c_settings = array(
+					'slidesPerView' => intval($display['carousel_items_mobile'] ?? 1),
+					'spaceBetween'  => intval($display['carousel_gap'] ?? 24),
+					'loop'          => isset($display['carousel_loop']) && 'yes' === $display['carousel_loop'],
+					'centeredSlides'=> isset($display['carousel_center']) && 'yes' === $display['carousel_center'],
+					'freeMode'      => isset($display['carousel_free_scroll']) && 'yes' === $display['carousel_free_scroll'],
+					'speed'         => intval($display['carousel_speed'] ?? 400),
+					'breakpoints'   => array(
+						768  => array( 'slidesPerView' => intval($display['carousel_items_tablet'] ?? 2) ),
+						1024 => array( 'slidesPerView' => intval($display['carousel_items'] ?? 3) ),
+					)
+				);
+
+				if ( isset($display['carousel_autoplay']) && 'yes' === $display['carousel_autoplay'] ) {
+					$c_settings['autoplay'] = array(
+						'delay' => intval($display['carousel_autoplay_speed'] ?? 5000),
+						'disableOnInteraction' => false,
+						'pauseOnMouseEnter' => isset($display['carousel_pause_hover']) && 'yes' === $display['carousel_pause_hover']
+					);
+				}
+				
+				$show_arrows = isset($display['carousel_arrows']) && 'yes' === $display['carousel_arrows'];
+				$show_dots   = isset($display['carousel_dots']) && 'yes' === $display['carousel_dots'];
+				$hide_arrows_mob = isset($display['carousel_hide_arrows_mobile']) && 'yes' === $display['carousel_hide_arrows_mobile'];
+				
+				if ( $show_arrows ) {
+					$c_settings['navigation'] = array(
+						'nextEl' => ".{$carousel_uid}-next",
+						'prevEl' => ".{$carousel_uid}-prev"
+					);
+				}
+				if ( $show_dots ) {
+					$c_settings['pagination'] = array(
+						'el' => ".{$carousel_uid}-pagination",
+						'clickable' => true
+					);
+				}
+
+				echo '<div class="ke-carousel-container ' . ($hide_arrows_mob ? 'ke-hide-arrows-mobile' : '') . '" id="' . $carousel_uid . '">';
+				echo '<div class="swiper ke-swiper" data-swiper-settings=\'' . esc_attr( wp_json_encode( $c_settings ) ) . '\'>';
+			}
+
 			echo '<div class="' . implode(' ', $classes) . '">';
+			
+			// LOOP
 			while ( $query->have_posts() ) {
 				$query->the_post();
 				$count++;
 				$preset = $display['layout_preset'];
 				$item_classes = array();
+				
 				if ( $max_initial > 0 && $count > $max_initial ) {
 					$item_classes[] = 'ke-hidden-item';
+				}
+				if ( $is_carousel ) {
+					$item_classes[] = 'swiper-slide';
 				}
 
 				$partial = KE_PLUGIN_DIR . 'templates/partials/widgets/event-card-' . $preset . '.php';
 				
-				// Standardize item wrapper for hidden state support
+				// Standardize item wrapper for hidden state / slider support
 				if ( ! empty( $item_classes ) ) echo '<div class="' . implode(' ', $item_classes) . '">';
 				
 				if ( file_exists( $partial ) ) include $partial;
@@ -292,13 +350,47 @@ class KE_Query {
 				
 				if ( ! empty( $item_classes ) ) echo '</div>';
 			}
-			echo '</div>';
+			
+			echo '</div>'; // close loop wrapper
+			
+			// Carousel Navigation Close
+			if ( $is_carousel ) {
+				echo '</div>'; // close swiper block
+				
+				if ( isset($display['carousel_arrows']) && 'yes' === $display['carousel_arrows'] ) {
+					echo '<div class="swiper-button-prev ke-carousel-prev ' . $carousel_uid . '-prev"></div>';
+					echo '<div class="swiper-button-next ke-carousel-next ' . $carousel_uid . '-next"></div>';
+				}
+				if ( isset($display['carousel_dots']) && 'yes' === $display['carousel_dots'] ) {
+					echo '<div class="swiper-pagination ke-carousel-pagination ' . $carousel_uid . '-pagination"></div>';
+				}
+				
+				echo '</div>'; // close ke-carousel-container
+				
+				// Inline JS Init for stability independent of Elementor's async loading
+				echo "<script>
+				document.addEventListener('DOMContentLoaded', function() {
+					function initIESwiper() {
+						if(typeof Swiper !== 'undefined') {
+							var container = document.getElementById('{$carousel_uid}').querySelector('.swiper');
+							var options = JSON.parse(container.getAttribute('data-swiper-settings'));
+							new Swiper(container, options);
+						} else {
+							setTimeout(initIESwiper, 500);
+						}
+					}
+					initIESwiper();
+				});
+				</script>";
+			}
 
-			if ( $max_initial > 0 && $query->post_count > $max_initial ) {
+			// Ajax Pagination Show More
+			if ( $max_initial > 0 && $query->post_count > $max_initial && ! $is_carousel ) {
 				echo '<div class="ke-show-more-wrapper">';
 				echo '<button type="button" class="ke-show-more-btn" data-target="next">' . esc_html__( 'Show More', 'kontentainment-events' ) . '</button>';
 				echo '</div>';
 			}
+
 
 			if ( ! empty( $display['pagination'] ) ) $this->render_pagination( $query, $display );
 			wp_reset_postdata();

@@ -61,6 +61,9 @@ class KE_Widget_Venue_Events extends KE_Widget_Base {
 		// 2.5 Pagination
 		$this->register_pagination_section();
 
+		// 2.7 Carousel Mode
+		$this->register_carousel_section();
+
 		// 3. Entry Meta (from Base)
 		$this->register_entry_meta_controls();
 

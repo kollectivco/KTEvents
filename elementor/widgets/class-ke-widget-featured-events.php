@@ -23,6 +23,12 @@ class KE_Widget_Featured_Events extends KE_Widget_Base {
 		// 2. Advanced Query
 		$this->register_advanced_query_section();
 
+		// 2.5 Carousel Mode
+		$this->register_carousel_section();
+
+		// 2.7 Pagination
+		$this->register_pagination_section();
+
 		// 3. Style
 		$this->register_entry_meta_styling();
 		$this->register_box_style_controls();

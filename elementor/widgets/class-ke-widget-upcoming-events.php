@@ -20,6 +20,7 @@ class KE_Widget_Upcoming_Events extends KE_Widget_Base {
 		$this->end_controls_section();
 
 		$this->register_advanced_query_section();
+		$this->register_carousel_section();
 		$this->register_pagination_section();
 		$this->register_entry_meta_styling();
 		$this->register_box_style_controls();
