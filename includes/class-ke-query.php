@@ -286,22 +286,34 @@ class KE_Query {
 			if ( $is_carousel ) {
 				$classes[] = 'swiper-wrapper'; // Internal wrapper acts as swiper wrapper
 				
+				$items_mob = isset($display['carousel_items_mobile']) && is_numeric($display['carousel_items_mobile']) ? intval($display['carousel_items_mobile']) : 1;
+				$items_tab = isset($display['carousel_items_tablet']) && is_numeric($display['carousel_items_tablet']) ? intval($display['carousel_items_tablet']) : 2;
+				$items_des = isset($display['carousel_items']) && is_numeric($display['carousel_items']) ? intval($display['carousel_items']) : 3;
+				
+				$gap = isset($display['carousel_gap']) && is_numeric($display['carousel_gap']) ? intval($display['carousel_gap']) : 24;
+				$speed = isset($display['carousel_speed']) && is_numeric($display['carousel_speed']) ? intval($display['carousel_speed']) : 400;
+
 				$c_settings = array(
-					'slidesPerView' => intval($display['carousel_items_mobile'] ?? 1),
-					'spaceBetween'  => intval($display['carousel_gap'] ?? 24),
-					'loop'          => isset($display['carousel_loop']) && 'yes' === $display['carousel_loop'],
+					'slidesPerView' => $items_mob,
+					'spaceBetween'  => $gap,
+					'grabCursor'    => true,
+					'watchSlidesProgress' => true,
+					'observer'      => true,
+					'observeParents'=> true,
+					'loop'          => (isset($display['carousel_loop']) && 'yes' === $display['carousel_loop'] && $query->post_count > $items_des),
 					'centeredSlides'=> isset($display['carousel_center']) && 'yes' === $display['carousel_center'],
-					'freeMode'      => isset($display['carousel_free_scroll']) && 'yes' === $display['carousel_free_scroll'],
-					'speed'         => intval($display['carousel_speed'] ?? 400),
+					'freeMode'      => (isset($display['carousel_free_scroll']) && 'yes' === $display['carousel_free_scroll']) ? array('enabled' => true) : false,
+					'speed'         => $speed,
 					'breakpoints'   => array(
-						768  => array( 'slidesPerView' => intval($display['carousel_items_tablet'] ?? 2) ),
-						1024 => array( 'slidesPerView' => intval($display['carousel_items'] ?? 3) ),
+						768  => array( 'slidesPerView' => $items_tab, 'spaceBetween' => $gap ),
+						1024 => array( 'slidesPerView' => $items_des, 'spaceBetween' => $gap ),
 					)
 				);
 
-				if ( isset($display['carousel_autoplay']) && 'yes' === $display['carousel_autoplay'] ) {
+				if ( isset($display['carousel_autoplay']) && 'yes' === $display['carousel_autoplay'] && $query->post_count > $items_mob ) {
+					$delay = isset($display['carousel_autoplay_speed']) && is_numeric($display['carousel_autoplay_speed']) ? intval($display['carousel_autoplay_speed']) : 5000;
 					$c_settings['autoplay'] = array(
-						'delay' => intval($display['carousel_autoplay_speed'] ?? 5000),
+						'delay' => $delay,
 						'disableOnInteraction' => false,
 						'pauseOnMouseEnter' => isset($display['carousel_pause_hover']) && 'yes' === $display['carousel_pause_hover']
 					);
@@ -373,18 +385,32 @@ class KE_Query {
 				
 				// Inline JS Init for stability independent of Elementor's async loading
 				echo "<script>
-				document.addEventListener('DOMContentLoaded', function() {
+				(function() {
+					var attempts = 0;
 					function initIESwiper() {
 						if(typeof Swiper !== 'undefined') {
-							var container = document.getElementById('{$carousel_uid}').querySelector('.swiper');
-							var options = JSON.parse(container.getAttribute('data-swiper-settings'));
-							new Swiper(container, options);
-						} else {
-							setTimeout(initIESwiper, 500);
+							var el = document.getElementById('{$carousel_uid}');
+							if(el) {
+								var container = el.querySelector('.swiper');
+								if(container && !container.classList.contains('swiper-initialized')) {
+									var options = JSON.parse(container.getAttribute('data-swiper-settings'));
+									new Swiper(container, options);
+								}
+							} else if (attempts < 20) {
+								attempts++;
+								setTimeout(initIESwiper, 50);
+							}
+						} else if (attempts < 100) {
+							attempts++;
+							setTimeout(initIESwiper, 50);
 						}
 					}
-					initIESwiper();
-				});
+					if (document.readyState === 'loading') {
+						document.addEventListener('DOMContentLoaded', initIESwiper);
+					} else {
+						initIESwiper();
+					}
+				})();
 				</script>";
 			}
 

@@ -22,21 +22,36 @@ class KE_Elementor_Options {
 	}
 
 	/**
-	 * Get layout presets (enhanced labels)
+	 * Get Grid Layouts
 	 */
-	public static function get_event_layout_presets() {
+	public static function get_grid_layout_presets() {
 		return [
 			'classic'        => 'Classic Grid',
 			'grid_1'         => 'Grid 1 (Clean)',
 			'grid_2'         => 'Grid 2 (Boxed)',
 			'minimal_grid'   => 'Minimal Grid',
 			'editorial_grid' => 'Editorial Grid',
-			'list_1'         => 'List 1 (Horizontal)',
-			'list_2'         => 'List 2 (Compact)',
 			'flex_overlay'   => 'Flex Overlay',
-			'small_list'     => 'Small List / Minimal',
 			'highlight'      => 'Highlight / Hero',
 		];
+	}
+
+	/**
+	 * Get List Layouts
+	 */
+	public static function get_list_layout_presets() {
+		return [
+			'list_1'     => 'List 1 (Horizontal)',
+			'list_2'     => 'List 2 (Compact)',
+			'small_list' => 'Small List / Minimal',
+		];
+	}
+
+	/**
+	 * Get layout presets (legacy compatibility)
+	 */
+	public static function get_event_layout_presets() {
+		return array_merge( self::get_grid_layout_presets(), self::get_list_layout_presets() );
 	}
 
 	/**

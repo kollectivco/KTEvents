@@ -25,11 +25,7 @@ class KE_Widget_Events_List extends KE_Widget_Base {
 				'label' => 'Display Preset',
 				'type' => \Elementor\Controls_Manager::SELECT,
 				'default' => 'list_1',
-				'options' => [
-					'list_1'     => 'List 1 (Horizontal)',
-					'list_2'     => 'List 2 (Compact)',
-					'small_list' => 'Small List / Minimal',
-				],
+				'options' => KE_Elementor_Options::get_list_layout_presets(),
 			]
 		);
 

@@ -247,7 +247,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 	/**
 	 * Carousel Settings Section
 	 */
-	protected function register_carousel_section() {
+	protected function register_carousel_section( $hide_switcher = false ) {
 		$this->start_controls_section(
 			'section_carousel',
 			[
@@ -255,15 +255,17 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 			]
 		);
 
-		$this->add_control(
-			'carousel',
-			[
-				'label' => 'Enable Carousel Mode',
-				'type' => \Elementor\Controls_Manager::SWITCHER,
-				'default' => '',
-				'description' => 'Converts the layout into a swipeable carousel.',
-			]
-		);
+		if ( ! $hide_switcher ) {
+			$this->add_control(
+				'carousel',
+				[
+					'label' => 'Enable Carousel Mode',
+					'type' => \Elementor\Controls_Manager::SWITCHER,
+					'default' => '',
+					'description' => 'Converts the layout into a swipeable carousel.',
+				]
+			);
+		}
 
 		$this->add_responsive_control(
 			'carousel_items',

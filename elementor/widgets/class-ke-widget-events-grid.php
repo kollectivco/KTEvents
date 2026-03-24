@@ -25,15 +25,7 @@ class KE_Widget_Events_Grid extends KE_Widget_Base {
 				'label' => 'Display Preset',
 				'type' => \Elementor\Controls_Manager::SELECT,
 				'default' => 'classic',
-				'options' => [
-					'classic'        => 'Classic Grid',
-					'grid_1'         => 'Grid 1 (Clean)',
-					'grid_2'         => 'Grid 2 (Boxed)',
-					'minimal_grid'   => 'Minimal Grid',
-					'editorial_grid' => 'Editorial Grid',
-					'flex_overlay'   => 'Flex Overlay',
-					'highlight'      => 'Highlight / Hero',
-				],
+				'options' => KE_Elementor_Options::get_grid_layout_presets(),
 			]
 		);
 
