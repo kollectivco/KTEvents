@@ -1,17 +1,17 @@
 <?php
 /**
- * KE Events Grid Widget
+ * KE Events List Widget
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class KE_Widget_Events_Grid extends KE_Widget_Base {
+class KE_Widget_Events_List extends KE_Widget_Base {
 
-	public function get_name() { return 'ke_events_grid'; }
-	public function get_title() { return 'Events Grid'; }
-	public function get_icon() { return 'eicon-post-grid'; }
+	public function get_name() { return 'ke_events_list'; }
+	public function get_title() { return 'Events List'; }
+	public function get_icon() { return 'eicon-editor-list-ul'; }
 
 	protected function register_controls() {
 		// 1. Layout Preset Family
@@ -24,48 +24,16 @@ class KE_Widget_Events_Grid extends KE_Widget_Base {
 			[
 				'label' => 'Display Preset',
 				'type' => \Elementor\Controls_Manager::SELECT,
-				'default' => 'classic',
+				'default' => 'list_1',
 				'options' => [
-					'classic'        => 'Classic Grid',
-					'grid_1'         => 'Grid 1 (Clean)',
-					'grid_2'         => 'Grid 2 (Boxed)',
-					'minimal_grid'   => 'Minimal Grid',
-					'editorial_grid' => 'Editorial Grid',
-					'flex_overlay'   => 'Flex Overlay',
-					'highlight'      => 'Highlight / Hero',
+					'list_1'     => 'List 1 (Horizontal)',
+					'list_2'     => 'List 2 (Compact)',
+					'small_list' => 'Small List / Minimal',
 				],
 			]
 		);
 
-		$this->add_responsive_control(
-			'columns',
-			[
-				'label' => 'Columns',
-				'type' => \Elementor\Controls_Manager::NUMBER,
-				'default' => 3,
-				'tablet_default' => 2,
-				'mobile_default' => 1,
-			]
-		);
-
-		$this->add_control(
-			'gap_preset',
-			[
-				'label' => 'Column Gap',
-				'type' => \Elementor\Controls_Manager::SELECT,
-				'default' => 'default',
-				'options' => KE_Elementor_Options::get_gap_options(),
-			]
-		);
-
-		$this->add_control(
-			'horizontal_scroll',
-			[
-				'label' => 'Horizontal Scroll (Mobile)',
-				'type' => \Elementor\Controls_Manager::SWITCHER,
-				'default' => '',
-			]
-		);
+		// No columns control for lists
 
 		$this->end_controls_section();
 
@@ -108,14 +76,19 @@ class KE_Widget_Events_Grid extends KE_Widget_Base {
 	protected function render() {
 		$settings = $this->get_settings_for_display();
 		$settings['is_widget'] = true;
+		
+		// Ensure List formats don't apply grid columns
+		$settings['columns'] = 1;
+		$settings['columns_tablet'] = 1;
+		$settings['columns_mobile'] = 1;
+
 		$settings['carousel'] = ''; // Ensure carousel is off
 
 		$query = KE_Query::get_instance()->get_events( $settings );
 
 		$classes = [
 			'ke-elementor-widget',
-			'ke-events-grid-widget',
-			'ke-gap-' . esc_attr($settings['gap_preset'] ?? 'default'),
+			'ke-events-list-widget',
 		];
 
 		if ( ! empty($settings['color_scheme']) ) $classes[] = 'ke-scheme-' . esc_attr($settings['color_scheme']);

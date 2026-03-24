@@ -1,17 +1,17 @@
 <?php
 /**
- * KE Events Grid Widget
+ * KE Events Grid Carousel Widget
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class KE_Widget_Events_Grid extends KE_Widget_Base {
+class KE_Widget_Events_Grid_Carousel extends KE_Widget_Base {
 
-	public function get_name() { return 'ke_events_grid'; }
-	public function get_title() { return 'Events Grid'; }
-	public function get_icon() { return 'eicon-post-grid'; }
+	public function get_name() { return 'ke_events_grid_carousel'; }
+	public function get_title() { return 'Events Grid Carousel'; }
+	public function get_icon() { return 'eicon-carousel'; }
 
 	protected function register_controls() {
 		// 1. Layout Preset Family
@@ -37,43 +37,13 @@ class KE_Widget_Events_Grid extends KE_Widget_Base {
 			]
 		);
 
-		$this->add_responsive_control(
-			'columns',
-			[
-				'label' => 'Columns',
-				'type' => \Elementor\Controls_Manager::NUMBER,
-				'default' => 3,
-				'tablet_default' => 2,
-				'mobile_default' => 1,
-			]
-		);
-
-		$this->add_control(
-			'gap_preset',
-			[
-				'label' => 'Column Gap',
-				'type' => \Elementor\Controls_Manager::SELECT,
-				'default' => 'default',
-				'options' => KE_Elementor_Options::get_gap_options(),
-			]
-		);
-
-		$this->add_control(
-			'horizontal_scroll',
-			[
-				'label' => 'Horizontal Scroll (Mobile)',
-				'type' => \Elementor\Controls_Manager::SWITCHER,
-				'default' => '',
-			]
-		);
-
 		$this->end_controls_section();
 
 		// 2. Advanced Query (from Base)
 		$this->register_advanced_query_section();
 
-		// 3. Ajax Pagination (from Base)
-		$this->register_pagination_section();
+		// 3. Carousel Mode (from Base)
+		$this->register_carousel_section();
 
 		// 4. Style: Featured Image
 		$this->start_controls_section(
@@ -108,14 +78,15 @@ class KE_Widget_Events_Grid extends KE_Widget_Base {
 	protected function render() {
 		$settings = $this->get_settings_for_display();
 		$settings['is_widget'] = true;
-		$settings['carousel'] = ''; // Ensure carousel is off
+		
+		// Force Carousel Mode internally
+		$settings['carousel'] = 'yes';
 
 		$query = KE_Query::get_instance()->get_events( $settings );
 
 		$classes = [
 			'ke-elementor-widget',
-			'ke-events-grid-widget',
-			'ke-gap-' . esc_attr($settings['gap_preset'] ?? 'default'),
+			'ke-events-grid-carousel-widget',
 		];
 
 		if ( ! empty($settings['color_scheme']) ) $classes[] = 'ke-scheme-' . esc_attr($settings['color_scheme']);

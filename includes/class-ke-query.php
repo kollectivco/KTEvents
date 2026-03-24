@@ -264,13 +264,17 @@ class KE_Query {
 			
 			$classes = array( 
 				'ke-loop-wrapper', 
-				'ke-preset-' . esc_attr($display['layout_preset']), 
-				'ke-columns-' . esc_attr($display['columns']),
-				'ke-columns-tablet-' . esc_attr($display['columns_tablet']),
-				'ke-columns-mobile-' . esc_attr($display['columns_mobile'])
+				'ke-preset-' . esc_attr($display['layout_preset'])
 			);
 			
-			if ( ! empty( $display['gap'] ) ) $classes[] = 'ke-gap-' . esc_attr( $display['gap'] );
+			// Prevent grid column CSS leakage when acting as a carousel
+			if ( ! $is_carousel ) {
+				if ( isset($display['columns']) ) $classes[] = 'ke-columns-' . esc_attr($display['columns']);
+				if ( isset($display['columns_tablet']) ) $classes[] = 'ke-columns-tablet-' . esc_attr($display['columns_tablet']);
+				if ( isset($display['columns_mobile']) ) $classes[] = 'ke-columns-mobile-' . esc_attr($display['columns_mobile']);
+			}
+			
+			if ( ! empty( $display['gap'] ) && ! $is_carousel ) $classes[] = 'ke-gap-' . esc_attr( $display['gap'] );
 			if ( isset($display['horizontal_scroll']) && 'yes' === $display['horizontal_scroll'] ) $classes[] = 'ke-horizontal-scroll';
 			if ( isset($display['is_boxed']) && 'yes' === $display['is_boxed'] ) $classes[] = 'ke-boxed';
 			if ( isset($display['color_scheme']) && 'dark' === $display['color_scheme'] ) $classes[] = 'ke-scheme-dark';

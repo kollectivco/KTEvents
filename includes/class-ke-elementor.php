@@ -63,17 +63,17 @@ class KE_Elementor {
 		require_once KE_PLUGIN_DIR . 'elementor/class-ke-widget-base.php';
 
 		require_once KE_PLUGIN_DIR . 'elementor/widgets/class-ke-widget-events-grid.php';
+		require_once KE_PLUGIN_DIR . 'elementor/widgets/class-ke-widget-events-grid-carousel.php';
+		require_once KE_PLUGIN_DIR . 'elementor/widgets/class-ke-widget-events-list.php';
 		require_once KE_PLUGIN_DIR . 'elementor/widgets/class-ke-widget-featured-events.php';
 		require_once KE_PLUGIN_DIR . 'elementor/widgets/class-ke-widget-upcoming-events.php';
-		require_once KE_PLUGIN_DIR . 'elementor/widgets/class-ke-widget-venues-grid.php';
-		require_once KE_PLUGIN_DIR . 'elementor/widgets/class-ke-widget-venue-events.php';
 		require_once KE_PLUGIN_DIR . 'elementor/widgets/class-ke-widget-events-by-category.php';
 
 		$widgets_manager->register( new KE_Widget_Events_Grid() );
+		$widgets_manager->register( new KE_Widget_Events_Grid_Carousel() );
+		$widgets_manager->register( new KE_Widget_Events_List() );
 		$widgets_manager->register( new KE_Widget_Featured_Events() );
 		$widgets_manager->register( new KE_Widget_Upcoming_Events() );
-		$widgets_manager->register( new KE_Widget_Venues_Grid() );
-		$widgets_manager->register( new KE_Widget_Venue_Events() );
 		$widgets_manager->register( new KE_Widget_Events_By_Category() );
 	}
 }
