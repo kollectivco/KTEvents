@@ -255,6 +255,8 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 			]
 		);
 
+		$base_condition = [ 'carousel' => 'yes' ];
+
 		if ( ! $hide_switcher ) {
 			$this->add_control(
 				'carousel',
@@ -265,6 +267,8 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 					'description' => 'Converts the layout into a swipeable carousel.',
 				]
 			);
+		} else {
+			$base_condition = []; // No condition needed if we are in carousel-only mode
 		}
 
 		$this->add_responsive_control(
@@ -275,7 +279,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 				'default' => 3,
 				'tablet_default' => 2,
 				'mobile_default' => 1,
-				'condition' => [ 'carousel' => 'yes' ],
+				'condition' => $base_condition,
 			]
 		);
 
@@ -285,7 +289,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 				'label' => 'Gap (px)',
 				'type' => \Elementor\Controls_Manager::NUMBER,
 				'default' => 24,
-				'condition' => [ 'carousel' => 'yes' ],
+				'condition' => $base_condition,
 			]
 		);
 
@@ -295,7 +299,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 				'label' => 'Autoplay',
 				'type' => \Elementor\Controls_Manager::SWITCHER,
 				'default' => '',
-				'condition' => [ 'carousel' => 'yes' ],
+				'condition' => $base_condition,
 			]
 		);
 
@@ -305,7 +309,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 				'label' => 'Autoplay Speed (ms)',
 				'type' => \Elementor\Controls_Manager::NUMBER,
 				'default' => 5000,
-				'condition' => [ 'carousel' => 'yes', 'carousel_autoplay' => 'yes' ],
+				'condition' => array_merge( $base_condition, [ 'carousel_autoplay' => 'yes' ] ),
 			]
 		);
 
@@ -315,7 +319,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 				'label' => 'Transition Speed (ms)',
 				'type' => \Elementor\Controls_Manager::NUMBER,
 				'default' => 400,
-				'condition' => [ 'carousel' => 'yes' ],
+				'condition' => $base_condition,
 			]
 		);
 
@@ -325,7 +329,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 				'label' => 'Infinite Loop',
 				'type' => \Elementor\Controls_Manager::SWITCHER,
 				'default' => 'yes',
-				'condition' => [ 'carousel' => 'yes' ],
+				'condition' => $base_condition,
 			]
 		);
 
@@ -335,7 +339,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 				'label' => 'Center Mode',
 				'type' => \Elementor\Controls_Manager::SWITCHER,
 				'default' => '',
-				'condition' => [ 'carousel' => 'yes' ],
+				'condition' => $base_condition,
 			]
 		);
 
@@ -345,7 +349,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 				'label' => 'Pause on Hover',
 				'type' => \Elementor\Controls_Manager::SWITCHER,
 				'default' => 'yes',
-				'condition' => [ 'carousel' => 'yes', 'carousel_autoplay' => 'yes' ],
+				'condition' => array_merge( $base_condition, [ 'carousel_autoplay' => 'yes' ] ),
 			]
 		);
 
@@ -355,7 +359,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 				'label' => 'Show Navigation Arrows',
 				'type' => \Elementor\Controls_Manager::SWITCHER,
 				'default' => 'yes',
-				'condition' => [ 'carousel' => 'yes' ],
+				'condition' => $base_condition,
 			]
 		);
 
@@ -365,7 +369,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 				'label' => 'Hide Arrows on Mobile',
 				'type' => \Elementor\Controls_Manager::SWITCHER,
 				'default' => 'yes',
-				'condition' => [ 'carousel' => 'yes', 'carousel_arrows' => 'yes' ],
+				'condition' => array_merge( $base_condition, [ 'carousel_arrows' => 'yes' ] ),
 			]
 		);
 
@@ -375,7 +379,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 				'label' => 'Show Pagination Dots',
 				'type' => \Elementor\Controls_Manager::SWITCHER,
 				'default' => '',
-				'condition' => [ 'carousel' => 'yes' ],
+				'condition' => $base_condition,
 			]
 		);
 
@@ -386,7 +390,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 				'type' => \Elementor\Controls_Manager::SWITCHER,
 				'default' => '',
 				'description' => 'Scroll freely without snapping to slides.',
-				'condition' => [ 'carousel' => 'yes' ],
+				'condition' => $base_condition,
 			]
 		);
 
