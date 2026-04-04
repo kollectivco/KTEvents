@@ -69,9 +69,9 @@ class KE_Widget_Events_Mobile_Webview extends KE_Widget_Base {
 		$this->add_control(
 			'mobile_cards_per_view',
 			[
-				'label' => 'Cards per view (Slider mode)',
+				'label' => 'Cards per view (Mobile)',
 				'type' => \Elementor\Controls_Manager::NUMBER,
-				'default' => 1.2,
+				'default' => 2,
 				'step' => 0.1,
 				'condition' => [ 'mobile_layout' => [ 'horizontal_slider', 'mini_carousel' ] ],
 			]
@@ -87,7 +87,7 @@ class KE_Widget_Events_Mobile_Webview extends KE_Widget_Base {
 			[
 				'label' => 'Item Count',
 				'type' => \Elementor\Controls_Manager::NUMBER,
-				'default' => 4,
+				'default' => 6,
 			]
 		);
 
@@ -104,7 +104,7 @@ class KE_Widget_Events_Mobile_Webview extends KE_Widget_Base {
 		$this->add_control(
 			'event_category',
 			[
-				'label' => 'Filter Category',
+				'label' => 'Categories',
 				'type' => \Elementor\Controls_Manager::SELECT2,
 				'options' => $this->get_tax_options( 'event_category' ),
 				'multiple' => true,
@@ -137,30 +137,25 @@ class KE_Widget_Events_Mobile_Webview extends KE_Widget_Base {
 
 		$this->end_controls_section();
 
-		// 3. Card Style / Image
+		// 3. Style / Image
 		$this->start_controls_section( 'section_image_style', [ 'label' => 'Card Presentation', 'tab' => \Elementor\Controls_Manager::TAB_STYLE ] );
-
-		$this->add_control(
-			'card_style',
-			[
-				'label' => 'Card Style',
-				'type' => \Elementor\Controls_Manager::SELECT,
-				'default' => 'minimal',
-				'options' => [
-					'minimal' => 'Minimal (No border)',
-					'boxed'   => 'Boxed (Subtle border/shadow)',
-					'dark'    => 'Dark Card (High Impact)',
-				],
-			]
-		);
 
 		$this->add_control(
 			'image_ratio',
 			[
 				'label' => 'Image Ratio',
 				'type' => \Elementor\Controls_Manager::SELECT,
-				'default' => '4-3',
+				'default' => '1-1',
 				'options' => KE_Elementor_Options::get_image_ratios(),
+			]
+		);
+
+		$this->add_control(
+			'is_boxed',
+			[
+				'label' => 'Boxed Cards',
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'default' => 'yes',
 			]
 		);
 
@@ -181,29 +176,37 @@ class KE_Widget_Events_Mobile_Webview extends KE_Widget_Base {
 		$settings['is_widget'] = true;
 		$settings['query_mode'] = 'standard';
 		
+		// ALWAYS use "classic" to match Events Grid Carousel design system
+		$settings['layout_preset'] = 'classic';
+
 		// Determine layout/carousel
 		if ( in_array($settings['mobile_layout'], ['horizontal_slider', 'mini_carousel']) ) {
 			$settings['carousel'] = 'yes';
-			$settings['carousel_items'] = $settings['mobile_cards_per_view'];
-			$settings['carousel_items_mobile'] = $settings['mobile_cards_per_view'];
-			$settings['carousel_items_tablet'] = $settings['mobile_cards_per_view']; // If forcing visible
+			
+			// Setup for 2 cards side-by-side on mobile
+			$per_view = $settings['mobile_cards_per_view'] ?: 2;
+			
+			$settings['carousel_items'] = $per_view;
+			$settings['carousel_items_mobile'] = $per_view;
+			$settings['carousel_items_tablet'] = $per_view;
+			
 			$settings['carousel_gap'] = $settings['mobile_gap'];
-			$settings['carousel_arrows'] = ''; // Touch-friendly, no arrows for webview
+			$settings['carousel_arrows'] = ''; // Touch-friendly
 			$settings['carousel_dots'] = '';
-			$settings['carousel_loop'] = ''; // Native feel without layout jumps
-			$settings['layout_preset'] = ($settings['mobile_layout'] === 'mini_carousel') ? 'editorial_grid' : 'minimal_grid';
+			$settings['carousel_loop'] = ''; 
 		} else {
 			$settings['carousel'] = '';
-			$settings['layout_preset'] = 'list_2'; // Stacked mapping
-			$settings['columns'] = 1;
-			$settings['columns_mobile'] = 1;
-			$settings['columns_tablet'] = 1;
+			$settings['columns'] = 2;
+			$settings['columns_mobile'] = 2;
+			$settings['columns_tablet'] = 2;
 		}
 
-		// Enforce gaps natively if we have a gap option
+		// Spacing integration
 		if ( $settings['mobile_spacing'] === 'compact' ) {
+            $settings['gap'] = 'small';
             $settings['gap_preset'] = 'small';
         } else {
+            $settings['gap'] = 'medium';
             $settings['gap_preset'] = 'default';
         }
 
@@ -211,17 +214,15 @@ class KE_Widget_Events_Mobile_Webview extends KE_Widget_Base {
 
 		$classes = [
 			'ke-elementor-widget',
-			'ke-events-mobile-webview'
+			'ke-events-mobile-webview',
+			'ke-mobile-2-up' // Identifier for CSS refinements
 		];
 
 		if ( $settings['webview_mode'] === 'mobile_only' ) {
-			// Elementor native responsive hidden classes
 			$classes[] = 'elementor-hidden-desktop';
 			$classes[] = 'elementor-hidden-tablet';
             $classes[] = 'ke-mobile-only-enforced';
 		}
-
-		$classes[] = 'ke-card-style-' . esc_attr($settings['card_style']);
 
 		echo '<div class="' . implode(' ', $classes) . '">';
 		echo KE_Query::get_instance()->render_events_loop( $query, $settings );
