@@ -62,6 +62,8 @@ class KE_Elementor {
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-elementor-options.php';
 		require_once KE_PLUGIN_DIR . 'elementor/class-ke-widget-base.php';
 
+		require_once KE_PLUGIN_DIR . 'elementor/widgets/class-ke-widget-events-mobile-webview.php';
+
 		require_once KE_PLUGIN_DIR . 'elementor/widgets/class-ke-widget-events-grid.php';
 		require_once KE_PLUGIN_DIR . 'elementor/widgets/class-ke-widget-events-grid-carousel.php';
 		require_once KE_PLUGIN_DIR . 'elementor/widgets/class-ke-widget-events-list.php';
@@ -70,6 +72,7 @@ class KE_Elementor {
 		require_once KE_PLUGIN_DIR . 'elementor/widgets/class-ke-widget-events-by-category.php';
 
 		$widgets_manager->register( new KE_Widget_Events_Grid() );
+		$widgets_manager->register( new KE_Widget_Events_Mobile_Webview() );
 		$widgets_manager->register( new KE_Widget_Events_Grid_Carousel() );
 		$widgets_manager->register( new KE_Widget_Events_List() );
 		$widgets_manager->register( new KE_Widget_Featured_Events() );

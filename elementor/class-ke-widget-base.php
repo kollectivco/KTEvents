@@ -43,7 +43,6 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 				'type' => \Elementor\Controls_Manager::SELECT,
 				'default' => 'standard',
 				'options' => KE_Elementor_Options::get_query_modes(),
-				'description' => KE_Elementor_Descriptions::get('query_mode'),
 			]
 		);
 
@@ -63,7 +62,6 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 				'label' => 'Offset',
 				'type' => \Elementor\Controls_Manager::NUMBER,
 				'default' => 0,
-				'description' => KE_Elementor_Descriptions::get('offset'),
 				'condition' => [ 'query_mode' => 'standard' ],
 			]
 		);
@@ -102,6 +100,16 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 		);
 
 		$this->add_control(
+			'query_filter_heading',
+			[
+				'label' => 'Filters',
+				'type' => \Elementor\Controls_Manager::HEADING,
+				'separator' => 'before',
+				'condition' => [ 'query_mode' => 'standard' ],
+			]
+		);
+
+		$this->add_control(
 			'status',
 			[
 				'label' => 'Event Status',
@@ -120,7 +128,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 		$this->add_control(
 			'event_category',
 			[
-				'label' => 'Filter Category',
+				'label' => 'Categories',
 				'type' => \Elementor\Controls_Manager::SELECT2,
 				'options' => $this->get_tax_options( 'event_category' ),
 				'multiple' => true,
@@ -131,7 +139,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 		$this->add_control(
 			'event_city',
 			[
-				'label' => 'Filter City',
+				'label' => 'Cities',
 				'type' => \Elementor\Controls_Manager::SELECT2,
 				'options' => $this->get_tax_options( 'event_city' ),
 				'multiple' => true,
@@ -142,7 +150,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 		$this->add_control(
 			'event_area',
 			[
-				'label' => 'Filter Area',
+				'label' => 'Areas',
 				'type' => \Elementor\Controls_Manager::SELECT2,
 				'options' => $this->get_tax_options( 'event_area' ),
 				'multiple' => true,
@@ -153,7 +161,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 		$this->add_control(
 			'venue_id',
 			[
-				'label' => 'Filter by Venue',
+				'label' => 'Specific Venue',
 				'type' => \Elementor\Controls_Manager::SELECT2,
 				'options' => $this->get_post_options( 'venue' ),
 				'multiple' => false,
@@ -187,7 +195,6 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 				'label' => 'Unique Posts',
 				'type' => \Elementor\Controls_Manager::SWITCHER,
 				'default' => '',
-				'description' => KE_Elementor_Descriptions::get('unique_post'),
 			]
 		);
 
@@ -261,7 +268,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 			$this->add_control(
 				'carousel',
 				[
-					'label' => 'Enable Carousel Mode',
+					'label' => 'Enable Carousel',
 					'type' => \Elementor\Controls_Manager::SWITCHER,
 					'default' => '',
 					'description' => 'Converts the layout into a swipeable carousel.',
@@ -356,7 +363,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 		$this->add_control(
 			'carousel_arrows',
 			[
-				'label' => 'Show Navigation Arrows',
+				'label' => 'Arrows',
 				'type' => \Elementor\Controls_Manager::SWITCHER,
 				'default' => 'yes',
 				'condition' => $base_condition,
@@ -376,7 +383,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 		$this->add_control(
 			'carousel_dots',
 			[
-				'label' => 'Show Pagination Dots',
+				'label' => 'Pagination Dots',
 				'type' => \Elementor\Controls_Manager::SWITCHER,
 				'default' => '',
 				'condition' => $base_condition,
