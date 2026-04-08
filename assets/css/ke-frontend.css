@@ -299,7 +299,7 @@
 }
 
 .ke-rb-body {
-    padding: 20px 20px 18px 20px;
+    padding: 16px 18px 12px 18px;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -308,10 +308,10 @@
 
 
 .ke-card-title {
-    font-size: 19px;
-    line-height: 1.35;
+    font-size: 18px;
+    line-height: 1.3;
     font-weight: 800;
-    margin: 0 0 12px 0;
+    margin: 0 0 8px 0;
     color: #1a1e26;
 }
 
@@ -329,8 +329,9 @@
 .ke-rb-meta-footer {
     display: flex;
     flex-wrap: wrap;
-    gap: 15px;
-    padding-top: 15px;
+    gap: 12px;
+    padding-top: 12px;
+    margin-top: 0;
     border-top: 1px solid #f1f5f9;
 }
 
@@ -1079,20 +1080,21 @@
 .ke-columns-5 { grid-template-columns: repeat(5, 1fr); }
 
 /* Stabilize Grid Item Heights */
-.ke-loop-wrapper > div { height: 100%; display: flex; }
+.ke-loop-wrapper > div { height: auto; display: flex; } /* Allow natural card heights unless explicitly stretched */
 .ke-loop-wrapper .ke-card,
-.ke-loop-wrapper .ke-event-card-rb { flex: 1; display: flex; flex-direction: column; width: 100%; }
+.ke-loop-wrapper .ke-event-card-rb { flex: 1; display: flex; flex-direction: column; width: 100%; height: 100%; }
 .ke-loop-wrapper .ke-card-content,
-.ke-loop-wrapper .ke-rb-body { flex: 1; display: flex; flex-direction: column; }
+.ke-loop-wrapper .ke-rb-body { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; }
 .ke-loop-wrapper .ke-card-title {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    min-height: 2.5em; /* Approx 2 lines alignment */
+    min-height: 0; 
+    margin-bottom: 8px !important;
 }
 .ke-loop-wrapper .ke-card-meta,
-.ke-loop-wrapper .ke-rb-meta-footer { margin-top: auto; }
+.ke-loop-wrapper .ke-rb-meta-footer { margin-top: 0 !important; }
 
 /* Tablet Overrides (max-width: 1024px) */
 @media (max-width: 1024px) {
@@ -1519,5 +1521,54 @@ body.foxiz-dark-mode .ke-elementor-widget:not(.ke-scheme-light) {
 
     .ke-events-mobile-webview {
         margin-bottom: 30px;
+    }
+
+    /* Show More / Reveal Logic */
+    .ke-hidden-item {
+        display: none !important;
+    }
+
+    .ke-show-more-wrapper {
+        text-align: center;
+        margin-top: 50px;
+        width: 100%;
+        display: block;
+        clear: both;
+    }
+
+    .ke-show-more-btn {
+        background: #111827;
+        color: #fff;
+        padding: 16px 40px;
+        border-radius: 4px;
+        border: none;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .ke-show-more-btn:hover {
+        background: #000;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 15px rgba(0,0,0,0.2);
+    }
+
+    .ke-item-revealed {
+        animation: keFadeInUp 0.8s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+    }
+
+    @keyframes keFadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 }

@@ -374,6 +374,13 @@ class KE_Query {
 			
 			echo '</div>'; // close loop wrapper
 			
+			// Show More Button (Initial reveal)
+			if ( $max_initial > 0 && $query->post_count > $max_initial && ! $is_carousel ) {
+				echo '<div class="ke-show-more-wrapper">';
+				echo '<button class="ke-show-more-btn">Load More Recommended Events</button>';
+				echo '</div>';
+			}
+			
 			// Carousel Navigation Close
 			if ( $is_carousel ) {
 				echo '</div>'; // close swiper block
