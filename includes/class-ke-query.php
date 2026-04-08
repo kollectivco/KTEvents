@@ -266,6 +266,10 @@ class KE_Query {
 				'ke-loop-wrapper', 
 				'ke-preset-' . esc_attr($display['layout_preset'])
 			);
+
+			if ( ! empty( $display['image_ratio'] ) ) {
+				$classes[] = 'ke-ratio-' . esc_attr( $display['image_ratio'] );
+			}
 			
 			// Prevent grid column CSS leakage when acting as a carousel
 			if ( ! $is_carousel ) {
@@ -286,9 +290,9 @@ class KE_Query {
 			if ( $is_carousel ) {
 				$classes[] = 'swiper-wrapper'; // Internal wrapper acts as swiper wrapper
 				
-				$items_mob = isset($display['carousel_items_mobile']) && is_numeric($display['carousel_items_mobile']) ? intval($display['carousel_items_mobile']) : 1;
-				$items_tab = isset($display['carousel_items_tablet']) && is_numeric($display['carousel_items_tablet']) ? intval($display['carousel_items_tablet']) : 2;
-				$items_des = isset($display['carousel_items']) && is_numeric($display['carousel_items']) ? intval($display['carousel_items']) : 3;
+				$items_mob = isset($display['carousel_items_mobile']) && is_numeric($display['carousel_items_mobile']) ? floatval($display['carousel_items_mobile']) : 1;
+				$items_tab = isset($display['carousel_items_tablet']) && is_numeric($display['carousel_items_tablet']) ? floatval($display['carousel_items_tablet']) : 2;
+				$items_des = isset($display['carousel_items']) && is_numeric($display['carousel_items']) ? floatval($display['carousel_items']) : 3;
 				
 				$gap = isset($display['carousel_gap']) && is_numeric($display['carousel_gap']) ? intval($display['carousel_gap']) : 24;
 				$speed = isset($display['carousel_speed']) && is_numeric($display['carousel_speed']) ? intval($display['carousel_speed']) : 400;
@@ -300,7 +304,8 @@ class KE_Query {
 					'watchSlidesProgress' => true,
 					'observer'      => true,
 					'observeParents'=> true,
-					'loop'          => (isset($display['carousel_loop']) && 'yes' === $display['carousel_loop'] && $query->post_count > $items_des),
+					'loop'          => (isset($display['carousel_loop']) && 'yes' === $display['carousel_loop'] && $query->post_count > 1),
+					'init'          => true,
 					'centeredSlides'=> isset($display['carousel_center']) && 'yes' === $display['carousel_center'],
 					'freeMode'      => (isset($display['carousel_free_scroll']) && 'yes' === $display['carousel_free_scroll']) ? array('enabled' => true) : false,
 					'speed'         => $speed,
@@ -310,7 +315,7 @@ class KE_Query {
 					)
 				);
 
-				if ( isset($display['carousel_autoplay']) && 'yes' === $display['carousel_autoplay'] && $query->post_count > $items_mob ) {
+				if ( isset($display['carousel_autoplay']) && 'yes' === $display['carousel_autoplay'] && $query->post_count > 1 ) {
 					$delay = isset($display['carousel_autoplay_speed']) && is_numeric($display['carousel_autoplay_speed']) ? intval($display['carousel_autoplay_speed']) : 5000;
 					$c_settings['autoplay'] = array(
 						'delay' => $delay,
@@ -387,24 +392,38 @@ class KE_Query {
 				echo "<script>
 				(function() {
 					var attempts = 0;
+					var maxAttempts = 100;
 					function initIESwiper() {
-						if(typeof Swiper !== 'undefined') {
+						if (typeof Swiper !== 'undefined') {
 							var el = document.getElementById('{$carousel_uid}');
-							if(el) {
+							if (el) {
 								var container = el.querySelector('.swiper');
-								if(container && !container.classList.contains('swiper-initialized')) {
+								if (container && !container.classList.contains('swiper-initialized')) {
 									var options = JSON.parse(container.getAttribute('data-swiper-settings'));
-									new Swiper(container, options);
+									var swiper = new Swiper(container, options);
+									
+									// Force Autoplay Start (for redundancy)
+									if (options.autoplay && swiper.autoplay) {
+										swiper.autoplay.start();
+									}
 								}
 							} else if (attempts < 20) {
 								attempts++;
 								setTimeout(initIESwiper, 50);
 							}
-						} else if (attempts < 100) {
+						} else if (attempts < maxAttempts) {
 							attempts++;
 							setTimeout(initIESwiper, 50);
 						}
 					}
+					
+					// Elementor Fix: Listen for widget being loaded in editor
+					if (window.elementorFrontend) {
+						elementorFrontend.hooks.addAction('frontend/element_ready/ke_events_grid_carousel.default', function($scope) {
+							initIESwiper();
+						});
+					}
+					
 					if (document.readyState === 'loading') {
 						document.addEventListener('DOMContentLoaded', initIESwiper);
 					} else {

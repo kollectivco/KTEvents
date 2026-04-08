@@ -72,6 +72,8 @@ class KE_Widget_Events_Mobile_Webview extends KE_Widget_Base {
 				'label' => 'Cards per view (Mobile)',
 				'type' => \Elementor\Controls_Manager::NUMBER,
 				'default' => 2,
+				'min' => 1,
+				'max' => 5,
 				'step' => 0.1,
 				'condition' => [ 'mobile_layout' => [ 'horizontal_slider', 'mini_carousel' ] ],
 			]
@@ -137,36 +139,32 @@ class KE_Widget_Events_Mobile_Webview extends KE_Widget_Base {
 
 		$this->end_controls_section();
 
-		// 3. Style / Image
-		$this->start_controls_section( 'section_image_style', [ 'label' => 'Card Presentation', 'tab' => \Elementor\Controls_Manager::TAB_STYLE ] );
+		// 3. Style / Image - Match Events Grid Carousel
+		$this->start_controls_section( 'section_image_style', [ 'label' => 'Featured Image', 'tab' => \Elementor\Controls_Manager::TAB_STYLE ] );
 
 		$this->add_control(
 			'image_ratio',
 			[
-				'label' => 'Image Ratio',
+				'label' => 'Ratio',
 				'type' => \Elementor\Controls_Manager::SELECT,
-				'default' => '1-1',
+				'default' => '16-9',
 				'options' => KE_Elementor_Options::get_image_ratios(),
 			]
 		);
 
 		$this->add_control(
-			'is_boxed',
-			[
-				'label' => 'Boxed Cards',
-				'type' => \Elementor\Controls_Manager::SWITCHER,
-				'default' => 'yes',
-			]
+			'image_radius',
+			[ 'label' => 'Rounded Corners', 'type' => \Elementor\Controls_Manager::SLIDER, 'selectors' => [ '{{WRAPPER}} .ke-card-image img' => 'border-radius: {{SIZE}}{{UNIT}};' ] ]
 		);
 
 		$this->end_controls_section();
 
-		// 4. Meta Toggles
-		$this->start_controls_section( 'section_entry_meta', [ 'label' => 'Card Metadata', 'tab' => \Elementor\Controls_Manager::TAB_STYLE ] );
-		$this->add_control( 'meta_venue', [ 'label' => 'Show Venue', 'type' => \Elementor\Controls_Manager::SWITCHER, 'default' => 'yes' ] );
-		$this->add_control( 'meta_date', [ 'label' => 'Show Date', 'type' => \Elementor\Controls_Manager::SWITCHER, 'default' => 'yes' ] );
-		$this->add_control( 'meta_time', [ 'label' => 'Show Time', 'type' => \Elementor\Controls_Manager::SWITCHER, 'default' => '' ] );
-		$this->end_controls_section();
+		// 4. Style: Dark Mode & Boxed (Standardized)
+		$this->register_box_style_controls();
+		$this->register_dark_mode_overrides();
+
+		// 5. Card Metadata
+		$this->register_entry_meta_styling();
 	}
 
 	protected function render() {
