@@ -434,11 +434,19 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 		);
 
 		$this->add_control(
-			'meta_color', [ 'label' => 'Color', 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .ke-card-meta' => 'color: {{VALUE}};' ] ]
+			'meta_color', [ 
+				'label' => 'Color', 
+				'type' => \Elementor\Controls_Manager::COLOR, 
+				'selectors' => [ '{{WRAPPER}} .ke-rb-meta-node' => 'color: {{VALUE}};' ] 
+			]
 		);
 		
 		$this->add_control(
-			'dark_meta_color', [ 'label' => 'Dark Meta Color', 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '.foxiz-dark-mode {{WRAPPER}} .ke-card-meta' => 'color: {{VALUE}};' ] ]
+			'dark_meta_color', [ 
+				'label' => 'Dark Meta Color', 
+				'type' => \Elementor\Controls_Manager::COLOR, 
+				'selectors' => [ '.foxiz-dark-mode {{WRAPPER}} .ke-rb-meta-node' => 'color: {{VALUE}};' ] 
+			]
 		);
 
 		$this->end_controls_section();
@@ -481,7 +489,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 				'label' => 'Item Padding',
 				'type' => \Elementor\Controls_Manager::DIMENSIONS,
 				'size_units' => [ 'px', '%', 'em' ],
-				'selectors' => [ '{{WRAPPER}} .ke-card' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
+				'selectors' => [ '{{WRAPPER}} .ke-event-card-rb' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
 				'condition' => [ 'is_boxed' => 'yes' ],
 			]
 		);
@@ -506,7 +514,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 			[
 				'label' => 'Dark Item Background',
 				'type' => \Elementor\Controls_Manager::COLOR,
-				'selectors' => [ '.foxiz-dark-mode {{WRAPPER}} .ke-card' => 'background-color: {{VALUE}};' ],
+				'selectors' => [ '.foxiz-dark-mode {{WRAPPER}} .ke-event-card-rb' => 'background-color: {{VALUE}};' ],
 			]
 		);
 
@@ -524,7 +532,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 			[
 				'label' => 'Dark Border Color',
 				'type' => \Elementor\Controls_Manager::COLOR,
-				'selectors' => [ '.foxiz-dark-mode {{WRAPPER}} .ke-card' => 'border-color: {{VALUE}};' ],
+				'selectors' => [ '.foxiz-dark-mode {{WRAPPER}} .ke-event-card-rb' => 'border-color: {{VALUE}};' ],
 			]
 		);
 
@@ -532,21 +540,30 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 	}
 
 	/**
-	 * Shared Helpers
+	 * Shared Helpers with Static Caching
 	 */
 	protected function get_tax_options( $tax ) {
+		static $tax_cache = [];
+		if ( isset( $tax_cache[ $tax ] ) ) return $tax_cache[ $tax ];
+
 		$terms = get_terms( [ 'taxonomy' => $tax, 'hide_empty' => false ] );
 		$options = [];
 		if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
 			foreach ( $terms as $term ) { $options[ $term->term_id ] = $term->name; }
 		}
+		$tax_cache[ $tax ] = $options;
 		return $options;
 	}
 
 	protected function get_post_options( $cpt ) {
-		$posts = get_posts( [ 'post_type' => $cpt, 'numberposts' => -1, 'post_status' => 'publish' ] );
+		static $post_cache = [];
+		if ( isset( $post_cache[ $cpt ] ) ) return $post_cache[ $cpt ];
+
+		$posts = get_posts( [ 'post_type' => $cpt, 'numberposts' => -1, 'post_status' => 'publish', 'fields' => 'ids' ] );
 		$options = [];
-		foreach ( $posts as $p ) { $options[ $p->ID ] = $p->post_title; }
+		foreach ( $posts as $pid ) { $options[ $pid ] = get_the_title( $pid ); }
+		
+		$post_cache[ $cpt ] = $options;
 		return $options;
 	}
 }

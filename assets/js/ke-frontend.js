@@ -286,4 +286,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 500);
         });
     }
+
+    /**
+     * Elementor Frontend Integration
+     * Re-init carousels when widgets are edited in the panel
+     */
+    if (window.elementorFrontend) {
+        elementorFrontend.hooks.addAction('frontend/element_ready/widget', function($scope) {
+            initKECarousels();
+        });
+    }
 });

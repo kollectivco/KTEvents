@@ -210,20 +210,17 @@ class KE_Widget_Events_Mobile_Webview extends KE_Widget_Base {
 
 		$query = KE_Query::get_instance()->get_events( $settings );
 
-		$classes = [
-			'ke-elementor-widget',
+		$settings['extra_classes'] = [
 			'ke-events-mobile-webview',
-			'ke-mobile-2-up' // Identifier for CSS refinements
+			'ke-mobile-2-up' 
 		];
 
 		if ( $settings['webview_mode'] === 'mobile_only' ) {
-			$classes[] = 'elementor-hidden-desktop';
-			$classes[] = 'elementor-hidden-tablet';
-            $classes[] = 'ke-mobile-only-enforced';
+			$settings['extra_classes'][] = 'elementor-hidden-desktop';
+			$settings['extra_classes'][] = 'elementor-hidden-tablet';
+            $settings['extra_classes'][] = 'ke-mobile-only-enforced';
 		}
 
-		echo '<div class="' . implode(' ', $classes) . '">';
 		echo KE_Query::get_instance()->render_events_loop( $query, $settings );
-		echo '</div>';
 	}
 }

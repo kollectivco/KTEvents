@@ -29,12 +29,11 @@ class KE_Widget_Upcoming_Events extends KE_Widget_Base {
 
 	protected function render() {
 		$settings = $this->get_settings_for_display();
-		$settings['status'] = 'upcoming'; // Hardcoded filter
+		$settings['status']    = 'upcoming'; 
 		$settings['is_widget'] = true;
+		$settings['extra_classes'] = 'ke-upcoming-events-widget';
 		
 		$query = KE_Query::get_instance()->get_events( $settings );
-		echo '<div class="ke-elementor-widget ke-upcoming-events-widget">';
 		echo KE_Query::get_instance()->render_events_loop( $query, $settings );
-		echo '</div>';
 	}
 }

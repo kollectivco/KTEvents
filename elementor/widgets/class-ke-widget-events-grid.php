@@ -100,21 +100,10 @@ class KE_Widget_Events_Grid extends KE_Widget_Base {
 	protected function render() {
 		$settings = $this->get_settings_for_display();
 		$settings['is_widget'] = true;
-		$settings['carousel'] = ''; // Ensure carousel is off
+		$settings['carousel'] = ''; 
 
 		$query = KE_Query::get_instance()->get_events( $settings );
 
-		$classes = [
-			'ke-isolated-wrap',
-			'ke-elementor-widget',
-			'ke-events-grid-widget',
-			'ke-gap-' . esc_attr($settings['gap_preset'] ?? 'default'),
-		];
-
-		if ( ! empty($settings['color_scheme']) ) $classes[] = 'ke-scheme-' . esc_attr($settings['color_scheme']);
-
-		echo '<div class="' . implode(' ', $classes) . '">';
 		echo KE_Query::get_instance()->render_events_loop( $query, $settings );
-		echo '</div>';
 	}
 }

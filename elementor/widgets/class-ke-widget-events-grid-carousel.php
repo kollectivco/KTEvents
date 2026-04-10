@@ -70,21 +70,10 @@ class KE_Widget_Events_Grid_Carousel extends KE_Widget_Base {
 	protected function render() {
 		$settings = $this->get_settings_for_display();
 		$settings['is_widget'] = true;
-		
-		// Force Carousel Mode internally
-		$settings['carousel'] = 'yes';
+		$settings['carousel']  = 'yes';
+		$settings['extra_classes'] = 'ke-events-grid-carousel-widget';
 
 		$query = KE_Query::get_instance()->get_events( $settings );
-
-		$classes = [
-			'ke-elementor-widget',
-			'ke-events-grid-carousel-widget',
-		];
-
-		if ( ! empty($settings['color_scheme']) ) $classes[] = 'ke-scheme-' . esc_attr($settings['color_scheme']);
-
-		echo '<div class="' . implode(' ', $classes) . '">';
 		echo KE_Query::get_instance()->render_events_loop( $query, $settings );
-		echo '</div>';
 	}
 }

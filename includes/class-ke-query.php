@@ -345,6 +345,18 @@ class KE_Query {
 				'ke-preset-' . esc_attr($display['layout_preset'])
 			);
 
+			if ( ! empty( $display['is_widget'] ) ) {
+				$classes[] = 'ke-elementor-widget';
+			}
+
+			if ( ! empty( $display['extra_classes'] ) ) {
+				if ( is_array( $display['extra_classes'] ) ) {
+					$classes = array_merge( $classes, $display['extra_classes'] );
+				} else {
+					$classes[] = $display['extra_classes'];
+				}
+			}
+
 			if ( ! empty( $display['image_ratio'] ) ) {
 				$classes[] = 'ke-ratio-' . esc_attr( $display['image_ratio'] );
 			}
@@ -356,7 +368,8 @@ class KE_Query {
 				if ( isset($display['columns_mobile']) ) $classes[] = 'ke-columns-mobile-' . esc_attr($display['columns_mobile']);
 			}
 			
-			if ( ! empty( $display['gap'] ) && ! $is_carousel ) $classes[] = 'ke-gap-' . esc_attr( $display['gap'] );
+			$gap = ! empty( $display['gap'] ) ? $display['gap'] : ( ! empty( $display['gap_preset'] ) ? $display['gap_preset'] : '' );
+			if ( ! empty( $gap ) && ! $is_carousel ) $classes[] = 'ke-gap-' . esc_attr( $gap );
 			if ( isset($display['horizontal_scroll']) && 'yes' === $display['horizontal_scroll'] ) $classes[] = 'ke-horizontal-scroll';
 			if ( isset($display['is_boxed']) && 'yes' === $display['is_boxed'] ) $classes[] = 'ke-boxed';
 			if ( isset($display['color_scheme']) && 'dark' === $display['color_scheme'] ) $classes[] = 'ke-scheme-dark';

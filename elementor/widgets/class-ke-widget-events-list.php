@@ -73,24 +73,14 @@ class KE_Widget_Events_List extends KE_Widget_Base {
 		$settings = $this->get_settings_for_display();
 		$settings['is_widget'] = true;
 		
-		// Ensure List formats don't apply grid columns
-		$settings['columns'] = 1;
+		// Force list into single column
+		$settings['columns']        = 1;
 		$settings['columns_tablet'] = 1;
 		$settings['columns_mobile'] = 1;
-
-		$settings['carousel'] = ''; // Ensure carousel is off
+		$settings['carousel']       = ''; 
+		$settings['extra_classes']  = 'ke-events-list-widget';
 
 		$query = KE_Query::get_instance()->get_events( $settings );
-
-		$classes = [
-			'ke-elementor-widget',
-			'ke-events-list-widget',
-		];
-
-		if ( ! empty($settings['color_scheme']) ) $classes[] = 'ke-scheme-' . esc_attr($settings['color_scheme']);
-
-		echo '<div class="' . implode(' ', $classes) . '">';
 		echo KE_Query::get_instance()->render_events_loop( $query, $settings );
-		echo '</div>';
 	}
 }

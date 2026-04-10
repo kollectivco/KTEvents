@@ -1574,3 +1574,41 @@ body.foxiz-dark-mode .ke-elementor-widget:not(.ke-scheme-light) {
         }
     }
 }
+
+/* Mobile App Feed & Webview Enforcement */
+@media (max-width: 767px) {
+    .ke-isolated-wrap.ke-mobile-only-enforced {
+        padding: 0 10px;
+    }
+    
+    .ke-mobile-2-up .ke-loop-wrapper {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+    }
+
+    .ke-mobile-2-up .ke-event-card-rb {
+        border-radius: 12px;
+    }
+
+    .ke-mobile-2-up .ke-card-title {
+        font-size: 13px !important;
+        height: 2.6em;
+        overflow: hidden;
+    }
+
+    .ke-mobile-2-up .ke-rb-meta-footer {
+        gap: 6px;
+    }
+
+    .ke-mobile-2-up .ke-rb-meta-node {
+        font-size: 10px !important;
+    }
+}
+
+/* Ensure hidden correctly in desktop if enforced */
+@media (min-width: 768px) {
+    .ke-mobile-only-enforced {
+        display: none !important;
+    }
+}

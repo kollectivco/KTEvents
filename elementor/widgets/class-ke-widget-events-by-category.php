@@ -65,10 +65,9 @@ class KE_Widget_Events_By_Category extends KE_Widget_Base {
 		}
 
 		$settings['is_widget'] = true;
+		$settings['extra_classes'] = 'ke-events-by-category-widget';
+		
 		$query = KE_Query::get_instance()->get_events( $settings );
-
-		echo '<div class="ke-elementor-widget ke-events-by-category-widget">';
 		echo KE_Query::get_instance()->render_events_loop( $query, $settings );
-		echo '</div>';
 	}
 }

@@ -37,12 +37,11 @@ class KE_Widget_Featured_Events extends KE_Widget_Base {
 
 	protected function render() {
 		$settings = $this->get_settings_for_display();
-		$settings['featured'] = true; // Hardcoded filter for this widget
+		$settings['featured']  = true; 
 		$settings['is_widget'] = true;
+		$settings['extra_classes'] = 'ke-featured-events-widget';
 		
 		$query = KE_Query::get_instance()->get_events( $settings );
-		echo '<div class="ke-elementor-widget ke-featured-events-widget">';
 		echo KE_Query::get_instance()->render_events_loop( $query, $settings );
-		echo '</div>';
 	}
 }
