@@ -104,7 +104,7 @@ class KE_Query {
 		$args['update_post_meta_cache'] = true;
 		$args['update_post_term_cache'] = true;
 
-		$cache_key = md_hash( wp_json_encode( $args ) );
+		$cache_key = md5( wp_json_encode( $args ) );
 		$cache_handler = KE_Cache::get_instance();
 		$cached_ids = $cache_handler->get( 'vn_ids_' . $cache_key );
 		
