@@ -296,4 +296,40 @@ document.addEventListener('DOMContentLoaded', function() {
             initKECarousels();
         });
     }
+
+    /**
+     * Single Page Lazy Loading for Related Sections
+     */
+    function initSingleLazyLoading() {
+        const lazySections = document.querySelectorAll('.ke-lazy-section');
+        if (!lazySections.length) return;
+
+        lazySections.forEach(section => {
+            const params = new URLSearchParams();
+            params.append('action', 'ke_load_related');
+            params.append('nonce', ke_ajax_obj.nonce);
+            
+            // Collect all data attributes
+            Object.keys(section.dataset).forEach(key => {
+                params.append(key, section.dataset[key]);
+            });
+
+            fetch(`${ke_ajax_obj.ajax_url}?${params.toString()}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.data.html) {
+                        section.innerHTML = data.data.html;
+                        // Fade in effect
+                        section.style.opacity = '0';
+                        section.style.transition = 'opacity 0.5s ease-in';
+                        setTimeout(() => section.style.opacity = '1', 10);
+                        // Init carousels if any
+                        initKECarousels();
+                    }
+                })
+                .catch(err => console.error('KE Lazy Section Error:', err));
+        });
+    }
+
+    initSingleLazyLoading();
 });
