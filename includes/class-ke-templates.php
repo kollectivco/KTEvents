@@ -32,6 +32,10 @@ class KE_Templates {
 			$file = 'single-event.php';
 			$find[] = $file;
 			$find[] = 'kontentainment-events/' . $file;
+		} elseif ( is_post_type_archive( 'event' ) ) {
+			$file = 'archive-event.php';
+			$find[] = $file;
+			$find[] = 'kontentainment-events/' . $file;
 		} elseif ( is_singular( 'venue' ) ) {
 			$file = 'single-venue.php';
 			$find[] = $file;
