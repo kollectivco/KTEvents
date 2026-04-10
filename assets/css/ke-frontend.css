@@ -1635,3 +1635,18 @@ body.foxiz-dark-mode .ke-elementor-widget:not(.ke-scheme-light) {
         display: none !important;
     }
 }
+
+/* --- Single Event Page Layout Fix --- */
+.ke-single-event-page {
+    padding-top: 80px !important;
+    padding-bottom: 80px;
+    background: #ffffff;
+}
+@media (max-width: 1024px) {
+    .ke-single-event-page {
+        padding-top: 40px !important;
+    }
+}
+.ke-foxiz-aware {
+    margin-top: 0;
+}

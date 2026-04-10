@@ -28,7 +28,7 @@ $icon_venue = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" viewB
 $icon_phone = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>';
 ?>
 
-<div class="ke-frontend-main">
+<div class="ke-frontend-main ke-single-event-page" style="padding-top: 60px; margin-top: 0;">
 	<div class="rb-container">
 		<div class="rb-section">
 			<div class="ke-layout-sidebar">
@@ -54,9 +54,9 @@ $icon_phone = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" viewB
 								<!-- Main Column: Poster Image -->
 								<div class="ke-hero-poster-col">
 									<?php if ( has_post_thumbnail() ) : ?>
-										<?php the_post_thumbnail( 'large', [ 'class' => 'ke-poster-image' ] ); ?>
+										<?php the_post_thumbnail( 'large', [ 'class' => 'ke-poster-image', 'loading' => 'lazy' ] ); ?>
 									<?php else : ?>
-										<img src="<?php echo KE_PLUGIN_URL . 'assets/images/event-placeholder.jpg'; ?>" alt="<?php the_title(); ?>" class="ke-poster-image">
+										<img src="<?php echo KE_PLUGIN_URL . 'assets/images/event-placeholder.jpg'; ?>" alt="<?php the_title(); ?>" class="ke-poster-image" loading="lazy">
 									<?php endif; ?>
 								</div>
 
@@ -136,10 +136,11 @@ $icon_phone = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" viewB
 							<h2 class="ke-foxiz-section-title">More at this Venue</h2>
 							<?php
 							$venue_query = KE_Query::get_instance()->get_events([
-								'posts_per_page' => 4,
+								'posts_per_page' => 3,
 								'post__not_in'   => [ $event_id ],
 								'venue_id'       => $venue_id,
 								'no_found_rows'  => true,
+								'ignore_sticky_posts' => true
 							]);
 
 							if ( $venue_query->have_posts() ) :
@@ -160,10 +161,11 @@ $icon_phone = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" viewB
 							<h2 class="ke-foxiz-section-title">More in this Category</h2>
 							<?php
 							$cat_query = KE_Query::get_instance()->get_events([
-								'posts_per_page' => 4,
+								'posts_per_page' => 3,
 								'post__not_in'   => [ $event_id ],
 								'ke_category'    => $cat_id,
 								'no_found_rows'  => true,
+								'ignore_sticky_posts' => true
 							]);
 
 							if ( $cat_query->have_posts() ) :
@@ -184,10 +186,11 @@ $icon_phone = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" viewB
 							<?php
 							// Optimized Recommended Query
 							$rec_query = KE_Query::get_instance()->get_events([
-								'posts_per_page' => 6, // Reduced from 12 for initial load speed
+								'posts_per_page' => 3,
 								'post__not_in'   => [ $event_id ],
 								'ke_sort'        => 'rand',
 								'no_found_rows'  => true,
+								'ignore_sticky_posts' => true
 							]);
 							if ( $rec_query->have_posts() ) :
 								echo KE_Query::get_instance()->render_events_loop( $rec_query, array(
