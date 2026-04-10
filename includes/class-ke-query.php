@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class KE_Query {
 
 	protected static $instance = null;
+	private static $page_query_cache = []; // Request-level static cache
 
 	public static function get_instance() {
 		if ( null === self::$instance ) {
@@ -26,52 +27,58 @@ class KE_Query {
 	public function get_events( $overrides = array() ) {
 		$args = $this->get_filtered_events_args( $overrides );
 
+		// 1. Static Request-level Cache (Absolute fastest)
+		$static_key = md5( wp_json_encode( $args ) );
+		if ( isset( self::$page_query_cache[ $static_key ] ) ) {
+			return self::$page_query_cache[ $static_key ];
+		}
+
 		// Performance: Pagination optimization
 		if ( ! isset( $args['paged'] ) || $args['posts_per_page'] === -1 ) {
 			$args['no_found_rows'] = true;
 		}
 		
-		// Performance: Warm up caches
+		// Performance: Warm up caches for events themselves
 		$args['update_post_meta_cache'] = true;
 		$args['update_post_term_cache'] = true;
 
-		// 1. Check Cache
-		// Important: We exclude post__not_in from cache key to allow widget caching across pages 
-		// despite different unique post tracking, but this is risky if post__not_in is essential.
-		// Instead, let's just make sure we are not caching something that changes too much.
+		// 2. Check Persistent Cache (IDs only)
 		$cache_args = $args;
 		unset($cache_args['post__not_in']); 
 		
-		$cache_key    = md_hash( wp_json_encode( $cache_args ) );
+		$cache_key    = 'ev_v2_' . md5( wp_json_encode( $cache_args ) );
 		$cache_handler = KE_Cache::get_instance();
-		$cached_ids   = $cache_handler->get( 'ev_ids_' . $cache_key );
+		$cached_ids   = $cache_handler->get( $cache_key );
 
 		if ( false !== $cached_ids ) {
-			// If we have cached IDs, return a dummy query with these IDs
-			// This is MUCH faster than caching the whole WP_Query object
+			// Respect original posts_per_page when fetching from cache
+			$limit = isset($args['posts_per_page']) ? intval($args['posts_per_page']) : -1;
+			$fetch_ids = ( $limit > 0 ) ? array_slice( (array) $cached_ids, 0, $limit ) : $cached_ids;
+			
 			$query = new WP_Query( array(
 				'post_type' => 'event',
-				'post__in'  => ! empty( $cached_ids ) ? $cached_ids : array( 0 ),
+				'post__in'  => ! empty( $fetch_ids ) ? $fetch_ids : array( 0 ),
 				'orderby'   => 'post__in',
 				'posts_per_page' => -1,
 				'no_found_rows' => true,
 				'fields' => 'all'
 			) );
+			self::$page_query_cache[ $static_key ] = $query;
 			return $query;
 		}
 
-		// 2. Fetch Query
+		// 3. Fetch Real Query
 		$query = new WP_Query( $args );
 
-		// 3. Set Cache (Only IDs for efficiency)
+		// 4. Set Persistent Cache
 		if ( $query->have_posts() ) {
 			$ids = wp_list_pluck( $query->posts, 'ID' );
-			$cache_handler->set( 'ev_ids_' . $cache_key, $ids, HOUR_IN_SECONDS );
+			$cache_handler->set( $cache_key, $ids, HOUR_IN_SECONDS );
 		} else {
-			$cache_handler->set( 'ev_ids_' . $cache_key, array(), HOUR_IN_SECONDS );
+			$cache_handler->set( $cache_key, array(), HOUR_IN_SECONDS );
 		}
 
-		// Track IDs for Unique Posts
+		// Unique Post Tracking
 		if ( (isset($overrides['unique_post']) && 'yes' === $overrides['unique_post']) || isset($overrides['is_widget']) ) {
 			if ( $query->have_posts() ) {
 				foreach ( $query->posts as $p ) {
@@ -80,6 +87,7 @@ class KE_Query {
 			}
 		}
 
+		self::$page_query_cache[ $static_key ] = $query;
 		return $query;
 	}
 
@@ -181,7 +189,6 @@ class KE_Query {
 				'key'     => 'KE_event_date',
 				'value'   => current_time( 'Y-m-d' ),
 				'compare' => '>=',
-				'type'    => 'DATE'
 			);
 		}
 
@@ -200,7 +207,11 @@ class KE_Query {
 
 		if ( isset($input['unique_post']) && 'yes' === $input['unique_post'] ) {
 			$tracked_ids = KE_Unique_Posts::get_instance()->get_ids();
-			if ( ! empty( $tracked_ids ) ) $args['post__not_in'] = array_merge( (array) $args['post__not_in'], $tracked_ids );
+			if ( ! empty( $tracked_ids ) ) {
+				// Capping to avoid massive SQL queries that "hang"
+				$capped_ids = array_slice( (array) $tracked_ids, -50 ); 
+				$args['post__not_in'] = array_merge( (array) $args['post__not_in'], $capped_ids );
+			}
 		}
 
 		if ( $args['offset'] > 0 && $args['paged'] > 1 ) {
@@ -413,6 +424,21 @@ class KE_Query {
 
 			echo '<div class="' . implode(' ', $classes) . '">';
 			
+			// Performance: Bulk prime caches (Eliminates N+1 per-card)
+			$prime_ids = [];
+			foreach ( $query->posts as $p ) {
+				// Collect Venues
+				$vid = get_post_meta( $p->ID, 'KE_event_venue_id', true );
+				if ( $vid ) $prime_ids[] = intval( $vid );
+				
+				// Collect Thumbnails
+				$tid = get_post_thumbnail_id( $p->ID );
+				if ( $tid ) $prime_ids[] = intval( $tid );
+			}
+			if ( ! empty( $prime_ids ) ) {
+				_prime_post_caches( array_unique( $prime_ids ), false, true );
+			}
+
 			// Pre-determine partial to avoid repeated file_exists calls inside the loop
 			$preset  = $display['layout_preset'];
 			$partial = KE_PLUGIN_DIR . 'templates/partials/widgets/event-card-' . $preset . '.php';
@@ -447,10 +473,10 @@ class KE_Query {
 			
 			echo '</div>'; // close loop wrapper
 			
-			// Show More Button (Initial reveal)
+			// Show More Button (Initial reveal for hidden items)
 			if ( $max_initial > 0 && $query->post_count > $max_initial && ! $is_carousel ) {
 				echo '<div class="ke-show-more-wrapper">';
-				echo '<button class="ke-show-more-btn">Load More Recommended Events</button>';
+				echo '<button type="button" class="ke-show-more-btn">' . esc_html__( 'Show More', 'kontentainment-events' ) . '</button>';
 				echo '</div>';
 			}
 			
@@ -468,38 +494,9 @@ class KE_Query {
 				
 				echo '</div>'; // close ke-carousel-container
 				
-				// Optimized JS Init (one script, less aggressive polling)
-				echo "<script>
-				(function() {
-					function initIESwiper() {
-						if (typeof Swiper === 'undefined') return;
-						var el = document.getElementById('{$carousel_uid}');
-						if (!el) return;
-						var container = el.querySelector('.swiper');
-						if (container && !container.classList.contains('swiper-initialized')) {
-							var options = JSON.parse(container.getAttribute('data-swiper-settings'));
-							new Swiper(container, options);
-						}
-					}
-					// Use Elementor's hook or standard domestic events
-					if (window.elementorFrontend) {
-						elementorFrontend.hooks.addAction('frontend/element_ready/ke_events_grid_carousel.default', initIESwiper);
-					}
-					initIESwiper(); // Initial try
-					if (document.readyState === 'loading') {
-						document.addEventListener('DOMContentLoaded', initIESwiper);
-					} else {
-						window.addEventListener('load', initIESwiper);
-					}
-				})();
-				</script>";
-			}
-
-			// Ajax Pagination Show More
-			if ( $max_initial > 0 && $query->post_count > $max_initial && ! $is_carousel ) {
-				echo '<div class="ke-show-more-wrapper">';
-				echo '<button type="button" class="ke-show-more-btn" data-target="next">' . esc_html__( 'Show More', 'kontentainment-events' ) . '</button>';
-				echo '</div>';
+				// initKECarousels() in ke-frontend.js handles the heavy lifting. 
+				// This inline call just triggers it immediately for this specific element.
+				echo '<script>if(typeof initKECarousels === "function") initKECarousels();</script>';
 			}
 
 

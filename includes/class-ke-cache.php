@@ -11,6 +11,7 @@ class KE_Cache {
 
 	protected static $instance = null;
 	private $prefix = 'ke_query_';
+	private $version = null;
 
 	public static function get_instance() {
 		if ( null === self::$instance ) {
@@ -19,14 +20,17 @@ class KE_Cache {
 		return self::$instance;
 	}
 
-	private function __construct() {}
+	private function __construct() {
+		$this->version = get_option( 'ke_cache_version', '1' );
+	}
 
 	/**
 	 * Get cached data by key
 	 */
 	public function get( $key ) {
 		if ( ! $this->is_enabled() ) return false;
-		return get_transient( $this->prefix . $key );
+		$versioned_key = $this->prefix . 'v' . $this->version . '_' . $key;
+		return get_transient( $versioned_key );
 	}
 
 	/**
@@ -34,34 +38,19 @@ class KE_Cache {
 	 */
 	public function set( $key, $data, $ttl = null ) {
 		if ( ! $this->is_enabled() ) return false;
-		
 		if ( null === $ttl ) {
 			$ttl = get_option( 'ke_cache_ttl', HOUR_IN_SECONDS );
 		}
-		
-		return set_transient( $this->prefix . $key, $data, $ttl );
+		$versioned_key = $this->prefix . 'v' . $this->version . '_' . $key;
+		return set_transient( $versioned_key, $data, $ttl );
 	}
 
 	/**
-	 * Generate a unique key for query args
-	 */
-	public function generate_key( $args ) {
-		return md_hash( serialize( $args ) );
-	}
-
-	/**
-	 * Flush all KE caches
+	 * Flush all KE caches (By incrementing version)
 	 */
 	public function flush_all() {
-		global $wpdb;
-		// Use a more targeted delete if possible, but LIKE is standard for transients
-		$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->options WHERE option_name LIKE %s", '_transient_' . $this->prefix . '%' ) );
-		$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->options WHERE option_name LIKE %s", '_transient_timeout_' . $this->prefix . '%' ) );
-		
-		// Also flush ID cache
-		$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->options WHERE option_name LIKE %s", '_transient_ev_ids_%' ) );
-		$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->options WHERE option_name LIKE %s", '_transient_timeout_ev_ids_%' ) );
-		
+		$this->version = time();
+		update_option( 'ke_cache_version', $this->version );
 		return true;
 	}
 

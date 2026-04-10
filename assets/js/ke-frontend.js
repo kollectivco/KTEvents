@@ -1,9 +1,29 @@
 /**
- * Kontentainment Events Frontend Phase 2
- * AJAX Filters, Load More, URL Sync
+ * Global Carousel Initializer
  */
+function initKECarousels() {
+    if (typeof Swiper === 'undefined') return;
+
+    const carousels = document.querySelectorAll('.ke-carousel:not(.swiper-initialized)');
+    carousels.forEach(container => {
+        const swiperContainer = container.querySelector('.swiper');
+        if (!swiperContainer || swiperContainer.classList.contains('swiper-initialized')) return;
+
+        const settingsAttr = swiperContainer.getAttribute('data-swiper-settings');
+        if (!settingsAttr) return;
+
+        try {
+            const settings = JSON.parse(settingsAttr);
+            new Swiper(swiperContainer, settings);
+            swiperContainer.classList.add('swiper-initialized');
+        } catch (e) {
+            console.error('KE Swiper Init Error:', e);
+        }
+    });
+}
 
 document.addEventListener('DOMContentLoaded', function() {
+    initKECarousels();
     const archiveContainer = document.getElementById('ke-archive-container');
     const filterForm = document.getElementById('ke-filter-form');
     const archiveLoop = document.getElementById('ke-archive-loop');
@@ -67,6 +87,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Update URL
                     updateURL(params);
                 }
+
+                // Re-initialize carousels if any in new content
+                initKECarousels();
 
                 // Update pagination state
                 updatePagination(data.data);
