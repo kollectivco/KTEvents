@@ -211,7 +211,8 @@ class KE_Updater {
 	private function cache_remote( $remote ) {
 		$cache_key = 'ke_gh_' . md5($this->github_repo) . '_data';
 		set_transient( $cache_key, $remote, HOUR_IN_SECONDS * 6 );
-		set_transient( 'ke_last_check_' . md5($this->github_repo), date_i18n( get_option('date_format') . ' H:i:s' ), DAY_IN_SECONDS );
+		set_transient( 'ke_github_update_data', $remote, HOUR_IN_SECONDS * 6 ); // Static key for Admin Tools
+		set_transient( 'ke_last_check_time', date_i18n( get_option('date_format') . ' H:i:s' ), DAY_IN_SECONDS );
 	}
 
 	private function get_asset_url( $data ) {
