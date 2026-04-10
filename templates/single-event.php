@@ -147,11 +147,7 @@ $icon_phone = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" viewB
 						</div>
 					</div>
 				<?php else : ?>
-					<div class="ke-sidebar-col">
-						<div class="ke-sidebar-inner">
-							<?php get_sidebar(); ?>
-						</div>
-					</div>
+					<!-- No Sidebar - Full Width or Empty Col to prevent theme conflict -->
 				<?php endif; ?>
 
 			</div>
