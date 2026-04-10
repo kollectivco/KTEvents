@@ -92,7 +92,7 @@ class KE_AJAX {
 				break;
 			case 'recommended':
 				$title = 'Recommended Events';
-				$args = [ 'posts_per_page' => 3, 'post__not_in' => $exclude, 'ke_sort' => 'rand', 'no_found_rows' => true ];
+				$args = [ 'posts_per_page' => 3, 'post__not_in' => $exclude, 'ke_sort' => 'date_desc', 'no_found_rows' => true ];
 				break;
 			default:
 				wp_send_json_error();

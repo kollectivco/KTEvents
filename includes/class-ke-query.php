@@ -59,7 +59,7 @@ class KE_Query {
 				'post_type' => 'event',
 				'post__in'  => ! empty( $fetch_ids ) ? $fetch_ids : array( 0 ),
 				'orderby'   => 'post__in',
-				'posts_per_page' => -1,
+				'posts_per_page' => $limit,
 				'no_found_rows' => true,
 				'fields' => 'all'
 			) );
@@ -162,8 +162,8 @@ class KE_Query {
 
 	public function get_filtered_events_args( $overrides = array() ) {
 		// Merge URL parameters with overrides
-		// We prioritize overrides (structural settings) but allow $_GET (filters/pagination)
-		$input = wp_parse_args( $_GET, $overrides );
+		// We prioritize structural settings (overrides) and merge with sanitized URL parameters
+		$input = wp_parse_args( $overrides, $_GET );
 
 		// Pagination handling
 		$paged = isset( $_GET['ke_paged'] ) ? intval( $_GET['ke_paged'] ) : ( isset( $overrides['paged'] ) ? intval( $overrides['paged'] ) : 1 );
