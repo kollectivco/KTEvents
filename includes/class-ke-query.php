@@ -160,6 +160,7 @@ class KE_Query {
 		return $this->get_events( $args );
 	}
 
+	public function get_filtered_events_args( $overrides = array() ) {
 		// Merge URL parameters with overrides
 		// We prioritize overrides (structural settings) but allow $_GET (filters/pagination)
 		$input = wp_parse_args( $_GET, $overrides );
