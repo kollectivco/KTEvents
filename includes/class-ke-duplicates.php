@@ -77,6 +77,9 @@ class KE_Duplicates {
 			'meta_value'     => $value,
 			'posts_per_page' => 1,
 			'post_status'    => array( 'publish', 'draft', 'pending' ),
+			'no_found_rows'  => true,
+			'update_post_meta_cache' => false,
+			'update_post_term_cache' => false,
 		) );
 
 		if ( $query->have_posts() ) {

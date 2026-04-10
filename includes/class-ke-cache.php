@@ -54,8 +54,14 @@ class KE_Cache {
 	 */
 	public function flush_all() {
 		global $wpdb;
-		$wpdb->query( "DELETE FROM $wpdb->options WHERE option_name LIKE '_transient_{$this->prefix}%'" );
-		$wpdb->query( "DELETE FROM $wpdb->options WHERE option_name LIKE '_transient_timeout_{$this->prefix}%'" );
+		// Use a more targeted delete if possible, but LIKE is standard for transients
+		$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->options WHERE option_name LIKE %s", '_transient_' . $this->prefix . '%' ) );
+		$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->options WHERE option_name LIKE %s", '_transient_timeout_' . $this->prefix . '%' ) );
+		
+		// Also flush ID cache
+		$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->options WHERE option_name LIKE %s", '_transient_ev_ids_%' ) );
+		$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->options WHERE option_name LIKE %s", '_transient_timeout_ev_ids_%' ) );
+		
 		return true;
 	}
 

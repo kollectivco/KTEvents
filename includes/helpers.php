@@ -63,8 +63,8 @@ function ke_count_venue_upcoming_events( $venue_id ) {
 	$args = array(
 		'post_type'      => 'event',
 		'posts_per_page' => -1,
-		'fields'         => 'ids', // Performance
-		'no_found_rows'  => false,
+		'fields'         => 'ids', 
+		'no_found_rows'  => true, // -1 already fetches all, no need for calc_found_rows
 		'meta_query'     => array(
 			array(
 				'key'     => 'KE_event_venue_id',
@@ -80,7 +80,7 @@ function ke_count_venue_upcoming_events( $venue_id ) {
 	);
 
 	$query = new WP_Query( $args );
-	$count = $query->found_posts;
+	$count = count( $query->posts );
 
 	// Cache for 24 hours unless invalidated
 	KE_Cache::get_instance()->set( $cache_key, $count, DAY_IN_SECONDS );
@@ -97,8 +97,8 @@ function ke_get_venue_location_display( $venue_id ) {
 	}
 
 	$address = get_post_meta( $venue_id, 'KE_venue_address', true );
-	$cities  = wp_get_object_terms( $venue_id, 'event_city' );
-	$govs    = wp_get_object_terms( $venue_id, 'event_governorate' );
+	$cities  = get_the_terms( $venue_id, 'event_city' );
+	$govs    = get_the_terms( $venue_id, 'event_governorate' );
 
 	$parts = array();
 	if ( $address ) {

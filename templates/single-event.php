@@ -138,7 +138,8 @@ $icon_phone = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" viewB
 							$venue_query = KE_Query::get_instance()->get_events([
 								'posts_per_page' => 4,
 								'post__not_in'   => [ $event_id ],
-								'venue_id'       => $venue_id
+								'venue_id'       => $venue_id,
+								'no_found_rows'  => true,
 							]);
 
 							if ( $venue_query->have_posts() ) :
@@ -161,7 +162,8 @@ $icon_phone = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" viewB
 							$cat_query = KE_Query::get_instance()->get_events([
 								'posts_per_page' => 4,
 								'post__not_in'   => [ $event_id ],
-								'ke_category'    => $cat_id
+								'ke_category'    => $cat_id,
+								'no_found_rows'  => true,
 							]);
 
 							if ( $cat_query->have_posts() ) :
@@ -180,10 +182,12 @@ $icon_phone = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" viewB
 						<div class="ke-supporting-block">
 							<h2 class="ke-foxiz-section-title">Recommended Events</h2>
 							<?php
+							// Optimized Recommended Query
 							$rec_query = KE_Query::get_instance()->get_events([
-								'posts_per_page' => 12,
+								'posts_per_page' => 6, // Reduced from 12 for initial load speed
 								'post__not_in'   => [ $event_id ],
-								'ke_sort'        => 'rand'
+								'ke_sort'        => 'rand',
+								'no_found_rows'  => true,
 							]);
 							if ( $rec_query->have_posts() ) :
 								echo KE_Query::get_instance()->render_events_loop( $rec_query, array(

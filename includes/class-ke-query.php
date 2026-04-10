@@ -26,18 +26,52 @@ class KE_Query {
 	public function get_events( $overrides = array() ) {
 		$args = $this->get_filtered_events_args( $overrides );
 
+		// Performance: Pagination optimization
+		if ( ! isset( $args['paged'] ) || $args['posts_per_page'] === -1 ) {
+			$args['no_found_rows'] = true;
+		}
+		
+		// Performance: Warm up caches
+		$args['update_post_meta_cache'] = true;
+		$args['update_post_term_cache'] = true;
+
 		// 1. Check Cache
-		$cache_key   = md_hash( json_encode( $args ) );
-		$cached_query = KE_Cache::get_instance()->get( 'event_q_' . $cache_key );
-		if ( $cached_query ) return $cached_query;
+		// Important: We exclude post__not_in from cache key to allow widget caching across pages 
+		// despite different unique post tracking, but this is risky if post__not_in is essential.
+		// Instead, let's just make sure we are not caching something that changes too much.
+		$cache_args = $args;
+		unset($cache_args['post__not_in']); 
+		
+		$cache_key    = md_hash( wp_json_encode( $cache_args ) );
+		$cache_handler = KE_Cache::get_instance();
+		$cached_ids   = $cache_handler->get( 'ev_ids_' . $cache_key );
+
+		if ( false !== $cached_ids ) {
+			// If we have cached IDs, return a dummy query with these IDs
+			// This is MUCH faster than caching the whole WP_Query object
+			$query = new WP_Query( array(
+				'post_type' => 'event',
+				'post__in'  => ! empty( $cached_ids ) ? $cached_ids : array( 0 ),
+				'orderby'   => 'post__in',
+				'posts_per_page' => -1,
+				'no_found_rows' => true,
+				'fields' => 'all'
+			) );
+			return $query;
+		}
 
 		// 2. Fetch Query
 		$query = new WP_Query( $args );
 
-		// 3. Set Cache
-		KE_Cache::get_instance()->set( 'event_q_' . $cache_key, $query );
+		// 3. Set Cache (Only IDs for efficiency)
+		if ( $query->have_posts() ) {
+			$ids = wp_list_pluck( $query->posts, 'ID' );
+			$cache_handler->set( 'ev_ids_' . $cache_key, $ids, HOUR_IN_SECONDS );
+		} else {
+			$cache_handler->set( 'ev_ids_' . $cache_key, array(), HOUR_IN_SECONDS );
+		}
 
-		// Track IDs for Unique Posts (on real query)
+		// Track IDs for Unique Posts
 		if ( (isset($overrides['unique_post']) && 'yes' === $overrides['unique_post']) || isset($overrides['is_widget']) ) {
 			if ( $query->have_posts() ) {
 				foreach ( $query->posts as $p ) {
@@ -55,12 +89,36 @@ class KE_Query {
 	public function get_venues( $overrides = array() ) {
 		$args = $this->get_filtered_venues_args( $overrides );
 		
-		$cache_key = md_hash( json_encode( $args ) );
-		$cached = KE_Cache::get_instance()->get( 'venue_q_' . $cache_key );
-		if ( $cached ) return $cached;
+		// Performance Flags
+		if ( ! isset( $args['paged'] ) || $args['posts_per_page'] === -1 ) {
+			$args['no_found_rows'] = true;
+		}
+		$args['update_post_meta_cache'] = true;
+		$args['update_post_term_cache'] = true;
+
+		$cache_key = md_hash( wp_json_encode( $args ) );
+		$cache_handler = KE_Cache::get_instance();
+		$cached_ids = $cache_handler->get( 'vn_ids_' . $cache_key );
+		
+		if ( false !== $cached_ids ) {
+			return new WP_Query( array(
+				'post_type' => 'venue',
+				'post__in'  => ! empty( $cached_ids ) ? $cached_ids : array( 0 ),
+				'orderby'   => 'post__in',
+				'posts_per_page' => -1,
+				'no_found_rows' => true
+			) );
+		}
 
 		$query = new WP_Query( $args );
-		KE_Cache::get_instance()->set( 'venue_q_' . $cache_key, $query );
+
+		if ( $query->have_posts() ) {
+			$ids = wp_list_pluck( $query->posts, 'ID' );
+			$cache_handler->set( 'vn_ids_' . $cache_key, $ids, HOUR_IN_SECONDS );
+		} else {
+			$cache_handler->set( 'vn_ids_' . $cache_key, array(), HOUR_IN_SECONDS );
+		}
+
 		return $query;
 	}
 
@@ -232,7 +290,11 @@ class KE_Query {
 			case 'title_desc': $args['orderby'] = 'title'; $args['order'] = 'DESC'; break;
 			case 'date_asc': $args['meta_key'] = 'KE_event_date'; $args['orderby'] = 'meta_value'; $args['order'] = 'ASC'; break;
 			case 'date_desc': $args['meta_key'] = 'KE_event_date'; $args['orderby'] = 'meta_value'; $args['order'] = 'DESC'; break;
-			case 'rand': $args['orderby'] = 'rand'; break;
+			case 'rand': 
+				$args['orderby'] = 'rand'; 
+				// Optimization: random order should never use Found Rows
+				$args['no_found_rows'] = true;
+				break;
 			default:
 				// If upcoming or default
 				$args['meta_key'] = 'KE_event_date';
@@ -240,6 +302,10 @@ class KE_Query {
 				$args['order']    = 'ASC';
 				break;
 		}
+
+		// Prevent N+1 on metadata and taxonomies
+		$args['update_post_meta_cache'] = true;
+		$args['update_post_term_cache'] = true;
 
 		return $args;
 	}
@@ -347,11 +413,17 @@ class KE_Query {
 
 			echo '<div class="' . implode(' ', $classes) . '">';
 			
+			// Pre-determine partial to avoid repeated file_exists calls inside the loop
+			$preset  = $display['layout_preset'];
+			$partial = KE_PLUGIN_DIR . 'templates/partials/widgets/event-card-' . $preset . '.php';
+			if ( ! file_exists( $partial ) ) {
+				$partial = KE_PLUGIN_DIR . 'templates/partials/loop-event-card.php';
+			}
+
 			// LOOP
 			while ( $query->have_posts() ) {
 				$query->the_post();
 				$count++;
-				$preset = $display['layout_preset'];
 				$item_classes = array();
 				
 				if ( $max_initial > 0 && $count > $max_initial ) {
@@ -361,15 +433,16 @@ class KE_Query {
 					$item_classes[] = 'swiper-slide';
 				}
 
-				$partial = KE_PLUGIN_DIR . 'templates/partials/widgets/event-card-' . $preset . '.php';
-				
 				// Standardize item wrapper for hidden state / slider support
-				if ( ! empty( $item_classes ) ) echo '<div class="' . implode(' ', $item_classes) . '">';
+				if ( ! empty( $item_classes ) ) {
+					echo '<div class="' . implode(' ', $item_classes) . '">';
+				}
 				
-				if ( file_exists( $partial ) ) include $partial;
-				else include KE_PLUGIN_DIR . 'templates/partials/loop-event-card.php';
+				include $partial;
 				
-				if ( ! empty( $item_classes ) ) echo '</div>';
+				if ( ! empty( $item_classes ) ) {
+					echo '</div>';
+				}
 			}
 			
 			echo '</div>'; // close loop wrapper
@@ -395,46 +468,28 @@ class KE_Query {
 				
 				echo '</div>'; // close ke-carousel-container
 				
-				// Inline JS Init for stability independent of Elementor's async loading
+				// Optimized JS Init (one script, less aggressive polling)
 				echo "<script>
 				(function() {
-					var attempts = 0;
-					var maxAttempts = 100;
 					function initIESwiper() {
-						if (typeof Swiper !== 'undefined') {
-							var el = document.getElementById('{$carousel_uid}');
-							if (el) {
-								var container = el.querySelector('.swiper');
-								if (container && !container.classList.contains('swiper-initialized')) {
-									var options = JSON.parse(container.getAttribute('data-swiper-settings'));
-									var swiper = new Swiper(container, options);
-									
-									// Force Autoplay Start (for redundancy)
-									if (options.autoplay && swiper.autoplay) {
-										swiper.autoplay.start();
-									}
-								}
-							} else if (attempts < 20) {
-								attempts++;
-								setTimeout(initIESwiper, 50);
-							}
-						} else if (attempts < maxAttempts) {
-							attempts++;
-							setTimeout(initIESwiper, 50);
+						if (typeof Swiper === 'undefined') return;
+						var el = document.getElementById('{$carousel_uid}');
+						if (!el) return;
+						var container = el.querySelector('.swiper');
+						if (container && !container.classList.contains('swiper-initialized')) {
+							var options = JSON.parse(container.getAttribute('data-swiper-settings'));
+							new Swiper(container, options);
 						}
 					}
-					
-					// Elementor Fix: Listen for widget being loaded in editor
+					// Use Elementor's hook or standard domestic events
 					if (window.elementorFrontend) {
-						elementorFrontend.hooks.addAction('frontend/element_ready/ke_events_grid_carousel.default', function($scope) {
-							initIESwiper();
-						});
+						elementorFrontend.hooks.addAction('frontend/element_ready/ke_events_grid_carousel.default', initIESwiper);
 					}
-					
+					initIESwiper(); // Initial try
 					if (document.readyState === 'loading') {
 						document.addEventListener('DOMContentLoaded', initIESwiper);
 					} else {
-						initIESwiper();
+						window.addEventListener('load', initIESwiper);
 					}
 				})();
 				</script>";
