@@ -60,8 +60,9 @@ class KE_Widget_Events_List extends KE_Widget_Base {
 		);
 
 		$this->end_controls_section();
-
-		// 5. Style: Entry Meta (from Base)
+		
+		// 5. Style: Title & Meta (from Base)
+		$this->register_title_styling();
 		$this->register_entry_meta_styling();
 
 		// 6. Style: Dark Mode & Boxed (from Base)

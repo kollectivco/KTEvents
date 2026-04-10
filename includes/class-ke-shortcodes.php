@@ -34,21 +34,24 @@ class KE_Shortcodes {
 
 		ob_start();
 		?>
-		<div class="ke-events-shortcode-wrapper">
+		<div class="ke-isolated-wrap ke-events-directory">
 			<div class="ke-discovery-filter">
 				<?php $this->render_discovery_filter(); ?>
 			</div>
 
-			<div id="ke-archive-loop">
+			<div id="ke-archive-loop" class="ke-archive-loop-container">
 				<?php
 				$query = KE_Query::get_instance()->get_events( array(
 					'posts_per_page' => $atts['limit'],
 					'query_mode'     => 'standard'
 				) );
+				
+				// Important: We pass a flag to tell the renderer NOT to double-wrap in .ke-isolated-wrap
 				echo KE_Query::get_instance()->render_events_loop( $query, array(
 					'columns'       => $atts['columns'],
 					'layout_preset' => $atts['preset'],
-					'pagination'    => 'load_more'
+					'pagination'    => 'load_more',
+					'skip_isolated_wrap' => true 
 				) );
 				?>
 			</div>

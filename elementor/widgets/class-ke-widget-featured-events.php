@@ -30,6 +30,7 @@ class KE_Widget_Featured_Events extends KE_Widget_Base {
 		$this->register_pagination_section();
 
 		// 3. Style
+		$this->register_title_styling();
 		$this->register_entry_meta_styling();
 		$this->register_box_style_controls();
 		$this->register_dark_mode_overrides();

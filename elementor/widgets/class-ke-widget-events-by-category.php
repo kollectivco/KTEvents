@@ -47,8 +47,9 @@ class KE_Widget_Events_By_Category extends KE_Widget_Base {
 		// 2.5 Pagination
 		$this->register_pagination_section();
 
-		// 3. Entry Meta (from Base)
-		$this->register_entry_meta_controls();
+		// 3. Title & Meta (from Base)
+		$this->register_title_styling();
+		$this->register_entry_meta_styling();
 
 		// 4. Boxed Style (from Base)
 		$this->register_box_style_controls();

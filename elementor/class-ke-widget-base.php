@@ -405,10 +405,50 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 	}
 
 	/**
-	 * Alias for Entry Meta Styling
+	 * Title Styling
 	 */
-	protected function register_entry_meta_controls() {
-		$this->register_entry_meta_styling();
+	protected function register_title_styling() {
+		$this->start_controls_section(
+			'section_title_style',
+			[
+				'label' => 'Title Settings',
+				'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->add_control(
+			'title_color', [
+				'label' => 'Color',
+				'type' => \Elementor\Controls_Manager::COLOR,
+				'selectors' => [ '{{WRAPPER}} .ke-card-title a' => 'color: {{VALUE}};' ]
+			]
+		);
+
+		$this->add_control(
+			'title_hover_color', [
+				'label' => 'Hover Color',
+				'type' => \Elementor\Controls_Manager::COLOR,
+				'selectors' => [ '{{WRAPPER}} .ke-card-title a:hover' => 'color: {{VALUE}};' ]
+			]
+		);
+
+		$this->add_group_control(
+			\Elementor\Group_Control_Typography::get_type(),
+			[
+				'name' => 'title_typography',
+				'selector' => '{{WRAPPER}} .ke-card-title',
+			]
+		);
+
+		$this->add_control(
+			'dark_title_color', [
+				'label' => 'Dark Mode Color',
+				'type' => \Elementor\Controls_Manager::COLOR,
+				'selectors' => [ '.foxiz-dark-mode {{WRAPPER}} .ke-card-title a' => 'color: {{VALUE}};' ]
+			]
+		);
+
+		$this->end_controls_section();
 	}
 
 	/**
