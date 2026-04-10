@@ -35,6 +35,11 @@ class KE_Shortcodes {
 		ob_start();
 		?>
 		<div class="ke-isolated-wrap ke-events-directory">
+			<div class="ke-page-header">
+				<h1 class="ke-page-title">Events</h1>
+				<div class="ke-title-line"></div>
+			</div>
+
 			<div class="ke-discovery-filter">
 				<?php $this->render_discovery_filter(); ?>
 			</div>
