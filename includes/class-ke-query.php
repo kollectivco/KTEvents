@@ -28,6 +28,7 @@ class KE_Query {
 		$args = $this->get_filtered_events_args( $overrides );
 
 		// 1. Static Request-level Cache (Absolute fastest)
+		// Static cache for the same page request
 		$static_key = md5( wp_json_encode( $args ) );
 		if ( isset( self::$page_query_cache[ $static_key ] ) ) {
 			return self::$page_query_cache[ $static_key ];
@@ -57,7 +58,7 @@ class KE_Query {
 			
 			$query = new WP_Query( array(
 				'post_type' => 'event',
-				'post__in'  => ! empty( $fetch_ids ) ? $fetch_ids : array( 0 ),
+				'post__in'  => ! empty( $fetch_ids ) ? array_map('intval', (array)$fetch_ids) : array( 0 ),
 				'orderby'   => 'post__in',
 				'posts_per_page' => $limit,
 				'no_found_rows' => true,
@@ -234,7 +235,11 @@ class KE_Query {
 		foreach ( $tax_map as $key => $taxonomy ) {
 			$val = $input[ $key ] ?? '';
 			if ( ! empty( $val ) ) {
-				$args['tax_query'][] = array( 'taxonomy' => $taxonomy, 'field' => is_numeric($val) ? 'term_id' : 'slug', 'terms' => (array) $val );
+				$args['tax_query'][] = array( 
+					'taxonomy' => $taxonomy, 
+					'field'    => is_numeric($val) ? 'term_id' : 'slug', 
+					'terms'    => (array) $val 
+				);
 			}
 		}
 
@@ -510,10 +515,11 @@ class KE_Query {
 
 
 			if ( ! empty( $display['pagination'] ) ) $this->render_pagination( $query, $display );
-			wp_reset_postdata();
 		} else {
 			include KE_PLUGIN_DIR . 'templates/partials/archive-empty-state.php';
 		}
+
+		wp_reset_postdata();
 		return ob_get_clean();
 	}
 

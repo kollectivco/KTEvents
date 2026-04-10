@@ -130,12 +130,61 @@ $icon_phone = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" viewB
 						</div>
 						<?php endif; ?>
 
-						<!-- Related Sections (AJAX Lazy Loaded) -->
-						<div id="ke-related-venue-section" class="ke-lazy-section" data-type="venue" data-venue-id="<?php echo esc_attr($venue_id); ?>" data-exclude="<?php echo esc_attr($event_id); ?>"></div>
-						
-						<div id="ke-related-category-section" class="ke-lazy-section" data-type="category" data-cat-id="<?php echo esc_attr($cat_id); ?>" data-exclude="<?php echo esc_attr($event_id); ?>"></div>
-						
-						<div id="ke-recommended-section" class="ke-lazy-section" data-type="recommended" data-exclude="<?php echo esc_attr($event_id); ?>"></div>
+						<!-- Related Sections (Optimized Direct Render) -->
+						<?php if ( $venue_id ) : ?>
+						<div class="ke-supporting-block">
+							<h2 class="ke-foxiz-section-title">More at this Venue</h2>
+							<?php
+							$venue_query = KE_Query::get_instance()->get_events([
+								'posts_per_page' => 3,
+								'post__not_in'   => [ $event_id ],
+								'venue_id'       => $venue_id,
+								'no_found_rows'  => true,
+								'ignore_sticky_posts' => true
+							]);
+							if ( $venue_query->have_posts() ) :
+								echo KE_Query::get_instance()->render_events_loop( $venue_query, [ 'columns' => 3 ] );
+							endif;
+							wp_reset_postdata();
+							?>
+						</div>
+						<?php endif; ?>
+
+						<?php if ( $cat_id ) : ?>
+						<div class="ke-supporting-block">
+							<h2 class="ke-foxiz-section-title">More in this Category</h2>
+							<?php
+							$cat_query = KE_Query::get_instance()->get_events([
+								'posts_per_page' => 3,
+								'post__not_in'   => [ $event_id ],
+								'ke_category'    => $cat_id,
+								'no_found_rows'  => true,
+								'ignore_sticky_posts' => true
+							]);
+							if ( $cat_query->have_posts() ) :
+								echo KE_Query::get_instance()->render_events_loop( $cat_query, [ 'columns' => 3 ] );
+							endif;
+							wp_reset_postdata();
+							?>
+						</div>
+						<?php endif; ?>
+
+						<div class="ke-supporting-block">
+							<h2 class="ke-foxiz-section-title">Recommended Events</h2>
+							<?php
+							$rec_query = KE_Query::get_instance()->get_events([
+								'posts_per_page' => 3,
+								'post__not_in'   => [ $event_id ],
+								'ke_sort'        => 'date_desc',
+								'no_found_rows'  => true,
+								'ignore_sticky_posts' => true
+							]);
+							if ( $rec_query->have_posts() ) :
+								echo KE_Query::get_instance()->render_events_loop( $rec_query, [ 'columns' => 3 ] );
+							endif;
+							wp_reset_postdata();
+							?>
+						</div>
 
 					</div>
 				</div>
