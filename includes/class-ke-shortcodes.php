@@ -29,40 +29,28 @@ class KE_Shortcodes {
 		$atts = shortcode_atts( array(
 			'columns' => 3,
 			'limit'   => 12,
+			'preset'  => 'classic'
 		), $atts, 'ke_events_archive' );
 
-		// Use the same logic as the archive template but PURE HTML only
 		ob_start();
 		?>
-		<div class="ke-isolated-wrap ke-events-shortcode">
+		<div class="ke-events-shortcode-wrapper">
 			<div class="ke-discovery-filter">
-				<?php 
-				// We need to render the discovery filter part here
-				// I'll extract it to a partial if needed, but for now I'll use the logic from archive-event.php
-				$this->render_discovery_filter(); 
-				?>
+				<?php $this->render_discovery_filter(); ?>
 			</div>
 
-			<div id="ke-archive-loop" class="ke-archive-grid-wrapper">
+			<div id="ke-archive-loop">
 				<?php
 				$query = KE_Query::get_instance()->get_events( array(
-					'posts_per_page' => $atts['limit']
+					'posts_per_page' => $atts['limit'],
+					'query_mode'     => 'standard'
 				) );
 				echo KE_Query::get_instance()->render_events_loop( $query, array(
-					'columns' => $atts['columns']
+					'columns'       => $atts['columns'],
+					'layout_preset' => $atts['preset'],
+					'pagination'    => 'load_more'
 				) );
 				?>
-			</div>
-
-			<div class="ke-archive-footer">
-				<?php if ( $query->max_num_pages > 1 ) : ?>
-					<button type="button" id="ke-load-more" 
-							data-current-page="<?php echo $query->query_vars['paged']; ?>" 
-							data-max-pages="<?php echo $query->max_num_pages; ?>"
-							class="button button-secondary is-full-width">
-						Load More Events
-					</button>
-				<?php endif; ?>
 			</div>
 
 			<div id="ke-loading-overlay" class="ke-loading-overlay">

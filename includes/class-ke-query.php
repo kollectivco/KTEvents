@@ -160,10 +160,12 @@ class KE_Query {
 		return $this->get_events( $args );
 	}
 
-	public function get_filtered_events_args( $overrides = array() ) {
-		$input = empty( $overrides ) || (isset( $overrides['paged'] ) && !isset($overrides['is_widget'])) ? $_GET : $overrides;
-		
-		$paged = isset( $input['ke_paged'] ) ? intval( $input['ke_paged'] ) : ( isset( $overrides['paged'] ) ? $overrides['paged'] : 1 );
+		// Merge URL parameters with overrides
+		// We prioritize overrides (structural settings) but allow $_GET (filters/pagination)
+		$input = wp_parse_args( $_GET, $overrides );
+
+		// Pagination handling
+		$paged = isset( $_GET['ke_paged'] ) ? intval( $_GET['ke_paged'] ) : ( isset( $overrides['paged'] ) ? intval( $overrides['paged'] ) : 1 );
 		
 		$defaults = array(
 			'post_type'      => 'event',
@@ -180,7 +182,8 @@ class KE_Query {
 
 		$args = wp_parse_args( $overrides, $defaults );
 
-		$mode = $input['query_mode'] ?? 'standard';
+		// Set Query Mode - Ensure shortcodes and widgets trigger the right logic
+		$mode = isset( $input['query_mode'] ) ? $input['query_mode'] : ( isset($overrides['is_widget']) ? 'standard' : 'standard' );
 		
 		// 1. Mandatory Upcoming Filter (Global Frontend Rule)
 		// We hide past events by default unless explicitly allowed (e.g. in some specific archive mode if ever needed)
@@ -189,6 +192,7 @@ class KE_Query {
 				'key'     => 'KE_event_date',
 				'value'   => current_time( 'Y-m-d' ),
 				'compare' => '>=',
+				'type'    => 'DATE'
 			);
 		}
 
@@ -438,20 +442,7 @@ class KE_Query {
 
 			echo '<div class="' . implode(' ', $classes) . '">';
 			
-			// Performance: Bulk prime caches (Eliminates N+1 per-card)
-			$prime_ids = [];
-			foreach ( $query->posts as $p ) {
-				// Collect Venues
-				$vid = get_post_meta( $p->ID, 'KE_event_venue_id', true );
-				if ( $vid ) $prime_ids[] = intval( $vid );
-				
-				// Collect Thumbnails
-				$tid = get_post_thumbnail_id( $p->ID );
-				if ( $tid ) $prime_ids[] = intval( $tid );
-			}
-			if ( ! empty( $prime_ids ) ) {
-				_prime_post_caches( array_unique( $prime_ids ), false, true );
-			}
+			// Rely on WP_Query's built-in meta/term caching (Set in get_filtered_events_args)
 
 			// Pre-determine partial to avoid repeated file_exists calls inside the loop
 			$preset  = $display['layout_preset'];
@@ -524,11 +515,14 @@ class KE_Query {
 
 	private function render_pagination( $query, $settings ) {
 		if ( $query->max_num_pages <= 1 ) return;
+		$paged = $query->query_vars['paged'] ?? 1;
 		$type = $settings['pagination'];
 		$style = $settings['pagination_style'] ?? 'standard';
 		$label = $settings['pagination_label'] ?? 'LOAD MORE';
 		echo '<div class="ke-pagination-wrapper ke-pagination-' . esc_attr($type) . ' ke-pagination-style-' . esc_attr($style) . '">';
-		if ( 'load_more' === $type ) echo '<a href="#" class="ke-load-more-btn" data-max-pages="' . $query->max_num_pages . '">' . esc_html($label) . '</a>';
+		if ( 'load_more' === $type ) {
+			echo '<button type="button" id="ke-load-more" class="ke-load-more-btn" data-current-page="' . esc_attr($paged) . '" data-max-pages="' . $query->max_num_pages . '">' . esc_html($label) . '</button>';
+		}
 		echo '</div>';
 	}
 
