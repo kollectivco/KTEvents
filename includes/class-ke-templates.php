@@ -28,16 +28,8 @@ class KE_Templates {
 	public function template_loader( $template ) {
 		$post_type = get_query_var( 'post_type' );
 
-		if ( is_post_type_archive( 'event' ) || is_tax( array( 'event_category', 'event_city', 'event_area' ) ) ) {
-			$file = 'archive-event.php';
-			$find[] = $file;
-			$find[] = 'kontentainment-events/' . $file;
-		} elseif ( is_singular( 'event' ) ) {
+		if ( is_singular( 'event' ) ) {
 			$file = 'single-event.php';
-			$find[] = $file;
-			$find[] = 'kontentainment-events/' . $file;
-		} elseif ( is_post_type_archive( 'venue' ) ) {
-			$file = 'archive-venue.php';
 			$find[] = $file;
 			$find[] = 'kontentainment-events/' . $file;
 		} elseif ( is_singular( 'venue' ) ) {

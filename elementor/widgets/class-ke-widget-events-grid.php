@@ -105,6 +105,7 @@ class KE_Widget_Events_Grid extends KE_Widget_Base {
 		$query = KE_Query::get_instance()->get_events( $settings );
 
 		$classes = [
+			'ke-isolated-wrap',
 			'ke-elementor-widget',
 			'ke-events-grid-widget',
 			'ke-gap-' . esc_attr($settings['gap_preset'] ?? 'default'),

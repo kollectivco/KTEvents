@@ -13,24 +13,29 @@
     --ke-top-spacing: 50px;
 }
 
-/* Layout Spacing & Wrappers */
-.ke-frontend-main {
+/* Layout Spacing & Wrappers - Scoped to avoid takeover */
+.ke-isolated-wrap {
+    width: 100%;
+    margin: 0 auto;
+}
+
+.ke-isolated-wrap .ke-frontend-main {
     padding-top: var(--ke-top-spacing);
 }
 
 @media (max-width: 1024px) {
-    .ke-frontend-main {
+    .ke-isolated-wrap .ke-frontend-main {
         --ke-top-spacing: 30px;
     }
 }
 
-/* Base Layout Integration */
-.ke-foxiz-aware {
+/* Base Layout Integration - Scoped */
+.ke-isolated-wrap .ke-foxiz-aware {
     width: 100%;
     margin-bottom: 60px;
 }
 
-.ke-main-content-area {
+.ke-isolated-wrap .ke-main-content-area {
     width: 100%;
 }
 
@@ -626,11 +631,9 @@
 }
 
 /* --- ARCHIVE GRID & LAYOUT REFINEMENTS --- */
-.post-type-archive-event .rb-container {
-    max-width: 1320px; /* Expands container for larger archive cards */
-}
+/* REMOVED: .post-type-archive-event .rb-container override as it corrupts Foxiz layout */
 
-.ke-archive-grid-wrapper {
+.ke-isolated-wrap .ke-archive-grid-wrapper {
     margin-top: 50px;
 }
 
@@ -704,9 +707,8 @@
         max-width: 100% !important;
     }
 
-    /* Add Horizontal Gutter / Breathing Room */
-    .rb-container,
-    .ke-container {
+    /* Add Horizontal Gutter / Breathing Room - Scoped to Plugin only */
+    .ke-isolated-wrap .ke-container {
         padding-left: 20px !important;
         padding-right: 20px !important;
         box-sizing: border-box !important;

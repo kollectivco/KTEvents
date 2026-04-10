@@ -340,6 +340,7 @@ class KE_Query {
 			$carousel_uid = uniqid('ke_carousel_');
 			
 			$classes = array( 
+				'ke-isolated-wrap',
 				'ke-loop-wrapper', 
 				'ke-preset-' . esc_attr($display['layout_preset'])
 			);
