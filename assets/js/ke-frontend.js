@@ -4,10 +4,10 @@
 function initKECarousels() {
     if (typeof Swiper === 'undefined') return;
 
-    const carousels = document.querySelectorAll('.ke-carousel:not(.swiper-initialized)');
+    const carousels = document.querySelectorAll('.ke-carousel-container:not(.ke-initialized)');
     carousels.forEach(container => {
         const swiperContainer = container.querySelector('.swiper');
-        if (!swiperContainer || swiperContainer.classList.contains('swiper-initialized')) return;
+        if (!swiperContainer) return;
 
         const settingsAttr = swiperContainer.getAttribute('data-swiper-settings');
         if (!settingsAttr) return;
@@ -15,7 +15,7 @@ function initKECarousels() {
         try {
             const settings = JSON.parse(settingsAttr);
             new Swiper(swiperContainer, settings);
-            swiperContainer.classList.add('swiper-initialized');
+            container.classList.add('ke-initialized');
         } catch (e) {
             console.error('KE Swiper Init Error:', e);
         }

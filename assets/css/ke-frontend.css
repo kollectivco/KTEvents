@@ -1650,3 +1650,62 @@ body.foxiz-dark-mode .ke-elementor-widget:not(.ke-scheme-light) {
 .ke-foxiz-aware {
     margin-top: 0;
 }
+
+/* --- Carousel & Swiper Layout Fixes --- */
+.ke-carousel-container {
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.ke-swiper {
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+.ke-carousel-container .swiper-slide {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.ke-carousel-container .swiper-slide img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Premium Swiper Arrows */
+.ke-carousel-container .swiper-button-next,
+.ke-carousel-container .swiper-button-prev {
+    width: 44px;
+    height: 44px;
+    background: #ffffff;
+    color: #111827;
+    border-radius: 50%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+.ke-carousel-container .swiper-button-next:after,
+.ke-carousel-container .swiper-button-prev:after {
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.ke-carousel-container .swiper-button-next:hover,
+.ke-carousel-container .swiper-button-prev:hover {
+    background: #111827;
+    color: #ffffff;
+    transform: scale(1.1);
+}
+
+.ke-carousel-container .swiper-pagination-bullet-active {
+    background: #111827;
+}
+
+/* Slider Hero Specifics */
+.ke-preset-hero_slider .swiper-slide {
+    height: 500px;
+}
