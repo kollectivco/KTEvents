@@ -124,14 +124,14 @@ $icon_phone = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 					</div>
 				</div>
 
-				<!-- Sidebar Column (30%) -->
+				<!-- Sidebar Column (Dedicated Events Sidebar Only) -->
 				<div class="ke-sidebar-col" style="flex: 0.8; min-width: 280px;">
 					<aside class="ke-sidebar-inner-integrated">
 						<?php 
 						if ( is_active_sidebar( 'ke-events-sidebar' ) ) {
 							dynamic_sidebar( 'ke-events-sidebar' );
 						} else {
-							get_sidebar(); 
+							echo '<div class="ke-sidebar-empty-placeholder" style="color:#ccc; font-size:12px; text-align:center; padding:20px; border:1px dashed #eee; border-radius:10px;">Events Sidebar is empty. Add widgets in Admin > Appearance > Widgets.</div>';
 						}
 						?>
 					</aside>
