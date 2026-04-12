@@ -1728,3 +1728,36 @@ body.foxiz-dark-mode .ke-elementor-widget:not(.ke-scheme-light) {
     .ke-integrated-mode .ke-hero-split-new { flex-direction: column; gap: 30px; }
     .ke-integrated-mode .ke-title-new { font-size: 34px; }
 }
+
+/* --- Single Event Page (Mobile-First) --- */
+.ke-single-entry-page { background: #fff; padding: 40px 0; }
+.ke-page-row { display: flex; gap: 40px; flex-wrap: wrap; }
+.ke-col-main { flex: 2; min-width: 310px; padding: 0 15px; } 
+.ke-col-sidebar { flex: 1; min-width: 300px; padding: 0 15px; }
+
+.ke-eyebrow-text { text-transform: uppercase; font-size: 11px; font-weight: 800; letter-spacing: 0.15em; color: #111827; margin-bottom: 12px; }
+.ke-single-title { font-size: 38px; font-weight: 900; margin: 0 0 35px 0; line-height: 1.15; color: #111827; letter-spacing: -0.01em; }
+
+.ke-hero-grid { display: flex; gap: 40px; margin-bottom: 50px; }
+.ke-hero-poster { flex: 1.2; }
+.ke-main-img { width: 100%; height: auto; border-radius: 16px; box-shadow: 0 12px 24px rgba(0,0,0,0.06); display: block; }
+.ke-hero-details { flex: 1; display: flex; flex-direction: column; gap: 20px; padding-top: 5px; }
+
+.ke-detail-item { display: flex; gap: 15px; align-items: center; }
+.ke-detail-icon { width: 44px; height: 44px; background: #f9fafb; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #6b7280; flex-shrink: 0; }
+.ke-detail-label { font-size: 13px; font-weight: 800; color: #111827; text-transform: uppercase; letter-spacing: 0.05em; display: block; }
+.ke-detail-value { font-size: 15px; color: #374151; font-weight: 500; display: block; }
+.ke-detail-sub { font-size: 13px; color: #9ca3af; display: block; }
+
+.ke-loader-placeholder { color: #9ca3af; font-size: 14px; text-align: center; padding: 40px; background: #f9fafb; border-radius: 12px; margin-top: 40px; }
+
+@media (max-width: 1024px) {
+    .ke-hero-grid { flex-direction: column; gap: 30px; }
+    .ke-single-title { font-size: 30px; }
+}
+
+@media (max-width: 767px) {
+    .ke-single-entry-page { padding: 20px 15px; }
+    .ke-single-title { font-size: 26px; }
+    .ke-col-main, .ke-col-sidebar { padding: 0 5px; }
+}

@@ -26,6 +26,8 @@ class KE_AJAX {
 		// AJAX for single page related loading
 		add_action( 'wp_ajax_ke_load_related', array( $this, 'load_related_events' ) );
 		add_action( 'wp_ajax_nopriv_ke_load_related', array( $this, 'load_related_events' ) );
+		add_action( 'wp_ajax_ke_load_related_combined', array( $this, 'load_related_events_combined' ) );
+		add_action( 'wp_ajax_nopriv_ke_load_related_combined', array( $this, 'load_related_events_combined' ) );
 
 		// Localize script for AJAX URL and nonces
 		add_action( 'wp_enqueue_scripts', array( $this, 'localize_ajax' ), 20 );
@@ -110,6 +112,49 @@ class KE_AJAX {
 			<?php
 			$html = ob_get_clean();
 		}
+
+		wp_send_json_success( [ 'html' => $html ] );
+	}
+
+	/**
+	 * Combined Lazy loader for extreme performance
+	 */
+	public function load_related_events_combined() {
+		check_ajax_referer( 'ke_ajax_nonce', 'nonce' );
+
+		$venue_id = intval($_GET['venueId'] ?? 0);
+		$cat_id   = intval($_GET['catId'] ?? 0);
+		$exclude  = isset($_GET['exclude']) ? [intval($_GET['exclude'])] : [];
+		
+		$html = '';
+		$sections = [
+			['type' => 'venue', 'id' => $venue_id, 'title' => 'More at this Venue', 'arg' => 'venue_id'],
+			['type' => 'category', 'id' => $cat_id, 'title' => 'More in this Category', 'arg' => 'ke_category'],
+			['type' => 'recommended', 'id' => 0, 'title' => 'Recommended Events', 'arg' => 'ke_sort']
+		];
+
+		ob_start();
+		foreach ($sections as $sec) {
+			if ($sec['type'] !== 'recommended' && !$sec['id']) continue;
+
+			$args = [ 'posts_per_page' => 3, 'post__not_in' => $exclude, 'no_found_rows' => true ];
+			if ($sec['type'] === 'recommended') {
+				$args['ke_sort'] = 'date_desc';
+			} else {
+				$args[$sec['arg']] = $sec['id'];
+			}
+
+			$query = KE_Query::get_instance()->get_events( $args );
+			if ( $query->have_posts() ) {
+				?>
+				<div class="ke-supporting-block">
+					<h2 class="ke-foxiz-section-title"><?php echo esc_html($sec['title']); ?></h2>
+					<?php echo KE_Query::get_instance()->render_events_loop( $query, [ 'columns' => 3 ] ); ?>
+				</div>
+				<?php
+			}
+		}
+		$html = ob_get_clean();
 
 		wp_send_json_success( [ 'html' => $html ] );
 	}
