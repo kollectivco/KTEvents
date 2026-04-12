@@ -101,21 +101,6 @@ $icon_phone = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 							</div>
 						</div>
 
-						<!-- About Section -->
-						<div class="ke-about-block" style="margin-top: 50px;">
-							<h2 style="font-size: 24px; font-weight: 800; margin-bottom: 20px; border-bottom: 1px solid #f3f4f6; padding-bottom: 10px;">About the Event</h2>
-							<div class="ke-main-description-rich">
-								<?php 
-								if ( have_posts() ) {
-									while ( have_posts() ) {
-										the_post();
-										the_content();
-									}
-								}
-								?>
-							</div>
-						</div>
-
 						<!-- Related / Recommended (AJAX Lazy) -->
 						<div id="ke-related-venue-section" class="ke-lazy-section" data-type="venue" data-venue-id="<?php echo esc_attr($venue_id); ?>" data-exclude="<?php echo esc_attr($event_id); ?>"></div>
 						<div id="ke-related-category-section" class="ke-lazy-section" data-type="category" data-cat-id="<?php echo esc_attr($cat_id); ?>" data-exclude="<?php echo esc_attr($event_id); ?>"></div>
