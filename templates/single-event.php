@@ -1,6 +1,6 @@
 <?php
 /**
- * Single Event Template - Ultra Optimized Mobile-First Integrated
+ * Single Event Template - High Performance Static Layout
  */
 
 get_header();
@@ -47,7 +47,6 @@ $icon_phone = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 
 						<!-- Quick Details -->
 						<div class="ke-hero-details">
-							
 							<div class="ke-detail-item">
 								<div class="ke-detail-icon"><?php echo $icon_calendar; ?></div>
 								<div class="ke-detail-content">
@@ -55,7 +54,6 @@ $icon_phone = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 									<span class="ke-detail-value"><?php echo $event_date ? date_i18n( 'd F Y', strtotime( $event_date ) ) : 'TBA'; ?></span>
 								</div>
 							</div>
-
 							<div class="ke-detail-item">
 								<div class="ke-detail-icon"><?php echo $icon_clock; ?></div>
 								<div class="ke-detail-content">
@@ -63,7 +61,6 @@ $icon_phone = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 									<span class="ke-detail-value"><?php echo $event_time ?: 'TBA'; ?></span>
 								</div>
 							</div>
-
 							<div class="ke-detail-item">
 								<div class="ke-detail-icon"><?php echo $icon_venue; ?></div>
 								<div class="ke-detail-content">
@@ -74,7 +71,6 @@ $icon_phone = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 									<?php endif; ?>
 								</div>
 							</div>
-
 							<div class="ke-detail-item">
 								<div class="ke-detail-icon"><?php echo $icon_phone; ?></div>
 								<div class="ke-detail-content">
@@ -82,16 +78,60 @@ $icon_phone = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 									<span class="ke-detail-value"><?php echo esc_html($phone); ?></span>
 								</div>
 							</div>
-
 						</div>
 					</div>
 
-					<!-- Unified Related Content Loader (Combined AJAX) -->
-					<div id="ke-combined-related-loader" 
-						 data-venue-id="<?php echo esc_attr($venue_id); ?>" 
-						 data-cat-id="<?php echo esc_attr($cat_id); ?>" 
-						 data-exclude="<?php echo esc_attr($event_id); ?>">
-						<div class="ke-loader-placeholder">Loading related events...</div>
+					<!-- Static Related Content (NO AJAX for stability and speed) -->
+					<div class="ke-static-related-sections">
+						
+						<?php 
+						// 1. More at this Venue
+						if ( $venue_id ) {
+							$venue_query = KE_Query::get_instance()->get_events([
+								'posts_per_page' => 3,
+								'post__not_in'   => [ $event_id ],
+								'venue_id'       => $venue_id,
+								'no_found_rows'  => true
+							]);
+							if ( $venue_query->have_posts() ) {
+								echo '<div class="ke-supporting-block">';
+								echo '<h2 class="ke-foxiz-section-title">More at this Venue</h2>';
+								echo KE_Query::get_instance()->render_events_loop( $venue_query, [ 'columns' => 3 ] );
+								echo '</div>';
+							}
+						}
+
+						// 2. More in this Category
+						if ( $cat_id ) {
+							$cat_query = KE_Query::get_instance()->get_events([
+								'posts_per_page' => 3,
+								'post__not_in'   => [ $event_id ],
+								'ke_category'    => $cat_id,
+								'no_found_rows'  => true
+							]);
+							if ( $cat_query->have_posts() ) {
+								echo '<div class="ke-supporting-block">';
+								echo '<h2 class="ke-foxiz-section-title">More in this Category</h2>';
+								echo KE_Query::get_instance()->render_events_loop( $cat_query, [ 'columns' => 3 ] );
+								echo '</div>';
+							}
+						}
+
+						// 3. Recommended Events (Latest)
+						$rec_query = KE_Query::get_instance()->get_events([
+							'posts_per_page' => 3,
+							'post__not_in'   => [ $event_id ],
+							'ke_sort'        => 'date_desc',
+							'no_found_rows'  => true
+						]);
+						if ( $rec_query->have_posts() ) {
+							echo '<div class="ke-supporting-block">';
+							echo '<h2 class="ke-foxiz-section-title">Recommended Events</h2>';
+							echo KE_Query::get_instance()->render_events_loop( $rec_query, [ 'columns' => 3 ] );
+							echo '</div>';
+						}
+						?>
+
 					</div>
 
 				</div>
