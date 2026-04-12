@@ -1,6 +1,6 @@
 <?php
 /**
- * Single Event Template - High Speed Integrated Design
+ * Single Event Template - Compact Integrated Design with Sidebar
  */
 
 get_header();
@@ -23,98 +23,122 @@ $icon_venue = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 $icon_phone = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>';
 ?>
 
-<div class="ke-standalone-wrapper" style="background:#fff; padding: 60px 0;">
+<div class="ke-frontend-main ke-integrated-layout" style="background:#fff; padding: 40px 0;">
 	<div class="rb-container">
-		
-		<!-- Header Information -->
-		<div style="text-transform: uppercase; font-size: 13px; font-weight: 800; letter-spacing: 0.1em; color: #111827; margin-bottom: 20px;">
-			<?php echo esc_html($cat_name); ?>
-		</div>
-		<h1 style="font-size: 54px; font-weight: 900; margin: 0 0 50px 0; letter-spacing: -0.02em; line-height: 1.1; color: #111827;">
-			<?php the_title(); ?>
-		</h1>
-
-		<!-- Layout Split -->
-		<div style="display: flex; gap: 60px; align-items: flex-start; margin-bottom: 60px; flex-wrap: wrap;">
-			
-			<!-- Poster Image -->
-			<div style="flex: 1.2; min-width: 300px;">
-				<?php if ( has_post_thumbnail() ) : ?>
-					<?php the_post_thumbnail( 'large', [ 'style' => 'width:100%; height:auto; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); display:block;' ] ); ?>
-				<?php else : ?>
-					<img src="<?php echo KE_PLUGIN_URL . 'assets/images/event-placeholder.jpg'; ?>" alt="<?php the_title(); ?>" style="width:100%; height:auto; border-radius:20px; box-shadow:0 20px 40px rgba(0,0,0,0.1);">
-				<?php endif; ?>
-			</div>
-
-			<!-- Meta Details -->
-			<div style="flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 30px; padding-top: 10px;">
+		<div class="rb-section">
+			<div class="ke-layout-sidebar" style="display: flex; gap: 40px; flex-wrap: wrap;">
 				
-				<div style="display: flex; gap: 20px; align-items: center;">
-					<div style="width: 50px; height: 50px; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #4b5563; flex-shrink: 0;">
-						<?php echo $icon_calendar; ?>
-					</div>
-					<div>
-						<div style="font-size: 14px; font-weight: 800; color: #111827; text-transform: uppercase; letter-spacing: 0.05em;">Date</div>
-						<div style="font-size: 16px; color: #4b5563; font-weight: 500;"><?php echo $event_date ? date_i18n( 'd F Y', strtotime( $event_date ) ) : 'TBA'; ?></div>
+				<!-- Main Content Column -->
+				<div class="ke-main-col" style="flex: 2; min-width: 300px;">
+					<div class="ke-foxiz-aware">
+
+						<!-- Layout Header -->
+						<div style="text-transform: uppercase; font-size: 12px; font-weight: 800; letter-spacing: 0.1em; color: #111827; margin-bottom: 15px;">
+							<?php echo esc_html($cat_name); ?>
+						</div>
+						<h1 style="font-size: 42px; font-weight: 900; margin: 0 0 40px 0; letter-spacing: -0.01em; line-height: 1.1; color: #111827;">
+							<?php the_title(); ?>
+						</h1>
+
+						<!-- Split Info Row -->
+						<div style="display: flex; gap: 40px; align-items: flex-start; margin-bottom: 50px; flex-wrap: wrap;">
+							
+							<!-- Poster Image (Compact) -->
+							<div style="flex: 1.1; min-width: 280px;">
+								<?php if ( has_post_thumbnail() ) : ?>
+									<?php the_post_thumbnail( 'large', [ 'style' => 'width:100%; height:auto; border-radius: 16px; box-shadow: 0 15px 30px rgba(0,0,0,0.08); display:block;' ] ); ?>
+								<?php else : ?>
+									<img src="<?php echo KE_PLUGIN_URL . 'assets/images/event-placeholder.jpg'; ?>" alt="<?php the_title(); ?>" style="width:100%; height:auto; border-radius:16px; box-shadow:0 15px 30px rgba(0,0,0,0.08);">
+								<?php endif; ?>
+							</div>
+
+							<!-- Details Side (Compact) -->
+							<div style="flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 20px; padding-top: 5px;">
+								
+								<div style="display: flex; gap: 15px; align-items: center;">
+									<div style="width: 44px; height: 44px; background: #f9fafb; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #6b7280; flex-shrink: 0;">
+										<?php echo $icon_calendar; ?>
+									</div>
+									<div>
+										<div style="font-size: 13px; font-weight: 800; color: #111827; text-transform: uppercase; letter-spacing: 0.05em;">Date</div>
+										<div style="font-size: 15px; color: #4b5563; font-weight: 500;"><?php echo $event_date ? date_i18n( 'd F Y', strtotime( $event_date ) ) : 'TBA'; ?></div>
+									</div>
+								</div>
+
+								<div style="display: flex; gap: 15px; align-items: center;">
+									<div style="width: 44px; height: 44px; background: #f9fafb; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #6b7280; flex-shrink: 0;">
+										<?php echo $icon_clock; ?>
+									</div>
+									<div>
+										<div style="font-size: 13px; font-weight: 800; color: #111827; text-transform: uppercase; letter-spacing: 0.05em;">Time</div>
+										<div style="font-size: 15px; color: #4b5563; font-weight: 500;"><?php echo $event_time ?: 'TBA'; ?></div>
+									</div>
+								</div>
+
+								<div style="display: flex; gap: 15px; align-items: center;">
+									<div style="width: 44px; height: 44px; background: #f9fafb; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #6b7280; flex-shrink: 0;">
+										<?php echo $icon_venue; ?>
+									</div>
+									<div>
+										<div style="font-size: 13px; font-weight: 800; color: #111827; text-transform: uppercase; letter-spacing: 0.05em;">Venue</div>
+										<div style="font-size: 15px; color: #4b5563; font-weight: 600;"><?php echo esc_html($venue_name); ?></div>
+										<?php if ( $venue_addr ) : ?>
+											<div style="font-size: 13px; color: #9ca3af;"><?php echo esc_html($venue_addr); ?></div>
+										<?php endif; ?>
+									</div>
+								</div>
+
+								<div style="display: flex; gap: 15px; align-items: center;">
+									<div style="width: 44px; height: 44px; background: #f9fafb; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #6b7280; flex-shrink: 0;">
+										<?php echo $icon_phone; ?>
+									</div>
+									<div>
+										<div style="font-size: 13px; font-weight: 800; color: #111827; text-transform: uppercase; letter-spacing: 0.05em;">Phone</div>
+										<div style="font-size: 15px; color: #4b5563; font-weight: 500;"><?php echo esc_html($phone); ?></div>
+									</div>
+								</div>
+
+							</div>
+						</div>
+
+						<!-- About Section -->
+						<div class="ke-about-block" style="margin-top: 50px;">
+							<h2 style="font-size: 24px; font-weight: 800; margin-bottom: 20px; border-bottom: 1px solid #f3f4f6; padding-bottom: 10px;">About the Event</h2>
+							<div class="ke-main-description-rich">
+								<?php 
+								if ( have_posts() ) {
+									while ( have_posts() ) {
+										the_post();
+										the_content();
+									}
+								}
+								?>
+							</div>
+						</div>
+
+						<!-- Related / Recommended (AJAX Lazy) -->
+						<div id="ke-related-venue-section" class="ke-lazy-section" data-type="venue" data-venue-id="<?php echo esc_attr($venue_id); ?>" data-exclude="<?php echo esc_attr($event_id); ?>"></div>
+						<div id="ke-related-category-section" class="ke-lazy-section" data-type="category" data-cat-id="<?php echo esc_attr($cat_id); ?>" data-exclude="<?php echo esc_attr($event_id); ?>"></div>
+						<div id="ke-recommended-section" class="ke-lazy-section" data-type="recommended" data-exclude="<?php echo esc_attr($event_id); ?>"></div>
+
 					</div>
 				</div>
 
-				<div style="display: flex; gap: 20px; align-items: center;">
-					<div style="width: 50px; height: 50px; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #4b5563; flex-shrink: 0;">
-						<?php echo $icon_clock; ?>
-					</div>
-					<div>
-						<div style="font-size: 14px; font-weight: 800; color: #111827; text-transform: uppercase; letter-spacing: 0.05em;">Time</div>
-						<div style="font-size: 16px; color: #4b5563; font-weight: 500;"><?php echo $event_time ?: 'TBA'; ?></div>
-					</div>
-				</div>
-
-				<div style="display: flex; gap: 20px; align-items: center;">
-					<div style="width: 50px; height: 50px; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #4b5563; flex-shrink: 0;">
-						<?php echo $icon_venue; ?>
-					</div>
-					<div>
-						<div style="font-size: 14px; font-weight: 800; color: #111827; text-transform: uppercase; letter-spacing: 0.05em;">Venue</div>
-						<div style="font-size: 16px; color: #4b5563; font-weight: 500;"><strong><?php echo esc_html($venue_name); ?></strong></div>
-						<?php if ( $venue_addr ) : ?>
-							<div style="font-size: 14px; color: #9ca3af;"><?php echo esc_html($venue_addr); ?></div>
-						<?php endif; ?>
-					</div>
-				</div>
-
-				<div style="display: flex; gap: 20px; align-items: center;">
-					<div style="width: 50px; height: 50px; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #4b5563; flex-shrink: 0;">
-						<?php echo $icon_phone; ?>
-					</div>
-					<div>
-						<div style="font-size: 14px; font-weight: 800; color: #111827; text-transform: uppercase; letter-spacing: 0.05em;">Phone</div>
-						<div style="font-size: 16px; color: #4b5563; font-weight: 500;"><?php echo esc_html($phone); ?></div>
-					</div>
+				<!-- Sidebar Column (30%) -->
+				<div class="ke-sidebar-col" style="flex: 0.8; min-width: 280px;">
+					<aside class="ke-sidebar-inner-integrated">
+						<?php 
+						if ( is_active_sidebar( 'ke-events-sidebar' ) ) {
+							dynamic_sidebar( 'ke-events-sidebar' );
+						} else {
+							get_sidebar(); 
+						}
+						?>
+					</aside>
 				</div>
 
 			</div>
 		</div>
-
-		<!-- Content Area -->
-		<div style="max-width: 900px; margin-top: 60px;">
-			<h2 style="font-size: 28px; font-weight: 800; margin-bottom: 25px; border-bottom: 2px solid #f3f4f6; padding-bottom: 15px;">About the Event</h2>
-			<div class="ke-rich-content">
-				<?php 
-				if ( have_posts() ) {
-					while ( have_posts() ) {
-						the_post();
-						the_content();
-					}
-				}
-				?>
-			</div>
-		</div>
-
-		<!-- Related Sections (AJAX) -->
-		<div id="ke-related-venue-section" class="ke-lazy-section" data-type="venue" data-venue-id="<?php echo esc_attr($venue_id); ?>" data-exclude="<?php echo esc_attr($event_id); ?>"></div>
-		<div id="ke-related-category-section" class="ke-lazy-section" data-type="category" data-cat-id="<?php echo esc_attr($cat_id); ?>" data-exclude="<?php echo esc_attr($event_id); ?>"></div>
-		<div id="ke-recommended-section" class="ke-lazy-section" data-type="recommended" data-exclude="<?php echo esc_attr($event_id); ?>"></div>
-
 	</div>
 </div>
 
