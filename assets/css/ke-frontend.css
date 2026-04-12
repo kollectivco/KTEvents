@@ -1778,3 +1778,24 @@ body.foxiz-dark-mode .ke-elementor-widget:not(.ke-scheme-light) {
     .ke-detail-label { font-size: 10px; }
     .ke-detail-value { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 }
+
+@media (max-width: 767px) {
+    .ke-loop-wrapper.ke-columns-mobile-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+}
+
+.ke-show-more-wrapper { text-align: center; margin-top: 30px; }
+.ke-show-more-btn { 
+    background: #111827; 
+    color: #fff; 
+    border: none; 
+    padding: 12px 30px; 
+    border-radius: 30px; 
+    font-size: 13px; 
+    font-weight: 700; 
+    cursor: pointer; 
+}
+.ke-hidden-item { display: none; }
