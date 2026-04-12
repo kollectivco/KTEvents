@@ -22,8 +22,51 @@ function initKECarousels() {
     });
 }
 
+/**
+ * Single Page Lazy Loading for Related Sections
+ */
+function initSingleLazyLoading() {
+    const lazySections = document.querySelectorAll('.ke-lazy-section');
+    if (!lazySections.length) return;
+
+    if (typeof ke_ajax_obj === 'undefined') {
+        console.error('KE AJAX Object not found');
+        return;
+    }
+
+    lazySections.forEach(section => {
+        const params = new URLSearchParams();
+        params.append('action', 'ke_load_related');
+        params.append('nonce', ke_ajax_obj.nonce);
+        
+        // Collect all data attributes
+        Object.keys(section.dataset).forEach(key => {
+            params.append(key, section.dataset[key]);
+        });
+
+        fetch(`${ke_ajax_obj.ajax_url}?${params.toString()}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.data.html) {
+                    section.innerHTML = data.data.html;
+                    // Fade in effect
+                    section.style.opacity = '0';
+                    section.style.transition = 'opacity 0.5s ease-in';
+                    setTimeout(() => section.style.opacity = '1', 10);
+                    // Init carousels if any
+                    initKECarousels();
+                }
+            })
+            .catch(err => console.error('KE Lazy Section Error:', err));
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // 1. Core independent runners
     initKECarousels();
+    initSingleLazyLoading();
+
+    // 2. Archive-specific elements
     const archiveContainer = document.getElementById('ke-archive-container');
     const filterForm = document.getElementById('ke-filter-form');
     const archiveLoop = document.getElementById('ke-archive-loop');
@@ -32,9 +75,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const loadingOverlay = document.getElementById('ke-loading-overlay');
     const postType = archiveContainer ? archiveContainer.getAttribute('data-post-type') : 'event';
 
-    /**
-     * State Management
-     */
     let isLoading = false;
 
     /**
@@ -57,7 +97,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData(filterForm);
         const params = new URLSearchParams(formData);
         
-        // Add post type and paged info
         params.append('action', 'ke_filter_archive');
         params.append('nonce', ke_ajax_obj.nonce);
         params.append('post_type', postType);
@@ -75,23 +114,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (data.success) {
                 if (isLoadMore) {
-                    // Append new items
                     const tempDiv = document.createElement('div');
                     tempDiv.innerHTML = data.data.html;
                     while (tempDiv.firstChild) {
                         archiveLoop.appendChild(tempDiv.firstChild);
                     }
                 } else {
-                    // Replace loop content
                     archiveLoop.innerHTML = data.data.html;
-                    // Update URL
                     updateURL(params);
                 }
 
-                // Re-initialize carousels if any in new content
                 initKECarousels();
-
-                // Update pagination state
                 updatePagination(data.data);
             }
         } catch (error) {
@@ -107,229 +140,86 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    /**
-     * Update URL parameters without reload
-     */
     function updateURL(params) {
         const urlParams = new URLSearchParams();
         for (const [key, value] of params.entries()) {
-            if (!['action', 'nonce', 'post_type', 'is_load_more'].includes(key) && value !== '') {
+            if (!['action', 'nonce', 'post_type'].includes(key) && value !== '') {
                 urlParams.append(key, value);
             }
         }
-        
         const newURL = `${window.location.pathname}?${urlParams.toString()}`;
         window.history.pushState({ path: newURL }, '', newURL);
     }
 
-    /**
-     * Handle Pagination UI
-     */
     function updatePagination(data) {
         if (!loadMoreBtn) return;
-
         const { current_page, max_num_pages } = data;
-        
         loadMoreBtn.setAttribute('data-current-page', current_page);
         loadMoreBtn.setAttribute('data-max-pages', max_num_pages);
-
-        if (parseInt(current_page) >= parseInt(max_num_pages)) {
-            loadMoreBtn.style.display = 'none';
-        } else {
-            loadMoreBtn.style.display = 'inline-block';
-        }
+        loadMoreBtn.style.display = (parseInt(current_page) >= parseInt(max_num_pages)) ? 'none' : 'inline-block';
     }
 
-    /**
-     * Event Listeners
-     */
     if (filterForm) {
-        // Form Inputs (Autosubmit)
         filterForm.addEventListener('change', (e) => {
-            if (e.target.tagName === 'SELECT' || e.target.type === 'checkbox') {
-                filterArchive();
-            }
+            if (e.target.tagName === 'SELECT' || e.target.type === 'checkbox') filterArchive();
         });
-
-        // Form Submit
         filterForm.addEventListener('submit', (e) => {
             e.preventDefault();
             filterArchive();
         });
     }
 
-    // Load More
     if (loadMoreBtn) {
-        loadMoreBtn.addEventListener('click', () => {
-            filterArchive(true);
-        });
+        loadMoreBtn.addEventListener('click', () => filterArchive(true));
     }
-
-    // Reset Filters
-    const resetFilters = () => {
-        if (!filterForm) return;
-        filterForm.reset();
-        filterForm.querySelectorAll('select').forEach(select => select.value = '');
-        filterForm.querySelectorAll('input[type="text"]').forEach(input => input.value = '');
-        filterForm.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-        filterArchive();
-    };
 
     if (resetBtn) {
-        resetBtn.addEventListener('click', resetFilters);
+        resetBtn.addEventListener('click', () => {
+            if (filterForm) {
+                filterForm.reset();
+                filterArchive();
+            }
+        });
     }
 
-    // Global Click Handlers (for injected buttons)
+    // Global Click Handlers
     document.addEventListener('click', (e) => {
-        // Quick Nav Tabs
         const navItem = e.target.closest('.ke-nav-item');
         if (navItem) {
-            const range = navItem.getAttribute('data-range');
-            const meta = navItem.getAttribute('data-meta');
-            
-            // UI Update
-            document.querySelectorAll('.ke-nav-item').forEach(item => item.classList.remove('active'));
-            navItem.classList.add('active');
-
-            // Logic Update
             const rangeInput = document.getElementById('ke-input-range');
             const recInput = document.getElementById('ke-input-recommended');
-
-            if (range !== null) rangeInput.value = range;
-            if (meta === 'ke_recommended') recInput.value = '1';
-            else recInput.value = '';
-
+            if (rangeInput) rangeInput.value = navItem.dataset.range || '';
+            if (recInput) recInput.value = (navItem.dataset.meta === 'ke_recommended') ? '1' : '';
             filterArchive();
             return;
         }
 
-        // Location Pills
         const pillItem = e.target.closest('.ke-pill-item');
         if (pillItem) {
-            const city = pillItem.getAttribute('data-city');
-            
-            // UI Update
-            document.querySelectorAll('.ke-pill-item').forEach(item => item.classList.remove('active'));
-            pillItem.classList.add('active');
-
-            // Logic Update
             const cityInput = document.getElementById('ke-input-city');
-            if (cityInput) cityInput.value = city;
-
+            if (cityInput) cityInput.value = pillItem.dataset.city || '';
             filterArchive();
             return;
         }
 
-        // Advanced Filter Toggle
-        const toggleBtn = e.target.closest('#ke-toggle-advanced');
-        if (toggleBtn) {
-            const target = document.getElementById('ke-advanced-filters');
-            if (target) {
-                const isHidden = target.style.display === 'none';
-                if (isHidden) {
-                    target.style.display = 'block';
-                    // Force reflow
-                    void target.offsetWidth;
-                    target.style.opacity = '1';
-                    target.style.transform = 'translateY(0)';
-                    toggleBtn.classList.add('is-active');
-                } else {
-                    target.style.opacity = '0';
-                    target.style.transform = 'translateY(-10px)';
-                    toggleBtn.classList.remove('is-active');
-                    setTimeout(() => {
-                        target.style.display = 'none';
-                    }, 400);
-                }
-            }
-            return;
-        }
-
-        // Reset filters support for empty state button
-        if (e.target.id === 'ke-reset-filters') {
-            resetFilters();
-        }
-
-        // Show More / Reveal Hidden Items logic
         if (e.target.classList.contains('ke-show-more-btn')) {
-            const button = e.target;
-            const supportingBlock = button.closest('.ke-supporting-block, .ke-main-col, body');
-            
-            if (supportingBlock) {
-                const hiddenItems = supportingBlock.querySelectorAll('.ke-hidden-item');
-                hiddenItems.forEach((item, index) => {
+            const block = e.target.closest('.ke-supporting-block, .ke-main-col');
+            if (block) {
+                block.querySelectorAll('.ke-hidden-item').forEach(item => {
                     item.style.display = 'block';
-                    // Trigger reflow for animation
-                    void item.offsetWidth;
                     item.classList.remove('ke-hidden-item');
-                    item.classList.add('ke-item-revealed');
-                    item.style.animationDelay = `${index * 0.08}s`;
                 });
-                button.parentElement.style.display = 'none';
+                e.target.style.display = 'none';
             }
         }
     });
 
-    // History Context
-    window.addEventListener('popstate', () => {
-        if (archiveContainer) window.location.reload();
-    });
-
-    // Keyboard search debounce
     const searchInput = document.getElementById('ke_search');
     if (searchInput) {
-        let searchTimeout;
+        let timeout;
         searchInput.addEventListener('input', () => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                filterArchive();
-            }, 500);
+            clearTimeout(timeout);
+            timeout = setTimeout(() => filterArchive(), 500);
         });
     }
-
-    /**
-     * Elementor Frontend Integration
-     * Re-init carousels when widgets are edited in the panel
-     */
-    if (window.elementorFrontend) {
-        elementorFrontend.hooks.addAction('frontend/element_ready/widget', function($scope) {
-            initKECarousels();
-        });
-    }
-
-    /**
-     * Single Page Lazy Loading for Related Sections
-     */
-    function initSingleLazyLoading() {
-        const lazySections = document.querySelectorAll('.ke-lazy-section');
-        if (!lazySections.length) return;
-
-        lazySections.forEach(section => {
-            const params = new URLSearchParams();
-            params.append('action', 'ke_load_related');
-            params.append('nonce', ke_ajax_obj.nonce);
-            
-            // Collect all data attributes
-            Object.keys(section.dataset).forEach(key => {
-                params.append(key, section.dataset[key]);
-            });
-
-            fetch(`${ke_ajax_obj.ajax_url}?${params.toString()}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success && data.data.html) {
-                        section.innerHTML = data.data.html;
-                        // Fade in effect
-                        section.style.opacity = '0';
-                        section.style.transition = 'opacity 0.5s ease-in';
-                        setTimeout(() => section.style.opacity = '1', 10);
-                        // Init carousels if any
-                        initKECarousels();
-                    }
-                })
-                .catch(err => console.error('KE Lazy Section Error:', err));
-        });
-    }
-
-    initSingleLazyLoading();
 });
