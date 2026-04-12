@@ -1709,3 +1709,22 @@ body.foxiz-dark-mode .ke-elementor-widget:not(.ke-scheme-light) {
 .ke-preset-hero_slider .swiper-slide {
     height: 500px;
 }
+
+/* Integrated High-Performance Single Layout */
+.ke-integrated-mode .ke-eyebrow-new { text-transform: uppercase; font-size: 13px; font-weight: 800; letter-spacing: 0.1em; color: #111827; margin-bottom: 20px; }
+.ke-integrated-mode .ke-title-new { font-size: 54px; font-weight: 900; margin: 0 0 50px 0; letter-spacing: -0.02em; line-height: 1.1; color: #111827; }
+.ke-integrated-mode .ke-hero-split-new { display: flex; gap: 60px; align-items: flex-start; margin-bottom: 60px; }
+.ke-integrated-mode .ke-poster-image-wrap-new { flex: 1.2; }
+.ke-integrated-mode .ke-poster-image-wrap-new img { width: 100%; height: auto; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); display: block; }
+.ke-integrated-mode .ke-details-side-new { flex: 1; display: flex; flex-direction: column; gap: 30px; padding-top: 10px; }
+.ke-integrated-mode .ke-meta-node-new { display: flex; gap: 20px; align-items: center; }
+.ke-integrated-mode .ke-meta-icon-new { width: 50px; height: 50px; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #4b5563; flex-shrink: 0; }
+.ke-integrated-mode .ke-meta-icon-new svg { width: 22px; height: 22px; }
+.ke-integrated-mode .ke-meta-label-new { font-size: 14px; font-weight: 800; color: #111827; text-transform: uppercase; letter-spacing: 0.05em; }
+.ke-integrated-mode .ke-meta-value-new { font-size: 16px; color: #4b5563; font-weight: 500; }
+.ke-integrated-mode .ke-section-title-new { font-size: 28px; font-weight: 800; margin-bottom: 25px; border-bottom: 2px solid #f3f4f6; padding-bottom: 15px; }
+
+@media (max-width: 1024px) {
+    .ke-integrated-mode .ke-hero-split-new { flex-direction: column; gap: 30px; }
+    .ke-integrated-mode .ke-title-new { font-size: 34px; }
+}
