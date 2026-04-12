@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment Events
  * Plugin URI:  https://github.com/kollectivco/KTEvents
  * Description: A professional editorial events directory for magazine websites.
- * Version:     1.3.55
+ * Version:     1.3.56
  * Author:      Kollectiv
  * Author URI:  https://github.com/kollectivco
  * Text Domain: kontentainment-events
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Define constants
 define( 'KE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'KE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'KE_PLUGIN_VERSION', '1.3.55' );
+define( 'KE_PLUGIN_VERSION', '1.3.56' );
 
 /**
  * Main Kontentainment Events Class
@@ -174,6 +174,12 @@ class KE_Events {
 		// Plugin assets
 		wp_enqueue_style( 'ke-frontend', KE_PLUGIN_URL . 'assets/css/ke-frontend.css', array( 'swiper' ), KE_PLUGIN_VERSION );
 		wp_enqueue_script( 'ke-frontend', KE_PLUGIN_URL . 'assets/js/ke-frontend.js', array( 'jquery', 'swiper' ), KE_PLUGIN_VERSION, true );
+
+		// Localize for AJAX
+		wp_localize_script( 'ke-frontend', 'ke_ajax_obj', array(
+			'ajax_url' => admin_url( 'admin-ajax.php' ),
+			'nonce'    => wp_create_nonce( 'ke_ajax_nonce' )
+		));
 	}
 
 	/**
