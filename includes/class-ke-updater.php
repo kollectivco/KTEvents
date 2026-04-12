@@ -1,7 +1,6 @@
 <?php
 /**
- * Kontentainment Events GitHub Updater - v1.3.19 (FIXED - ISOLATED IDENTITY)
- * Orchestrates plugin updates specifically for this plugin only.
+ * Kontentainment Events GitHub Updater - v1.3.59 (OPTIMIZED - NO RATE LIMITS)
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -18,17 +17,14 @@ class KE_Updater {
 
 	public function __construct( $plugin_file, $github_url ) {
 		$this->plugin_file = $plugin_file;
-		$this->plugin_slug = plugin_basename( $plugin_file ); // kontentainment-events/kontentainment-events.php
-		$this->base_slug   = dirname( $this->plugin_slug );  // kontentainment-events
+		$this->plugin_slug = plugin_basename( $plugin_file );
+		$this->base_slug   = dirname( $this->plugin_slug );
 		
-		// Parse repo path
 		$path = trim( wp_parse_url( $github_url, PHP_URL_PATH ), '/' );
 		$this->github_repo = $path;
 
-		// Token support (for private repo testing)
 		$this->access_token = defined( 'KE_GITHUB_TOKEN' ) ? KE_GITHUB_TOKEN : get_option( 'ke_github_token', '' );
 
-		// Only register hooks if we have valid slugs
 		if ( ! empty( $this->plugin_slug ) && ! empty( $this->base_slug ) ) {
 			add_filter( 'site_transient_update_plugins', array( $this, 'check_update' ) );
 			add_filter( 'plugins_api', array( $this, 'plugin_info' ), 20, 3 );
@@ -37,14 +33,11 @@ class KE_Updater {
 		}
 	}
 
-	/**
-	 * Inject our plugin into the update transient
-	 */
 	public function check_update( $transient ) {
 		if ( empty( $transient->checked ) ) return $transient;
 
 		$remote = $this->get_remote_data();
-		if ( ! $remote || is_wp_error( $remote ) || empty( $remote->version ) || '0.0.0' === $remote->version ) {
+		if ( ! $remote || empty( $remote->version ) || '0.0.0' === $remote->version ) {
 			return $transient;
 		}
 
@@ -63,9 +56,6 @@ class KE_Updater {
 		return $transient;
 	}
 
-	/**
-	 * Provide plugin information for the "View Details" modal
-	 */
 	public function plugin_info( $res, $action, $args ) {
 		if ( 'plugin_information' !== $action || $args->slug !== $this->base_slug ) return $res;
 
@@ -81,7 +71,7 @@ class KE_Updater {
 		$res->download_link  = $remote->package;
 		$res->last_updated   = $remote->last_updated;
 		$res->sections       = array(
-			'description' => 'A professional editorial events and directory plugin for WordPress magazine websites.',
+			'description' => 'A professional editorial events directory for magazine websites.',
 			'changelog'   => wp_kses_post( wpautop( $remote->changelog ) ),
 		);
 		return $res;
@@ -92,60 +82,43 @@ class KE_Updater {
 		return $update;
 	}
 
-	/**
-	 * CRITICAL FIX: Ensure the source folder selection ONLY targets this plugin.
-	 * Hijacking unrelated zip uploads was caused by lack of scope checking here.
-	 */
 	public function fix_source_folder( $source, $remote_source, $upgrader, $hook_extra ) {
 		if ( ! $source || ! $this->base_slug ) return $source;
 		
-		// 1. Isolate to plugin skip if it already contains our slug correctly
 		if ( strpos( basename($source), $this->base_slug ) === 0 && basename($source) === $this->base_slug ) {
 			return $source;
 		}
 
-		// 2. STRICTOR CHECK: Is this upgrader actually targeting OUR plugin?
-		// Check skin->plugin (standard for single updates)
-		$target_item = '';
-		if ( isset( $upgrader->skin->plugin ) ) {
-			$target_item = $upgrader->skin->plugin;
-		} elseif ( isset( $hook_extra['plugin'] ) ) {
-			$target_item = $hook_extra['plugin'];
-		}
-
-		// If we can't confirm this is our plugin, bail immediately.
+		$target_item = ( isset( $upgrader->skin->plugin ) ) ? $upgrader->skin->plugin : ( $hook_extra['plugin'] ?? '' );
 		if ( $target_item !== $this->plugin_slug ) {
 			return $source;
 		}
 
-		// 3. Perform the rename only for our plugin
 		global $wp_filesystem;
 		$new_source = trailingslashit( $remote_source ) . $this->base_slug . '/';
-		
-		if ( $wp_filesystem->move( $source, $new_source ) ) {
-			return $new_source;
-		}
+		if ( $wp_filesystem->move( $source, $new_source ) ) return $new_source;
 
 		return $source;
 	}
 
 	/**
-	 * Fetch remote data with granular error tracking
+	 * ULTRA ROBUST REMOTE DATA FETCH
+	 * Tries GitHub API, then falls back to GitHub Raw to bypass 403 Forbidden/Rate limits.
 	 */
 	public function get_remote_data( $force = false ) {
-		$cache_key = 'ke_gh_' . md5($this->github_repo) . '_data';
+		$cache_key = 'ke_gh_' . md5($this->github_repo) . '_data_v2';
 		$cached = get_transient( $cache_key );
 		if ( false !== $cached && ! $force ) return $cached;
 
 		$remote = new stdClass();
 		$remote->version = '0.0.0';
 		$remote->package = '';
-		$remote->last_updated = '';
-		$remote->changelog = '';
+		$remote->last_updated = current_time('mysql');
+		$remote->changelog = 'New updates are available on GitHub.';
 		$remote->error = '';
 		$remote->source = 'none';
 
-		// Step 1: Handshake with Releases
+		// Step 1: Try GitHub API (Releases)
 		$release_url = "https://api.github.com/repos/{$this->github_repo}/releases/latest";
 		$response    = $this->api_get( $release_url );
 		$code        = wp_remote_retrieve_response_code( $response );
@@ -157,38 +130,39 @@ class KE_Updater {
 				$remote->package = $this->get_asset_url( $data );
 				$remote->last_updated = $data->published_at;
 				$remote->changelog = $data->body ?: 'New updates available.';
-				$remote->source = 'GitHub Release';
-				
+				$remote->source = 'GitHub API (Release)';
 				$this->cache_remote( $remote );
 				return $remote;
 			}
-		} elseif ( ! is_wp_error( $response ) && 404 !== $code ) {
-			$remote->error = "GitHub API Error: $code " . wp_remote_retrieve_response_message( $response );
-			return $remote;
 		}
 
-		// Step 2: Fallback to Tags
-		$tags_url = "https://api.github.com/repos/{$this->github_repo}/tags";
-		$response = $this->api_get( $tags_url );
+		// Step 2: FALLBACK TO RAW (Bypasses 403 / Rate Limits)
+		// We fetch the main plugin file from GitHub Raw and parse the version
+		$raw_url  = "https://raw.githubusercontent.com/{$this->github_repo}/main/kontentainment-events.php";
+		$response = wp_remote_get( $raw_url, [ 'timeout' => 10, 'user-agent' => 'KTEvents-Updater' ] );
 		$code     = wp_remote_retrieve_response_code( $response );
 
 		if ( ! is_wp_error( $response ) && 200 === $code ) {
-			$data = json_decode( wp_remote_retrieve_body( $response ) );
-			if ( ! empty( $data ) && is_array( $data ) ) {
-				$latest = $data[0];
-				$remote->version = $latest->name;
-				$remote->package = $latest->zipball_url;
-				$remote->source  = 'Git Tag';
-				$remote->changelog = 'Release notes available on GitHub Tags.';
+			$body = wp_remote_retrieve_body( $response );
+			if ( preg_match( '/Version:\s*([0-9\.]+)/i', $body, $matches ) ) {
+				$remote->version = trim( $matches[1] );
+				// For Raw check, we assume the ZIP is at the main branch or we use the latest tag logic
+				$remote->package = "https://github.com/{$this->github_repo}/archive/refs/tags/v{$remote->version}.zip";
+				$remote->source  = 'GitHub Raw (bypass)';
+				$remote->error   = ''; // Clear 403 if raw worked
 				
 				$this->cache_remote( $remote );
 				return $remote;
-			} else {
-				$remote->error = "No versions found in repository.";
 			}
+		}
+
+		// Step 3: Catch Error if everything failed
+		if ( is_wp_error( $response ) ) {
+			$remote->error = $response->get_error_message();
+		} elseif ( 403 === $code ) {
+			$remote->error = "GitHub Rate Limit Exceeded (403). Waiting for cooldown or use a Token in KEA Tools.";
 		} else {
-			$reason = is_wp_error( $response ) ? $response->get_error_message() : "HTTP $code";
-			$remote->error = "Connection failed: $reason";
+			$remote->error = "Update server returned code: $code";
 		}
 
 		return $remote;
@@ -196,7 +170,7 @@ class KE_Updater {
 
 	private function api_get( $url ) {
 		$args = array(
-			'timeout' => 20,
+			'timeout' => 15,
 			'headers' => array(
 				'Accept'     => 'application/vnd.github.v3+json',
 				'User-Agent' => 'KTEvents-Updater/1.0; ' . get_bloginfo( 'url' ),
@@ -209,16 +183,15 @@ class KE_Updater {
 	}
 
 	private function cache_remote( $remote ) {
-		$cache_key = 'ke_gh_' . md5($this->github_repo) . '_data';
-		set_transient( $cache_key, $remote, HOUR_IN_SECONDS * 6 );
-		set_transient( 'ke_github_update_data', $remote, HOUR_IN_SECONDS * 6 ); // Static key for Admin Tools
+		$cache_key = 'ke_gh_' . md5($this->github_repo) . '_data_v2';
+		set_transient( $cache_key, $remote, HOUR_IN_SECONDS * 12 ); // Cache for 12 hours
+		set_transient( 'ke_github_update_data', $remote, HOUR_IN_SECONDS * 12 ); 
 		set_transient( 'ke_last_check_time', date_i18n( get_option('date_format') . ' H:i:s' ), DAY_IN_SECONDS );
 	}
 
 	private function get_asset_url( $data ) {
 		if ( ! empty( $data->assets ) ) {
 			foreach ( $data->assets as $asset ) {
-				// Match any ZIP file in the release assets
 				if ( strpos( strtolower($asset->name), '.zip' ) !== false ) {
 					return $asset->browser_download_url;
 				}
