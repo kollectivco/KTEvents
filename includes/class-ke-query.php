@@ -49,7 +49,7 @@ class KE_Query {
 		
 		$cache_key    = 'ev_v2_' . md5( wp_json_encode( $cache_args ) );
 		$cache_handler = KE_Cache::get_instance();
-		$cached_ids   = false; // DIAGNOSTIC: Bypassing cache
+		$cached_ids   = $cache_handler->get( $cache_key );
 
 		if ( false !== $cached_ids ) {
 			// Respect original posts_per_page when fetching from cache
