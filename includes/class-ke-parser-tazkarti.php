@@ -38,41 +38,51 @@ class KE_Parser_Tazkarti implements KE_Parser_Interface {
 		// 1. Extract Event ID from URL
 		// Formats: /#/e/1875 or /#/event-details/1875
 		$event_id = 0;
-		if ( preg_match( '/\/(?:e|event-details|event)\/(\d+)/i', $url, $matches ) ) {
+		if ( preg_match( '/\/(?:e|event-details|event|entertainment\/events)\/(\d+)/i', $url, $matches ) ) {
 			$event_id = intval( $matches[1] );
 		}
 
-		if ( !$event_id ) {
-			// Try to find it in the HTML if it was rendered
-			if ( preg_match( '/ID":\s*(\d+)/', $html, $matches ) ) {
-				$event_id = intval( $matches[1] );
-			}
-		}
-
 		if ( ! $event_id ) {
-			$result['warnings'][] = 'Could not find a valid Tazkarti Event ID in the URL.';
+			$result['warnings'][] = 'Could not find a valid Tazkarti Event ID in the URL. Please ensure it is a single event URL.';
 			return $result;
 		}
 
-		// 2. Fetch from Tazkarti API
+		// 2. Fetch from Tazkarti API with REQUIRED headers
 		$api_url = "https://www.tazkarti.com/bookenter/Entertainment/events/{$event_id}";
-		$response = wp_remote_get( $api_url, [ 'timeout' => 15 ] );
+		
+		$args = [
+			'timeout' => 15,
+			'headers' => [
+				'Referer'    => 'https://www.tazkarti.com/',
+				'Origin'     => 'https://www.tazkarti.com',
+				'Accept'     => 'application/json, text/plain, */*',
+				'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+			]
+		];
+
+		$response = wp_remote_get( $api_url, $args );
 
 		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
-			$result['warnings'][] = 'Tazkarti API request failed. Attempting fallback scraping.';
-			// Fallback to basic HTML (might not work well for SPA but better than nothing)
+			$code = wp_remote_retrieve_response_code( $response );
+			$result['warnings'][] = "Tazkarti API request failed (Code: $code). Access might be restricted.";
+			// Fallback to basic HTML
 			return $generic->parse( $html, $url );
 		}
 
-		$data = json_decode( wp_remote_retrieve_body( $response ), true );
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode( $body, true );
+		
 		if ( empty( $data ) || ! is_array( $data ) ) {
 			$result['warnings'][] = 'Tazkarti API returned invalid JSON.';
 			return $result;
 		}
 
 		// 3. Map Fields
-		$event_data = $data; // Sometimes nested, but usually direct or in 'data'
-		if ( isset( $data['data'] ) ) $event_data = $data['data'];
+		// Tazkarti API returns the object directly or wrapped in data
+		$event_data = $data;
+		if ( isset( $data['data'] ) ) {
+			$event_data = $data['data'];
+		}
 
 		$result['fields']['title'] = $event_data['EventName_En'] ?? ( $event_data['EventName_Ar'] ?? '' );
 		$result['fields']['description'] = $event_data['EventSummary_En'] ?? ( $event_data['EventSummary_Ar'] ?? '' );
@@ -81,9 +91,13 @@ class KE_Parser_Tazkarti implements KE_Parser_Interface {
 		if ( ! empty( $event_data['EventStartDate'] ) ) {
 			$result['fields']['event_date'] = date( 'Y-m-d', strtotime( $event_data['EventStartDate'] ) );
 		}
+		
+		if ( ! empty( $event_data['EventStartTime'] ) ) {
+			$result['fields']['event_time'] = $event_data['EventStartTime'];
+		}
 
 		// Venue
-		$result['fields']['venue_name'] = $event_data['LocationName_En'] ?? '';
+		$result['fields']['venue_name'] = $event_data['LocationName_En'] ?? ( $event_data['LocationName_Ar'] ?? '' );
 		if ( ! empty( $event_data['Latitude'] ) && ! empty( $event_data['Logitude'] ) ) {
 			$result['fields']['latitude'] = $event_data['Latitude'];
 			$result['fields']['longitude'] = $event_data['Logitude'];
@@ -93,6 +107,11 @@ class KE_Parser_Tazkarti implements KE_Parser_Interface {
 		if ( ! empty( $event_data['EventImg'] ) ) {
 			$path = ltrim( $event_data['EventImg'], '/' );
 			$result['fields']['image_url'] = "https://www.tazkarti.com/{$path}";
+		}
+
+		// Price
+		if ( ! empty( $event_data['MiniClassPrice'] ) ) {
+			$result['fields']['price'] = floatval( $event_data['MiniClassPrice'] );
 		}
 
 		// Confidence
