@@ -100,8 +100,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (filterForm) {
         filterForm.addEventListener('change', (e) => {
-            if (e.target.tagName === 'SELECT' || e.target.type === 'checkbox') filterArchive();
+            if (e.target.tagName === 'SELECT' || e.target.type === 'checkbox' || e.target.tagName === 'INPUT') filterArchive();
         });
+
+        // Discovery Tabs (Upcoming, Recommended, etc)
+        filterForm.querySelectorAll('.ke-nav-item').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const range = btn.dataset.range || '';
+                const rec   = btn.dataset.meta === 'ke_recommended' ? 'yes' : '';
+                document.getElementById('ke-input-range').value = range;
+                document.getElementById('ke-input-recommended').value = rec;
+                
+                filterForm.querySelectorAll('.ke-nav-item').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filterArchive();
+            });
+        });
+
+        // Location Pills
+        filterForm.querySelectorAll('.ke-pill-item').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const city = btn.dataset.city || '';
+                document.getElementById('ke-input-city').value = city;
+                
+                filterForm.querySelectorAll('.ke-pill-item').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filterArchive();
+            });
+        });
+
+        // Advanced Toggle
+        const advancedToggle = document.getElementById('ke-toggle-advanced');
+        const advancedFilters = document.getElementById('ke-advanced-filters');
+        if (advancedToggle && advancedFilters) {
+            advancedToggle.addEventListener('click', () => {
+                advancedFilters.style.display = advancedFilters.style.display === 'none' ? 'block' : 'none';
+            });
+        }
     }
 
     document.addEventListener('click', (e) => {
