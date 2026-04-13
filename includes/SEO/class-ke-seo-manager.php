@@ -23,12 +23,14 @@ class KE_SEO_Manager {
 	}
 
 	private function __construct() {
+		// If a major SEO plugin is active, we completely back off to avoid duplication/confusion
+		if ( self::is_seo_plugin_active() ) {
+			return;
+		}
+
 		$this->includes();
 		$this->init_submodules();
-
-		if ( ! self::is_seo_plugin_active() ) {
-			add_action( 'init', array( $this, 'register_sitemaps' ) );
-		}
+		add_action( 'init', array( $this, 'register_sitemaps' ) );
 	}
 
 	/**
