@@ -144,10 +144,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const block = e.target.closest('.ke-supporting-block, .ke-main-col');
             if (block) {
                 block.querySelectorAll('.ke-hidden-item').forEach(item => {
-                    item.style.display = 'block';
                     item.classList.remove('ke-hidden-item');
+                    item.classList.add('ke-item-revealed');
                 });
-                e.target.style.display = 'none';
+                e.target.parentElement.style.display = 'none';
             }
         }
     });

@@ -84,17 +84,17 @@ class KE_AJAX {
 				$venue_id = intval($_GET['venue_id']);
 				if ( ! $venue_id ) wp_send_json_error();
 				$title = 'More at this Venue';
-				$args = [ 'posts_per_page' => 3, 'post__not_in' => $exclude, 'venue_id' => $venue_id, 'no_found_rows' => true ];
+				$args = [ 'posts_per_page' => 9, 'post__not_in' => $exclude, 'venue_id' => $venue_id, 'no_found_rows' => true ];
 				break;
 			case 'category':
 				$cat_id = intval($_GET['cat_id']);
 				if ( ! $cat_id ) wp_send_json_error();
 				$title = 'More in this Category';
-				$args = [ 'posts_per_page' => 3, 'post__not_in' => $exclude, 'ke_category' => $cat_id, 'no_found_rows' => true ];
+				$args = [ 'posts_per_page' => 9, 'post__not_in' => $exclude, 'ke_category' => $cat_id, 'no_found_rows' => true ];
 				break;
 			case 'recommended':
 				$title = 'Recommended Events';
-				$args = [ 'posts_per_page' => 3, 'post__not_in' => $exclude, 'ke_sort' => 'date_desc', 'no_found_rows' => true ];
+				$args = [ 'posts_per_page' => 9, 'post__not_in' => $exclude, 'ke_sort' => 'date_desc', 'no_found_rows' => true ];
 				break;
 			default:
 				wp_send_json_error();
@@ -107,7 +107,7 @@ class KE_AJAX {
 			?>
 			<div class="ke-supporting-block">
 				<h2 class="ke-foxiz-section-title"><?php echo esc_html($title); ?></h2>
-				<?php echo KE_Query::get_instance()->render_events_loop( $query, [ 'columns' => 3 ] ); ?>
+				<?php echo KE_Query::get_instance()->render_events_loop( $query, [ 'columns' => 3, 'max_initial' => 3 ] ); ?>
 			</div>
 			<?php
 			$html = ob_get_clean();
@@ -137,7 +137,7 @@ class KE_AJAX {
 		foreach ($sections as $sec) {
 			if ($sec['type'] !== 'recommended' && !$sec['id']) continue;
 
-			$args = [ 'posts_per_page' => 3, 'post__not_in' => $exclude, 'no_found_rows' => true ];
+			$args = [ 'posts_per_page' => 9, 'post__not_in' => $exclude, 'no_found_rows' => true ];
 			if ($sec['type'] === 'recommended') {
 				$args['ke_sort'] = 'date_desc';
 			} else {
@@ -149,7 +149,7 @@ class KE_AJAX {
 				?>
 				<div class="ke-supporting-block">
 					<h2 class="ke-foxiz-section-title"><?php echo esc_html($sec['title']); ?></h2>
-					<?php echo KE_Query::get_instance()->render_events_loop( $query, [ 'columns' => 3 ] ); ?>
+					<?php echo KE_Query::get_instance()->render_events_loop( $query, [ 'columns' => 3, 'max_initial' => 3 ] ); ?>
 				</div>
 				<?php
 			}

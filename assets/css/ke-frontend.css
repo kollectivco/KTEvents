@@ -1213,7 +1213,7 @@
 }
 
 .ke-hidden-item {
-    display: none;
+    display: none !important;
 }
 
 .ke-show-more-wrapper {

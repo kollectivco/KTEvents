@@ -343,6 +343,11 @@ class KE_Query {
 			'gap'            => 'medium' 
 		) );
 		
+		// Global single-event override for related sections
+		if ( is_single() && get_post_type() === 'event' && empty( $display['max_initial'] ) && empty( $display['carousel'] ) ) {
+			$display['max_initial'] = 3;
+		}
+		
 		ob_start();
 		if ( $query->have_posts() ) {
 			
@@ -490,7 +495,7 @@ class KE_Query {
 			// Show More Button (Initial reveal for hidden items)
 			if ( $max_initial > 0 && $query->post_count > $max_initial && ! $is_carousel ) {
 				echo '<div class="ke-show-more-wrapper">';
-				echo '<button type="button" class="ke-show-more-btn">' . esc_html__( 'Show More', 'kontentainment-events' ) . '</button>';
+				echo '<button type="button" class="ke-show-more-btn">' . esc_html__( 'View More', 'kontentainment-events' ) . '</button>';
 				echo '</div>';
 			}
 			

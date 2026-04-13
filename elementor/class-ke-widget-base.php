@@ -248,6 +248,16 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 			]
 		);
 
+		$this->add_control(
+			'max_initial',
+			[
+				'label' => 'Max Initial Items',
+				'type' => \Elementor\Controls_Manager::NUMBER,
+				'default' => 0,
+				'description' => 'Show this many items initially, then show a "View More" button. Set to 0 to show all.',
+			]
+		);
+
 		$this->end_controls_section();
 	}
 
