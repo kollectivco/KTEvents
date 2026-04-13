@@ -92,7 +92,7 @@ $icon_phone = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 								echo '<div class="ke-supporting-block">';
 								echo '<h2 class="ke-foxiz-section-title">' . esc_html($sec['title']) . '</h2>';
 								// Render with Load More capability (initially showing 4, revealing rest)
-								echo KE_Query::get_instance()->render_events_loop( $query, [ 'columns' => 3, 'columns_mobile' => 2, 'max_initial' => 4 ] );
+								echo KE_Query::get_instance()->render_events_loop( $query, [ 'columns' => 3, 'columns_mobile' => 2, 'max_initial' => 3 ] );
 								echo '</div>';
 							}
 						}
