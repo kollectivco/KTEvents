@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment Events
  * Plugin URI:  https://github.com/kollectivco/KTEvents
  * Description: A professional editorial events directory for magazine websites.
- * Version:     1.3.64
+ * Version:     1.3.65
  * Author:      Kollectiv
  * Author URI:  https://github.com/kollectivco
  * Text Domain: kontentainment-events
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Define constants
 define( 'KE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'KE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'KE_PLUGIN_VERSION', '1.3.64' );
+define( 'KE_PLUGIN_VERSION', '1.3.65' );
 
 /**
  * Main Kontentainment Events Class
@@ -86,6 +86,8 @@ class KE_Events {
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-parser-generic.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-parser-scenenow.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-parser-cairojazzclub.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-parser-tazkarti.php';
+		require_once KE_PLUGIN_DIR . 'includes/class-ke-parser-ticketsmarche.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-parser-registry.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-duplicates.php';
 		require_once KE_PLUGIN_DIR . 'includes/class-ke-logs.php';
