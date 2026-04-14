@@ -146,8 +146,8 @@ class KE_Updater {
 			$body = wp_remote_retrieve_body( $response );
 			if ( preg_match( '/Version:\s*([0-9\.]+)/i', $body, $matches ) ) {
 				$remote->version = trim( $matches[1] );
-				// For Raw check, we assume the ZIP is at the main branch or we use the latest tag logic
-				$remote->package = "https://github.com/{$this->github_repo}/archive/refs/tags/v{$remote->version}.zip";
+				// Use the actual main branch archive as a fallback to ensure 100% availability even if tags are delayed
+				$remote->package = "https://github.com/{$this->github_repo}/archive/refs/heads/main.zip";
 				$remote->source  = 'GitHub Raw (bypass)';
 				$remote->error   = ''; // Clear 403 if raw worked
 				
