@@ -286,17 +286,29 @@
 }
 
 .ke-rb-img {
-    aspect-ratio: 1/1;
     position: relative;
     overflow: hidden;
     background: #f8fafc;
+    width: 100%;
 }
+
+/* Default ratio if none specified */
+.ke-rb-img { aspect-ratio: 16/9; }
+
+/* Support Ratio Classes from Wrapper */
+.ke-ratio-1-1 .ke-rb-img { aspect-ratio: 1/1 !important; }
+.ke-ratio-4-3 .ke-rb-img { aspect-ratio: 4/3 !important; }
+.ke-ratio-16-9 .ke-rb-img { aspect-ratio: 16/9 !important; }
+.ke-ratio-3-4 .ke-rb-img { aspect-ratio: 3/4 !important; }
+.ke-ratio-2-1 .ke-rb-img { aspect-ratio: 2/1 !important; }
+.ke-ratio-9-16 .ke-rb-img { aspect-ratio: 9/16 !important; }
 
 .ke-rb-img img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 1.2s ease;
+    display: block;
 }
 
 .ke-event-card-rb:hover .ke-rb-img img {
