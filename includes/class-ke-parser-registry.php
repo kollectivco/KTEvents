@@ -26,6 +26,7 @@ class KE_Parser_Registry {
 		$this->register_parser( new KE_Parser_CairoJazzClub() );
 		$this->register_parser( new KE_Parser_Tazkarti() );
 		$this->register_parser( new KE_Parser_TicketsMarche() );
+		$this->register_parser( new KE_Parser_CairoSpots() );
 	}
 
 	/**
