@@ -75,6 +75,15 @@ class KE_Parser_CairoSpots implements KE_Parser_Interface {
 			}
 		}
 
+		// 4. Image Fallback (CairoSpots / The Events Calendar specific)
+		if ( empty( $result['fields']['image_url'] ) ) {
+			$image_nodes = $xpath->query( "//div[contains(@class, 'tribe-events-event-image')]//img | //meta[@property='og:image']/@content" );
+			if ( $image_nodes->length > 0 ) {
+				$node = $image_nodes->item(0);
+				$result['fields']['image_url'] = ( $node instanceof DOMAttr ) ? $node->nodeValue : $node->getAttribute('src');
+			}
+		}
+
 		// Increase confidence if we identified CairoSpots specific markers
 		if ( $result['parser_confidence'] < 90 ) {
 			$result['parser_confidence'] = 95;
