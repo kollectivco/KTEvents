@@ -1120,7 +1120,7 @@
 .ke-loop-wrapper > div { height: auto; display: flex; } /* Allow natural card heights unless explicitly stretched */
 .ke-loop-wrapper .ke-card,
 .ke-loop-wrapper .ke-event-card-rb { flex: 1; display: flex; flex-direction: column; width: 100%; height: 100%; min-height: 0; }
-.ke-loop-wrapper .ke-rb-img { flex: 1 0 auto; display: flex; flex-direction: column; min-height: 200px; }
+.ke-loop-wrapper .ke-rb-img { flex: 1; display: flex; flex-direction: column; min-height: 200px; height: 100%; aspect-ratio: auto !important; }
 .ke-loop-wrapper .ke-rb-body { flex: 0 0 auto; margin-top: auto; }
 .ke-loop-wrapper .ke-card-content { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; }
 .ke-loop-wrapper .ke-card-title {
@@ -1469,6 +1469,7 @@ body.foxiz-dark-mode .ke-elementor-widget:not(.ke-scheme-light) {
 /* Override any conflicting grid layout when in carousel mode */
 .ke-carousel-container .swiper-wrapper.ke-loop-wrapper {
     display: flex;
+    align-items: stretch;
     grid-template-columns: none !important;
 }
 .ke-carousel-container .swiper-slide {
