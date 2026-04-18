@@ -136,8 +136,24 @@ class KE_Updater {
 			}
 		}
 
+
+
+		// Step 1b: Try GitHub API (Tags) - If no release yet
+		$tags_url = "https://api.github.com/repos/{$this->github_repo}/tags";
+		$response = $this->api_get( $tags_url );
+		if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
+			$tags = json_decode( wp_remote_retrieve_body( $response ) );
+			if ( ! empty( $tags ) && is_array( $tags ) ) {
+				$latest_tag = $tags[0];
+				$remote->version = $latest_tag->name;
+				$remote->package = $latest_tag->zipball_url;
+				$remote->source = 'GitHub API (Tags)';
+				$this->cache_remote( $remote );
+				return $remote;
+			}
+		}
+
 		// Step 2: FALLBACK TO RAW (Bypasses 403 / Rate Limits)
-		// We fetch the main plugin file from GitHub Raw and parse the version
 		$raw_url  = "https://raw.githubusercontent.com/{$this->github_repo}/main/kontentainment-events.php";
 		$response = wp_remote_get( $raw_url, [ 'timeout' => 10, 'user-agent' => 'KTEvents-Updater' ] );
 		$code     = wp_remote_retrieve_response_code( $response );
@@ -184,8 +200,8 @@ class KE_Updater {
 
 	private function cache_remote( $remote ) {
 		$cache_key = 'ke_gh_' . md5($this->github_repo) . '_data_v2';
-		set_transient( $cache_key, $remote, HOUR_IN_SECONDS * 12 ); // Cache for 12 hours
-		set_transient( 'ke_github_update_data', $remote, HOUR_IN_SECONDS * 12 ); 
+		set_transient( $cache_key, $remote, HOUR_IN_SECONDS * 1 ); // Cache for 1 hour
+		set_transient( 'ke_github_update_data', $remote, HOUR_IN_SECONDS * 1 ); 
 		set_transient( 'ke_last_check_time', date_i18n( get_option('date_format') . ' H:i:s' ), DAY_IN_SECONDS );
 	}
 
