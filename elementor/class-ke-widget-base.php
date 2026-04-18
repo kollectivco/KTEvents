@@ -295,7 +295,7 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 				'type' => \Elementor\Controls_Manager::NUMBER,
 				'default' => 3,
 				'tablet_default' => 2,
-				'mobile_default' => 1,
+				'mobile_default' => 2,
 				'condition' => $base_condition,
 			]
 		);

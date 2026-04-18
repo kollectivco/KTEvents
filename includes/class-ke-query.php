@@ -339,7 +339,7 @@ class KE_Query {
 			'layout_preset'  => 'classic', 
 			'columns'        => 3, 
 			'columns_tablet' => 2, 
-			'columns_mobile' => 1,
+			'columns_mobile' => 2,
 			'gap'            => 'medium' 
 		) );
 		

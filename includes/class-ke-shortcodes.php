@@ -56,7 +56,9 @@ class KE_Shortcodes {
 					'columns'       => $atts['columns'],
 					'layout_preset' => $atts['preset'],
 					'pagination'    => 'load_more',
-					'skip_isolated_wrap' => true 
+					'skip_isolated_wrap' => true,
+					'extra_classes' => 'ke-mobile-2-up',
+					'columns_mobile' => 2
 				) );
 				?>
 			</div>

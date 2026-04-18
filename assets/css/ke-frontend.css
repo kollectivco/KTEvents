@@ -1150,9 +1150,9 @@
 @media (max-width: 768px) {
     .ke-loop-wrapper[class*="ke-columns-mobile-1"] { grid-template-columns: 1fr; }
     
-    /* Default everything to 1-col on mobile unless explicitly overriden */
-    .ke-loop-wrapper:not([class*="ke-columns-mobile-"]) { grid-template-columns: 1fr; }
-    .ke-columns-2, .ke-columns-3, .ke-columns-4, .ke-columns-5 { grid-template-columns: 1fr; }
+    /* Default everything to 2-col on mobile unless explicitly overriden */
+    .ke-loop-wrapper:not([class*="ke-columns-mobile-"]) { grid-template-columns: repeat(2, 1fr); }
+    .ke-columns-2, .ke-columns-3, .ke-columns-4, .ke-columns-5 { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* Boxed Mode */
@@ -1527,7 +1527,7 @@ body.foxiz-dark-mode .ke-elementor-widget:not(.ke-scheme-light) {
     .ke-loop-wrapper[class*="ke-columns-mobile-1"] { grid-template-columns: 1fr !important; }
     .ke-loop-wrapper[class*="ke-columns-mobile-2"] { grid-template-columns: repeat(2, 1fr) !important; }
     .ke-loop-wrapper {
-        grid-template-columns: 1fr; /* Default to 1 col */
+        grid-template-columns: repeat(2, 1fr); /* Default to 2 col on mobile */
     }
     .ke-filter-actions { flex-direction: column; align-items: flex-start; gap: 20px; }
     .ke-filters-bar { padding: 20px; margin-bottom: 30px; }
