@@ -175,12 +175,14 @@ class KE_Updater {
 		// Step 3: Catch Error if everything failed
 		if ( is_wp_error( $response ) ) {
 			$remote->error = $response->get_error_message();
-		} elseif ( 403 === $code ) {
+		} elseif ( isset($code) && 403 === $code ) {
 			$remote->error = "GitHub Rate Limit Exceeded (403). Waiting for cooldown or use a Token in KEA Tools.";
 		} else {
+			$code = isset($code) ? $code : 'Unknown';
 			$remote->error = "Update server returned code: $code";
 		}
 
+		$this->cache_remote( $remote );
 		return $remote;
 	}
 
