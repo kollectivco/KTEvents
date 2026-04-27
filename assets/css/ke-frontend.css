@@ -1696,10 +1696,42 @@ body.foxiz-dark-mode .ke-elementor-widget:not(.ke-scheme-light) {
 }
 
 .ke-carousel-container .swiper-slide img {
-    max-width: 100%;
-    height: auto;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
     display: block;
 }
+
+.ke-carousel-container .swiper-slide .ke-rb-img {
+    height: 100%;
+    min-height: 200px; /* Fallback height */
+}
+
+/* Specific fix for mobile 2-up and carousel cards */
+.ke-events-grid-carousel-widget .ke-rb-img img,
+.ke-events-mobile-webview .ke-rb-img img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+.ke-events-grid-carousel-widget .ke-rb-img,
+.ke-events-mobile-webview .ke-rb-img {
+    position: relative;
+    padding-bottom: 100%; /* Default square ratio, overridden by aspect-ratio if supported */
+}
+
+@supports (aspect-ratio: 1/1) {
+    .ke-events-grid-carousel-widget .ke-rb-img,
+    .ke-events-mobile-webview .ke-rb-img {
+        padding-bottom: 0;
+        height: 100%;
+    }
+}
+
 
 /* Premium Swiper Arrows */
 .ke-carousel-container .swiper-button-next,
