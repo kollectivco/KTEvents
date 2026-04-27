@@ -57,27 +57,120 @@ class KE_Widget_Events_Mobile_Webview extends KE_Widget_Base {
 			]
 		);
 
-		$this->add_control(
-			'mobile_gap',
+		$this->end_controls_section();
+
+		// Carousel Settings (Visible when Feed Format is Slider/Carousel)
+		$this->start_controls_section(
+			'section_carousel',
 			[
-				'label' => 'Item Gap (px)',
+				'label' => 'Carousel Settings',
+				'condition' => [ 'mobile_layout' => [ 'horizontal_slider', 'mini_carousel' ] ],
+			]
+		);
+
+		$this->add_responsive_control(
+			'carousel_items',
+			[
+				'label' => 'Slides Per View',
+				'type' => \Elementor\Controls_Manager::NUMBER,
+				'default' => 3,
+				'tablet_default' => 2,
+				'mobile_default' => 2,
+			]
+		);
+
+		$this->add_control(
+			'carousel_gap',
+			[
+				'label' => 'Gap (px)',
 				'type' => \Elementor\Controls_Manager::NUMBER,
 				'default' => 16,
 			]
 		);
 
 		$this->add_control(
-			'mobile_cards_per_view',
+			'carousel_autoplay',
 			[
-				'label' => 'Cards per view (Mobile)',
-				'type' => \Elementor\Controls_Manager::NUMBER,
-				'default' => 2,
-				'min' => 1,
-				'max' => 5,
-				'step' => 0.1,
-				'condition' => [ 'mobile_layout' => [ 'horizontal_slider', 'mini_carousel' ] ],
+				'label' => 'Autoplay',
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'default' => '',
 			]
 		);
+
+		$this->add_control(
+			'carousel_autoplay_speed',
+			[
+				'label' => 'Autoplay Speed (ms)',
+				'type' => \Elementor\Controls_Manager::NUMBER,
+				'default' => 5000,
+				'condition' => [ 'carousel_autoplay' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
+			'carousel_speed',
+			[
+				'label' => 'Transition Speed (ms)',
+				'type' => \Elementor\Controls_Manager::NUMBER,
+				'default' => 400,
+			]
+		);
+
+		$this->add_control(
+			'carousel_loop',
+			[
+				'label' => 'Infinite Loop',
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'default' => '',
+			]
+		);
+
+		$this->add_control(
+			'carousel_center',
+			[
+				'label' => 'Center Mode',
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'default' => '',
+			]
+		);
+
+		$this->add_control(
+			'carousel_arrows',
+			[
+				'label' => 'Arrows',
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'default' => '',
+			]
+		);
+
+		$this->add_control(
+			'carousel_hide_arrows_mobile',
+			[
+				'label' => 'Hide Arrows on Mobile',
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'default' => 'yes',
+				'condition' => [ 'carousel_arrows' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
+			'carousel_dots',
+			[
+				'label' => 'Pagination Dots',
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'default' => '',
+			]
+		);
+
+		$this->add_control(
+			'carousel_free_scroll',
+			[
+				'label' => 'Free Scroll Mode',
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'default' => '',
+			]
+		);
+
 
 		$this->end_controls_section();
 
@@ -181,17 +274,11 @@ class KE_Widget_Events_Mobile_Webview extends KE_Widget_Base {
 		if ( in_array($settings['mobile_layout'], ['horizontal_slider', 'mini_carousel']) ) {
 			$settings['carousel'] = 'yes';
 			
-			// Setup for 2 cards side-by-side on mobile
-			$per_view = $settings['mobile_cards_per_view'] ?: 2;
-			
-			$settings['carousel_items'] = $per_view;
-			$settings['carousel_items_mobile'] = $per_view;
-			$settings['carousel_items_tablet'] = $per_view;
-			
-			$settings['carousel_gap'] = $settings['mobile_gap'];
-			$settings['carousel_arrows'] = ''; // Touch-friendly
-			$settings['carousel_dots'] = '';
-			$settings['carousel_loop'] = ''; 
+			// Settings are now provided by the Carousel Settings section directly
+			// Defaulting missing keys just in case
+			$settings['carousel_items_mobile'] = $settings['carousel_items_mobile'] ?? $settings['carousel_items'] ?? 2;
+			$settings['carousel_items_tablet'] = $settings['carousel_items_tablet'] ?? $settings['carousel_items'] ?? 2;
+			$settings['carousel_gap'] = $settings['carousel_gap'] ?? 16;
 		} else {
 			$settings['carousel'] = '';
 			$settings['columns'] = 2;
