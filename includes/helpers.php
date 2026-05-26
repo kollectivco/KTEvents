@@ -34,7 +34,8 @@ function ke_get_event_date_display( $post_id = null ) {
 		return '';
 	}
 
-	return date_i18n( get_option( 'date_format' ), strtotime( $date ) );
+	$formatted_date = date_i18n( get_option( 'date_format' ), strtotime( $date ) );
+	return is_rtl() ? ke_convert_to_arabic_numbers( $formatted_date ) : $formatted_date;
 }
 
 /**
@@ -127,4 +128,13 @@ function ke_get_svg_icon( $name = '' ) {
 	if ( isset( $icons[ $name ] ) ) {
 		echo $icons[ $name ];
 	}
+}
+
+/**
+ * Convert numbers inside a string to Eastern Arabic numerals (١, ٢, ٣...)
+ */
+function ke_convert_to_arabic_numbers( $str ) {
+	$western = array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' );
+	$eastern = array( '٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩' );
+	return str_replace( $western, $eastern, $str );
 }

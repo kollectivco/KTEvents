@@ -44,14 +44,14 @@ $icon_phone = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 								<div class="ke-detail-icon"><?php echo $icon_calendar; ?></div>
 								<div class="ke-detail-content">
 									<span class="ke-detail-label">التاريخ</span>
-									<span class="ke-detail-value"><?php echo $event_date ? date_i18n( 'd F Y', strtotime( $event_date ) ) : 'يحدد لاحقاً'; ?></span>
+									<span class="ke-detail-value"><?php echo $event_date ? ke_convert_to_arabic_numbers( date_i18n( 'd F Y', strtotime( $event_date ) ) ) : 'يحدد لاحقاً'; ?></span>
 								</div>
 							</div>
 							<div class="ke-detail-item">
 								<div class="ke-detail-icon"><?php echo $icon_clock; ?></div>
 								<div class="ke-detail-content">
 									<span class="ke-detail-label">الوقت</span>
-									<span class="ke-detail-value"><?php echo $event_time ?: 'يحدد لاحقاً'; ?></span>
+									<span class="ke-detail-value"><?php echo $event_time ? ke_convert_to_arabic_numbers( $event_time ) : 'يحدد لاحقاً'; ?></span>
 								</div>
 							</div>
 							<div class="ke-detail-item">
