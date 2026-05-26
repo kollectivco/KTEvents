@@ -138,3 +138,26 @@ function ke_convert_to_arabic_numbers( $str ) {
 	$eastern = array( '٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩' );
 	return str_replace( $western, $eastern, $str );
 }
+
+/**
+ * Format event time string (HH:MM) to 12-hour format with AM/PM (Arabic or English)
+ */
+function ke_format_event_time( $time_str ) {
+	if ( ! $time_str ) {
+		return '';
+	}
+
+	$timestamp = strtotime( $time_str );
+	if ( ! $timestamp ) {
+		return $time_str;
+	}
+
+	$formatted_time = date( 'h:i A', $timestamp );
+	
+	if ( is_rtl() ) {
+		$formatted_time = str_replace( array( 'AM', 'PM' ), array( 'صباحاً', 'مساءً' ), $formatted_time );
+		$formatted_time = ke_convert_to_arabic_numbers( $formatted_time );
+	}
+
+	return $formatted_time;
+}
