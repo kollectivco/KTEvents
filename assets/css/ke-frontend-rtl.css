@@ -1,0 +1,96 @@
+/*
+ * Kontentainment Events RTL Stylesheet
+ * Scoped to body.rtl to ensure it only applies on Right-to-Left (Arabic) pages.
+ */
+
+body.rtl .ke-single-entry-page,
+body.rtl .ke-frontend-main,
+body.rtl .ke-isolated-wrap,
+body.rtl .ke-events-directory,
+body.rtl .ke-empty-state,
+body.rtl .ke-single-hero-foxiz {
+    direction: rtl;
+    text-align: right;
+}
+
+/* Float & Flex Flow Alignment */
+body.rtl .ke-hero-split,
+body.rtl .ke-layout-sidebar,
+body.rtl .ke-single-hero-foxiz,
+body.rtl .ke-filter-grid,
+body.rtl .ke-refinement-grid {
+    flex-direction: row-reverse;
+}
+
+/* Category Badge Positioning */
+body.rtl .ke-card-category-badge {
+    right: auto;
+    left: 15px;
+}
+
+/* Search Field Icon & Input Spacing */
+body.rtl .ke-field-icon {
+    left: auto;
+    right: 16px;
+}
+
+body.rtl .ke-node-search input {
+    padding-left: 16px;
+    padding-right: 48px;
+}
+
+/* Sidebar Borders & Paddings swapping */
+body.rtl .ke-sidebar-inner {
+    padding-left: 0;
+    padding-right: 30px;
+    border-left: none;
+    border-right: 1px solid var(--ke-border);
+}
+
+@media (max-width: 1120px) {
+    body.rtl .ke-sidebar-inner {
+        padding-right: 0;
+        border-right: none;
+        border-top: 1px solid var(--ke-border);
+        padding-top: 40px;
+    }
+}
+
+/* Swiper Carousel Button Overrides */
+body.rtl .ke-carousel-prev {
+    left: auto;
+    right: 10px;
+}
+
+body.rtl .ke-carousel-next {
+    right: auto;
+    left: 10px;
+}
+
+/* Load More Spinner Overrides */
+body.rtl .ke-load-more-btn.is-loading {
+    padding-right: 24px;
+    padding-left: 48px;
+}
+
+body.rtl .ke-load-more-btn.is-loading::after {
+    right: auto;
+    left: 18px;
+}
+
+/* Status Dot Spacing Override */
+body.rtl .ke-status-dot {
+    margin-left: 0;
+    margin-right: 5px;
+}
+
+/* Foxiz aware alignment */
+body.rtl .ke-foxiz-section-title {
+    text-align: right;
+    flex-direction: row-reverse;
+}
+
+body.rtl .ke-foxiz-section-title::after {
+    margin-right: 15px;
+    margin-left: 0;
+}

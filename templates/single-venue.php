@@ -59,7 +59,7 @@ $icon_web      = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 										<div class="ke-meta-block">
 											<div class="ke-meta-icon-box"><?php echo $icon_location; ?></div>
 											<div class="ke-meta-info">
-												<label>Address</label>
+												<label>العنوان</label>
 												<strong><?php echo esc_html($address); ?></strong>
 											</div>
 										</div>
@@ -69,7 +69,7 @@ $icon_web      = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 										<div class="ke-meta-block">
 											<div class="ke-meta-icon-box"><?php echo $icon_phone; ?></div>
 											<div class="ke-meta-info">
-												<label>Phone</label>
+												<label>التليفون</label>
 												<strong><?php echo esc_html($phone); ?></strong>
 											</div>
 										</div>
@@ -79,15 +79,15 @@ $icon_web      = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 										<div class="ke-meta-block">
 											<div class="ke-meta-icon-box"><?php echo $icon_web; ?></div>
 											<div class="ke-meta-info">
-												<label>Website</label>
-												<strong><a href="<?php echo esc_url($website); ?>" target="_blank" rel="nofollow">Official Site</a></strong>
+												<label>الموقع الإلكتروني</label>
+												<strong><a href="<?php echo esc_url($website); ?>" target="_blank" rel="nofollow">الموقع الرسمي</a></strong>
 											</div>
 										</div>
 										<?php endif; ?>
 
 										<?php if ( $map_url ) : ?>
 										<div class="ke-hero-actions" style="margin-top: 20px;">
-											<a href="<?php echo esc_url($map_url); ?>" target="_blank" class="ke-register-btn ke-map-btn">Get Directions</a>
+											<a href="<?php echo esc_url($map_url); ?>" target="_blank" class="ke-register-btn ke-map-btn">احصل على الاتجاهات</a>
 										</div>
 										<?php endif; ?>
 									</div>
@@ -96,7 +96,7 @@ $icon_web      = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 						</header>
 
 						<div class="ke-content-body">
-							<h2 class="ke-foxiz-section-title">About this Venue</h2>
+							<h2 class="ke-foxiz-section-title">عن المكان</h2>
 							<div class="entry-content">
 								<?php while ( have_posts() ) : the_post(); the_content(); endwhile; ?>
 							</div>
@@ -104,7 +104,7 @@ $icon_web      = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 
 						<!-- Upcoming Events -->
 						<div class="ke-supporting-block">
-							<h2 class="ke-foxiz-section-title">Upcoming Events</h2>
+							<h2 class="ke-foxiz-section-title">الفعاليات القادمة</h2>
 							<?php
 							$upcoming_query = KE_Query::get_instance()->get_venue_events( $venue_id, 'upcoming', 12 );
 							if ( $upcoming_query->have_posts() ) :
@@ -115,7 +115,7 @@ $icon_web      = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 									'gap'            => 'medium'
 								) );
 							else :
-								echo '<p class="ke-empty-text">No upcoming events scheduled at this venue.</p>';
+								echo '<p class="ke-empty-text">مفيش فعاليات قادمة مجدولة في المكان ده حالياً.</p>';
 							endif;
 							wp_reset_postdata();
 							?>
@@ -123,7 +123,7 @@ $icon_web      = '<svg class="ke-meta-icon" fill="none" stroke="currentColor" vi
 
 						<!-- Past Events -->
 						<div class="ke-supporting-block ke-past-section">
-							<h2 class="ke-foxiz-section-title">Recent Past Events</h2>
+							<h2 class="ke-foxiz-section-title">الفعاليات السابقة مؤخراً</h2>
 							<?php
 							$past_query = KE_Query::get_instance()->get_venue_events( $venue_id, 'past', 6 );
 							if ( $past_query->have_posts() ) :

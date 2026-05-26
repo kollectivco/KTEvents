@@ -67,7 +67,7 @@ $show_count   = $display['show_count'] ?? 'yes';
 
 				<?php if ( 'yes' === $show_count ) : ?>
 					<div class="ke-upcoming-count">
-						<span class="ke-count"><?php echo $upcoming_count; ?></span> Upcoming Events
+						<span class="ke-count"><?php echo $upcoming_count; ?></span> فعاليات قادمة
 					</div>
 				<?php endif; ?>
 			</footer>

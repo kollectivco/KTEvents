@@ -43,28 +43,28 @@ $icon_phone = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 							<div class="ke-detail-item">
 								<div class="ke-detail-icon"><?php echo $icon_calendar; ?></div>
 								<div class="ke-detail-content">
-									<span class="ke-detail-label">Date</span>
-									<span class="ke-detail-value"><?php echo $event_date ? date_i18n( 'd F Y', strtotime( $event_date ) ) : 'TBA'; ?></span>
+									<span class="ke-detail-label">التاريخ</span>
+									<span class="ke-detail-value"><?php echo $event_date ? date_i18n( 'd F Y', strtotime( $event_date ) ) : 'يحدد لاحقاً'; ?></span>
 								</div>
 							</div>
 							<div class="ke-detail-item">
 								<div class="ke-detail-icon"><?php echo $icon_clock; ?></div>
 								<div class="ke-detail-content">
-									<span class="ke-detail-label">Time</span>
-									<span class="ke-detail-value"><?php echo $event_time ?: 'TBA'; ?></span>
+									<span class="ke-detail-label">الوقت</span>
+									<span class="ke-detail-value"><?php echo $event_time ?: 'يحدد لاحقاً'; ?></span>
 								</div>
 							</div>
 							<div class="ke-detail-item">
 								<div class="ke-detail-icon"><?php echo $icon_venue; ?></div>
 								<div class="ke-detail-content">
-									<span class="ke-detail-label">Venue</span>
+									<span class="ke-detail-label">المكان</span>
 									<span class="ke-detail-value"><strong><?php echo esc_html($venue_name); ?></strong></span>
 								</div>
 							</div>
 							<div class="ke-detail-item">
 								<div class="ke-detail-icon"><?php echo $icon_phone; ?></div>
 								<div class="ke-detail-content">
-									<span class="ke-detail-label">Phone</span>
+									<span class="ke-detail-label">التليفون</span>
 									<span class="ke-detail-value"><?php echo esc_html($phone); ?></span>
 								</div>
 							</div>
@@ -75,9 +75,9 @@ $icon_phone = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 					<div class="ke-static-related-sections">
 						<?php 
 						$sections = [
-							['type' => 'venue', 'id' => $venue_id, 'title' => 'More at this Venue', 'key' => 'venue_id'],
-							['type' => 'category', 'id' => $cat_id, 'title' => 'More in this Category', 'key' => 'ke_category'],
-							['type' => 'recommended', 'id' => 1, 'title' => 'Recommended Events', 'key' => 'ke_sort']
+							['type' => 'venue', 'id' => $venue_id, 'title' => 'المزيد في المكان ده', 'key' => 'venue_id'],
+							['type' => 'category', 'id' => $cat_id, 'title' => 'المزيد في القسم ده', 'key' => 'ke_category'],
+							['type' => 'recommended', 'id' => 1, 'title' => 'فعاليات مقترحة ليك', 'key' => 'ke_sort']
 						];
 
 						foreach ($sections as $sec) {

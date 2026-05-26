@@ -36,7 +36,7 @@ class KE_Shortcodes {
 		?>
 		<div class="ke-isolated-wrap ke-events-directory">
 			<div class="ke-page-header">
-				<h1 class="ke-page-title">Events</h1>
+				<h1 class="ke-page-title">الفعاليات</h1>
 				<div class="ke-title-line"></div>
 			</div>
 
@@ -76,26 +76,26 @@ class KE_Shortcodes {
 		<form id="ke-filter-form" method="get" action="">
 			<!-- Layer 1: Time/Mode Discovery Tabs -->
 			<div class="ke-filter-layer ke-layer-tabs">
-				<div class="ke-filter-label">Quick Choice</div>
+				<div class="ke-filter-label">اختيار سريع</div>
 				<div class="ke-tabs-scroll-wrapper">
 					<div class="ke-nav-scroll">
-						<button type="button" class="ke-nav-item active" data-range="">Upcoming</button>
-						<button type="button" class="ke-nav-item" data-meta="ke_recommended">Recommended</button>
-						<button type="button" class="ke-nav-item" data-range="today">Today</button>
-						<button type="button" class="ke-nav-item" data-range="weekend">Weekend</button>
-						<button type="button" class="ke-nav-item" data-range="week">This Week</button>
+						<button type="button" class="ke-nav-item active" data-range="">اللي جاية</button>
+						<button type="button" class="ke-nav-item" data-meta="ke_recommended">ترشيحاتنا</button>
+						<button type="button" class="ke-nav-item" data-range="today">النهارده</button>
+						<button type="button" class="ke-nav-item" data-range="weekend">الويك إند</button>
+						<button type="button" class="ke-nav-item" data-range="week">الأسبوع ده</button>
 					</div>
 					<button type="button" class="ke-refine-toggle-btn" id="ke-toggle-advanced">
-						<span>Get Specific</span>
+						<span>حدد أكتر</span>
 					</button>
 				</div>
 			</div>
 
 			<!-- Layer 2: Location Discovery Pills -->
 			<div class="ke-filter-layer ke-layer-locations">
-				<div class="ke-filter-label">Quick Location</div>
+				<div class="ke-filter-label">مكان سريع</div>
 				<div class="ke-pills-scroll">
-					<button type="button" class="ke-pill-item active" data-city="">All Events</button>
+					<button type="button" class="ke-pill-item active" data-city="">كل الفعاليات</button>
 					<?php 
 					$cities = get_terms( array( 'taxonomy' => 'event_city', 'hide_empty' => true ) );
 					if ( ! is_wp_error( $cities ) ) :
@@ -115,18 +115,18 @@ class KE_Shortcodes {
 			<div id="ke-advanced-filters" class="ke-refinement-area" style="display: none;">
 				<div class="ke-refinement-grid">
 					<div class="ke-refine-node ke-node-search">
-						<label>Topic / Keywords</label>
-						<input type="text" name="ke_search" placeholder="Search events..." value="">
+						<label>الموضوع / كلمات البحث</label>
+						<input type="text" name="ke_search" placeholder="ابحث عن فعاليات..." value="">
 					</div>
 					<div class="ke-refine-node">
-						<label>Sort By</label>
+						<label>ترتيب حسب</label>
 						<select name="ke_sort" class="ke-styled-select">
-							<option value="upcoming">Upcoming First</option>
-							<option value="latest">Just Added</option>
+							<option value="upcoming">القادمة أولاً</option>
+							<option value="latest">المضافة حديثاً</option>
 						</select>
 					</div>
 					<div class="ke-refine-node ke-node-submit">
-						<button type="submit" class="ke-apply-btn button-primary">Apply Filters</button>
+						<button type="submit" class="ke-apply-btn button-primary">تطبيق الفلاتر</button>
 					</div>
 				</div>
 			</div>

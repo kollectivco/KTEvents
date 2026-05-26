@@ -495,7 +495,7 @@ class KE_Query {
 			// Show More Button (Initial reveal for hidden items)
 			if ( $max_initial > 0 && $query->post_count > $max_initial && ! $is_carousel ) {
 				echo '<div class="ke-show-more-wrapper">';
-				echo '<button type="button" class="ke-show-more-btn">' . esc_html__( 'View More', 'kontentainment-events' ) . '</button>';
+				echo '<button type="button" class="ke-show-more-btn">' . esc_html( 'عرض المزيد' ) . '</button>';
 				echo '</div>';
 			}
 			

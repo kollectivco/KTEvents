@@ -15,22 +15,22 @@ get_header(); ?>
 
 						<header class="ke-archive-header">
 							<h1 class="ke-archive-title"><?php post_type_archive_title(); ?></h1>
-							<p class="ke-archive-subtitle">Discover the best event spaces, clubs, and cultural hubs across Egypt.</p>
+							<p class="ke-archive-subtitle">اكتشف أحسن أماكن الفعاليات، النوادي، والمراكز الثقافية في مصر.</p>
 
 							<div class="ke-filters">
 								<form id="ke-filter-form" method="get" action="<?php echo esc_url( get_post_type_archive_link( 'venue' ) ); ?>">
 									<div class="ke-filter-grid">
 										<!-- Search -->
 										<div class="ke-filter-item">
-											<label for="ke_search">Search Venues</label>
-											<input type="text" name="ke_search" id="ke_search" placeholder="Enter keywords..." value="<?php echo esc_attr( $_GET['ke_search'] ?? '' ); ?>">
+											<label for="ke_search">ابحث عن أماكن</label>
+											<input type="text" name="ke_search" id="ke_search" placeholder="اكتب كلمة البحث..." value="<?php echo esc_attr( $_GET['ke_search'] ?? '' ); ?>">
 										</div>
 
 										<!-- City -->
 										<div class="ke-filter-item">
-											<label for="ke_city">City</label>
+											<label for="ke_city">المدينة</label>
 											<select name="ke_city" id="ke_city">
-												<option value="">All Cities</option>
+												<option value="">كل المدن</option>
 												<?php 
 												$cities = get_terms( array( 'taxonomy' => 'event_city', 'hide_empty' => true ) );
 												foreach ( $cities as $term ) : ?>
@@ -41,19 +41,19 @@ get_header(); ?>
 
 										<!-- Sort -->
 										<div class="ke-filter-item">
-											<label for="ke_sort">Sort By</label>
+											<label for="ke_sort">ترتيب حسب</label>
 											<select name="ke_sort" id="ke_sort">
-												<option value="title_asc" <?php selected( $_GET['ke_sort'] ?? '', 'title_asc' ); ?>>Title A-Z</option>
-												<option value="title_desc" <?php selected( $_GET['ke_sort'] ?? '', 'title_desc' ); ?>>Title Z-A</option>
-												<option value="latest" <?php selected( $_GET['ke_sort'] ?? '', 'latest' ); ?>>Latest Added</option>
+												<option value="title_asc" <?php selected( $_GET['ke_sort'] ?? '', 'title_asc' ); ?>>الاسم (أ-ي)</option>
+												<option value="title_desc" <?php selected( $_GET['ke_sort'] ?? '', 'title_desc' ); ?>>الاسم (ي-أ)</option>
+												<option value="latest" <?php selected( $_GET['ke_sort'] ?? '', 'latest' ); ?>>أحدث الإضافات</option>
 											</select>
 										</div>
 
 										<!-- Buttons -->
 										<div class="ke-filter-item ke-filter-actions">
 											<div class="ke-buttons">
-												<button type="submit" class="ke-submit-btn">Filter</button>
-												<button type="button" class="ke-reset-btn" id="ke-reset-filters">Reset</button>
+												<button type="submit" class="ke-submit-btn">فلترة</button>
+												<button type="button" class="ke-reset-btn" id="ke-reset-filters">إعادة تعيين</button>
 											</div>
 										</div>
 									</div>
@@ -75,7 +75,7 @@ get_header(); ?>
 										data-current-page="<?php echo $query->query_vars['paged']; ?>" 
 										data-max-pages="<?php echo $query->max_num_pages; ?>"
 										class="ke-load-more-btn">
-									Load More Venues
+									عرض المزيد من الأماكن
 								</button>
 							<?php endif; ?>
 							
