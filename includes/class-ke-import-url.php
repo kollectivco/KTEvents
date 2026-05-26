@@ -68,7 +68,25 @@ class KE_Import_URL {
 			$detected_location = array();
 			
 			if ( ! empty( $parsed_data['fields']['venue_name'] ) ) {
-				$venue = get_page_by_title( $parsed_data['fields']['venue_name'], OBJECT, 'venue' );
+				// Try matching by slug first (derived from parsed/scraped venue name)
+				$venue_slug = sanitize_title( $parsed_data['fields']['venue_name'] );
+				$venue_query = new WP_Query( array(
+					'post_type'      => 'venue',
+					'name'           => $venue_slug,
+					'posts_per_page' => 1,
+					'post_status'    => 'publish',
+					'no_found_rows'  => true,
+					'fields'         => 'ids',
+				) );
+
+				$venue = null;
+				if ( ! empty( $venue_query->posts ) ) {
+					$venue = get_post( $venue_query->posts[0] );
+				} else {
+					// Fallback to title lookup if slug matching fails
+					$venue = get_page_by_title( $parsed_data['fields']['venue_name'], OBJECT, 'venue' );
+				}
+
 				if ( $venue ) {
 					$venue_id = $venue->ID;
 					
