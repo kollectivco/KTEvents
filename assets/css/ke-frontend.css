@@ -14,6 +14,11 @@
 }
 
 /* Layout Spacing & Wrappers - Scoped to avoid takeover */
+.ke-isolated-wrap,
+.ke-isolated-wrap * {
+    font-family: inherit;
+}
+
 .ke-isolated-wrap {
     width: 100%;
     margin: 0 auto;
