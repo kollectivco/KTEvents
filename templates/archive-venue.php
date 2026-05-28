@@ -15,22 +15,22 @@ get_header(); ?>
 
 						<header class="ke-archive-header">
 							<h1 class="ke-archive-title"><?php post_type_archive_title(); ?></h1>
-							<p class="ke-archive-subtitle">اكتشف أحسن أماكن الفعاليات، النوادي، والمراكز الثقافية في مصر.</p>
+							<p class="ke-archive-subtitle"><?php echo esc_html( __( 'Discover the best venues, clubs, and cultural centers in Egypt.', 'kontentainment-events' ) ); ?></p>
 
 							<div class="ke-filters">
 								<form id="ke-filter-form" method="get" action="<?php echo esc_url( get_post_type_archive_link( 'venue' ) ); ?>">
 									<div class="ke-filter-grid">
 										<!-- Search -->
 										<div class="ke-filter-item">
-											<label for="ke_search">ابحث عن أماكن</label>
-											<input type="text" name="ke_search" id="ke_search" placeholder="اكتب كلمة البحث..." value="<?php echo esc_attr( $_GET['ke_search'] ?? '' ); ?>">
+											<label for="ke_search"><?php echo esc_html( __( 'Search for venues', 'kontentainment-events' ) ); ?></label>
+											<input type="text" name="ke_search" id="ke_search" placeholder="<?php echo esc_attr( __( 'Type search terms...', 'kontentainment-events' ) ); ?>" value="<?php echo esc_attr( $_GET['ke_search'] ?? '' ); ?>">
 										</div>
 
 										<!-- City -->
 										<div class="ke-filter-item">
-											<label for="ke_city">المدينة</label>
+											<label for="ke_city"><?php echo esc_html( __( 'City', 'kontentainment-events' ) ); ?></label>
 											<select name="ke_city" id="ke_city">
-												<option value="">كل المدن</option>
+												<option value=""><?php echo esc_html( __( 'All Cities', 'kontentainment-events' ) ); ?></option>
 												<?php 
 												$cities = get_terms( array( 'taxonomy' => 'event_city', 'hide_empty' => true ) );
 												foreach ( $cities as $term ) : ?>
@@ -41,19 +41,19 @@ get_header(); ?>
 
 										<!-- Sort -->
 										<div class="ke-filter-item">
-											<label for="ke_sort">ترتيب حسب</label>
+											<label for="ke_sort"><?php echo esc_html( __( 'Sort by', 'kontentainment-events' ) ); ?></label>
 											<select name="ke_sort" id="ke_sort">
-												<option value="title_asc" <?php selected( $_GET['ke_sort'] ?? '', 'title_asc' ); ?>>الاسم (أ-ي)</option>
-												<option value="title_desc" <?php selected( $_GET['ke_sort'] ?? '', 'title_desc' ); ?>>الاسم (ي-أ)</option>
-												<option value="latest" <?php selected( $_GET['ke_sort'] ?? '', 'latest' ); ?>>أحدث الإضافات</option>
+												<option value="title_asc" <?php selected( $_GET['ke_sort'] ?? '', 'title_asc' ); ?>><?php echo esc_html( __( 'Name (A-Z)', 'kontentainment-events' ) ); ?></option>
+												<option value="title_desc" <?php selected( $_GET['ke_sort'] ?? '', 'title_desc' ); ?>><?php echo esc_html( __( 'Name (Z-A)', 'kontentainment-events' ) ); ?></option>
+												<option value="latest" <?php selected( $_GET['ke_sort'] ?? '', 'latest' ); ?>><?php echo esc_html( __( 'Latest additions', 'kontentainment-events' ) ); ?></option>
 											</select>
 										</div>
 
 										<!-- Buttons -->
 										<div class="ke-filter-item ke-filter-actions">
 											<div class="ke-buttons">
-												<button type="submit" class="ke-submit-btn">فلترة</button>
-												<button type="button" class="ke-reset-btn" id="ke-reset-filters">إعادة تعيين</button>
+												<button type="submit" class="ke-submit-btn"><?php echo esc_html( __( 'Filter', 'kontentainment-events' ) ); ?></button>
+												<button type="button" class="ke-reset-btn" id="ke-reset-filters"><?php echo esc_html( __( 'Reset', 'kontentainment-events' ) ); ?></button>
 											</div>
 										</div>
 									</div>
@@ -75,7 +75,7 @@ get_header(); ?>
 										data-current-page="<?php echo $query->query_vars['paged']; ?>" 
 										data-max-pages="<?php echo $query->max_num_pages; ?>"
 										class="ke-load-more-btn">
-									عرض المزيد من الأماكن
+									<?php echo esc_html( __( 'Show more venues', 'kontentainment-events' ) ); ?>
 								</button>
 							<?php endif; ?>
 							

@@ -15,11 +15,13 @@ body.rtl .ke-single-hero-foxiz {
 
 /* Float & Flex Flow Alignment */
 body.rtl .ke-hero-split,
-body.rtl .ke-layout-sidebar,
-body.rtl .ke-single-hero-foxiz,
 body.rtl .ke-filter-grid,
 body.rtl .ke-refinement-grid {
     flex-direction: row-reverse;
+}
+
+body.rtl .ke-layout-sidebar {
+    flex-direction: row;
 }
 
 /* Category Badge Positioning */

@@ -718,14 +718,17 @@
 .ke-layout-sidebar {
     display: flex;
     gap: 40px;
+    flex-direction: row-reverse;
 }
 
 .ke-main-col { flex: 1; min-width: 0; }
 .ke-sidebar-col { flex: 0 0 340px; }
 
 .ke-sidebar-inner {
-    padding-left: 30px;
-    border-left: 1px solid var(--ke-border);
+    padding-right: 30px;
+    border-right: 1px solid var(--ke-border);
+    padding-left: 0;
+    border-left: none;
     height: 100%;
 }
 

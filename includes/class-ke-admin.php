@@ -594,7 +594,7 @@ class KE_Admin {
 		// Exact list of localized strings used in our frontend templates
 		$defaults = array(
 			'LOAD MORE' => 'عرض المزيد',
-			'Events' => 'الفعاليات',
+			'Events' => 'الايفنتات',
 			'Quick Choice' => 'اختيار سريع',
 			'Upcoming' => 'اللي جاية',
 			'Our Recommendations' => 'ترشيحاتنا',
@@ -603,9 +603,9 @@ class KE_Admin {
 			'This week' => 'الأسبوع ده',
 			'Filter more' => 'حدد أكتر',
 			'Quick Location' => 'مكان سريع',
-			'All events' => 'كل الفعاليات',
+			'All events' => 'كل الايفنتات',
 			'Topic / Search words' => 'الموضوع / كلمات البحث',
-			'Search for events...' => 'ابحث عن فعاليات...',
+			'Search for events...' => 'ابحث عن ايفنتات...',
 			'Sort by' => 'ترتيب حسب',
 			'Upcoming first' => 'القادمة أولاً',
 			'Recently added' => 'المضافة حديثاً',
@@ -613,7 +613,7 @@ class KE_Admin {
 			'No matching results' => 'مفيش نتائج مطابقة',
 			'Try changing filters or search terms to find what you are looking for.' => 'جرب تغير الفلاتر أو كلمات البحث عشان تلاقي اللي بتدور عليه.',
 			'Clear all filters' => 'مسح كل الفلاتر',
-			'Upcoming Events' => 'الفعاليات القادمة',
+			'Upcoming Events' => 'الايفنتات القادمة',
 			'Date' => 'التاريخ',
 			'TBA' => 'يحدد لاحقاً',
 			'Time' => 'الوقت',
@@ -621,14 +621,14 @@ class KE_Admin {
 			'Phone' => 'التليفون',
 			'More in this venue' => 'المزيد في المكان ده',
 			'More in this section' => 'المزيد في القسم ده',
-			'Recommended events for you' => 'فعاليات مقترحة ليك',
+			'Recommended events for you' => 'ايفنتات مقترحة ليك',
 			'Address' => 'العنوان',
 			'Website' => 'الموقع الإلكتروني',
 			'Official Website' => 'الموقع الرسمي',
 			'Get Directions' => 'احصل على الاتجاهات',
 			'About Venue' => 'عن المكان',
-			'No upcoming events scheduled at this venue currently.' => 'مفيش فعاليات قادمة مجدولة في المكان ده حالياً.',
-			'Recent Past Events' => 'الفعاليات السابقة مؤخراً',
+			'No upcoming events scheduled at this venue currently.' => 'مفيش ايفنتات قادمة مجدولة في المكان ده حالياً.',
+			'Recent Past Events' => 'الايفنتات السابقة مؤخراً',
 		);
 
 		// Dynamically scan for any extra strings in the plugin files to be fully future-proof and robust!
@@ -653,6 +653,15 @@ class KE_Admin {
 			$translations = get_option( 'ke_quick_translations', array() );
 			$defaults = self::get_default_translations();
 			$translations = wp_parse_args( $translations, $defaults );
+			
+			// Automatically migrate existing saved database translations to use "ايفنتات" on the fly
+			foreach ( $translations as $key => $val ) {
+				if ( is_string( $val ) ) {
+					$val = str_replace( 'الفعاليات', 'الايفنتات', $val );
+					$val = str_replace( 'فعاليات', 'ايفنتات', $val );
+					$translations[ $key ] = $val;
+				}
+			}
 		}
 
 		if ( 'kontentainment-events' === $domain ) {
