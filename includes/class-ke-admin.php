@@ -534,37 +534,66 @@ class KE_Admin {
 	}
 
 	/**
+	 * Dynamically scan plugin files for translatable strings matching 'kontentainment-events'
+	 */
+	public static function scan_plugin_strings() {
+		$strings = array();
+		$plugin_dir = plugin_dir_path( dirname( __FILE__ ) );
+		
+		// Recursively scan directories: templates, includes, and elementor
+		$dirs_to_scan = array(
+			$plugin_dir . 'templates',
+			$plugin_dir . 'includes',
+			$plugin_dir . 'elementor',
+		);
+		
+		$files = array( $plugin_dir . 'kontentainment-events.php' );
+		
+		foreach ( $dirs_to_scan as $dir ) {
+			if ( is_dir( $dir ) ) {
+				$iterator = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $dir ) );
+				foreach ( $iterator as $file ) {
+					if ( $file->isFile() && 'php' === $file->getExtension() ) {
+						$files[] = $file->getPathname();
+					}
+				}
+			}
+		}
+		
+		// Regex pattern to find localization strings using the 'kontentainment-events' text domain
+		// Matches: __(), _e(), esc_html__(), esc_html_e(), esc_attr__(), esc_attr_e()
+		$pattern = '/(?:__|_e|esc_html__|esc_html_e|esc_attr__|esc_attr_e)\(\s*([\'"])(.*?)\1\s*,\s*[\'"]kontentainment-events[\'"]\s*\)/s';
+		
+		foreach ( $files as $filepath ) {
+			if ( ! file_exists( $filepath ) ) {
+				continue;
+			}
+			$content = file_get_contents( $filepath );
+			if ( preg_match_all( $pattern, $content, $matches ) ) {
+				if ( ! empty( $matches[2] ) ) {
+					foreach ( $matches[2] as $str ) {
+						// Clean backslashes if any escaped quotes
+						$str = stripslashes( $str );
+						if ( ! empty( $str ) ) {
+							$strings[ $str ] = '';
+						}
+					}
+				}
+			}
+		}
+		
+		// Sort strings alphabetically
+		ksort( $strings );
+		return $strings;
+	}
+
+	/**
 	 * Get Default Translations
 	 */
 	public static function get_default_translations() {
-		return array(
-			'Showing %s results for your search' => 'عرض %s من نتائج البحث',
-			'Register' => 'تسجيل',
-			'Username or Email Address' => 'اسم المستخدم أو البريد الإلكتروني',
-			'Password' => 'كلمة المرور',
-			'Remember me' => 'تذكرني',
-			'Log In' => 'تسجيل الدخول',
-			'Lost your password?' => 'نسيت كلمة المرور؟',
-			'Get New Password' => 'الحصول على كلمة مرور جديدة',
-			'Date' => 'التاريخ',
-			'TBA' => 'يحدد لاحقاً',
-			'Time' => 'الوقت',
-			'Venue' => 'المكان',
-			'Phone' => 'التليفون',
-			'More in this venue' => 'المزيد في المكان ده',
-			'More in this section' => 'المزيد في القسم ده',
-			'Recommended events for you' => 'فعاليات مقترحة ليك',
-			'Address' => 'العنوان',
-			'Website' => 'الموقع الإلكتروني',
-			'Official Website' => 'الموقع الرسمي',
-			'Get Directions' => 'احصل على الاتجاهات',
-			'About Venue' => 'عن المكان',
-			'Upcoming Events' => 'الفعاليات القادمة',
-			'Recent Past Events' => 'الفعاليات السابقة مؤخراً',
-			'No upcoming events scheduled at this venue currently.' => 'مفيش فعاليات قادمة مجدولة في المكان ده حالياً.',
-			'No matching results' => 'مفيش نتائج مطابقة',
-			'Try changing filters or search terms to find what you are looking for.' => 'جرب تغير الفلاتر أو كلمات البحث عشان تلاقي اللي بتدور عليه.',
-			'Clear all filters' => 'مسح كل الفلاتر',
+		// Exact list of localized strings used in our frontend templates
+		$defaults = array(
+			'LOAD MORE' => 'عرض المزيد',
 			'Events' => 'الفعاليات',
 			'Quick Choice' => 'اختيار سريع',
 			'Upcoming' => 'اللي جاية',
@@ -581,8 +610,38 @@ class KE_Admin {
 			'Upcoming first' => 'القادمة أولاً',
 			'Recently added' => 'المضافة حديثاً',
 			'Apply filters' => 'تطبيق الفلاتر',
-			'LOAD MORE' => 'عرض المزيد',
+			'No matching results' => 'مفيش نتائج مطابقة',
+			'Try changing filters or search terms to find what you are looking for.' => 'جرب تغير الفلاتر أو كلمات البحث عشان تلاقي اللي بتدور عليه.',
+			'Clear all filters' => 'مسح كل الفلاتر',
+			'Upcoming Events' => 'الفعاليات القادمة',
+			'Date' => 'التاريخ',
+			'TBA' => 'يحدد لاحقاً',
+			'Time' => 'الوقت',
+			'Venue' => 'المكان',
+			'Phone' => 'التليفون',
+			'More in this venue' => 'المزيد في المكان ده',
+			'More in this section' => 'المزيد في القسم ده',
+			'Recommended events for you' => 'فعاليات مقترحة ليك',
+			'Address' => 'العنوان',
+			'Website' => 'الموقع الإلكتروني',
+			'Official Website' => 'الموقع الرسمي',
+			'Get Directions' => 'احصل على الاتجاهات',
+			'About Venue' => 'عن المكان',
+			'No upcoming events scheduled at this venue currently.' => 'مفيش فعاليات قادمة مجدولة في المكان ده حالياً.',
+			'Recent Past Events' => 'الفعاليات السابقة مؤخراً',
 		);
+
+		// Dynamically scan for any extra strings in the plugin files to be fully future-proof and robust!
+		$scanned = self::scan_plugin_strings();
+		
+		// Merge them, keeping defaults if already present
+		foreach ( $scanned as $key => $val ) {
+			if ( ! isset( $defaults[ $key ] ) ) {
+				$defaults[ $key ] = '';
+			}
+		}
+
+		return $defaults;
 	}
 
 	/**
@@ -597,23 +656,6 @@ class KE_Admin {
 		}
 
 		if ( 'kontentainment-events' === $domain ) {
-			if ( isset( $translations[ $text ] ) && ! empty( $translations[ $text ] ) ) {
-				return $translations[ $text ];
-			}
-		}
-
-		// Sites often have common login/register strings in 'default' or other domains
-		$general_strings = array(
-			'Showing %s results for your search',
-			'Register',
-			'Username or Email Address',
-			'Password',
-			'Remember me',
-			'Log In',
-			'Lost your password?',
-			'Get New Password'
-		);
-		if ( in_array( $text, $general_strings ) ) {
 			if ( isset( $translations[ $text ] ) && ! empty( $translations[ $text ] ) ) {
 				return $translations[ $text ];
 			}
