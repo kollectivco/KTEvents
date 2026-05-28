@@ -208,4 +208,254 @@ jQuery(document).ready(function($) {
         previewWrapper.fadeIn(600);
         $('html, body').animate({ scrollTop: previewWrapper.offset().top - 40 }, 800);
     }
+
+    /**
+     * ----------------------------------------------------
+     * QUICK TRANSLATION INTERFACE HANDLERS
+     * ----------------------------------------------------
+     */
+    
+    // Toast Notification helper
+    function showToast(message, type = 'success') {
+        const toast = $('#ke-translation-toast');
+        if (!toast.length) {
+            $('body').append(`<div id="ke-translation-toast" class="ke-toast-notification"></div>`);
+        }
+        
+        const el = $('#ke-translation-toast');
+        el.removeClass('success error')
+          .addClass(type)
+          .html(`<span class="dashicons dashicons-${type === 'success' ? 'yes' : 'warning'}"></span> ${message}`)
+          .fadeIn(300);
+          
+        setTimeout(() => {
+            el.fadeOut(300);
+        }, 4000);
+    }
+
+    // Toggle Quick Tools Dropdown
+    $(document).on('click', '#ke-quick-tools-btn', function(e) {
+        e.stopPropagation();
+        $('#ke-quick-tools-menu').css('display', $('#ke-quick-tools-menu').css('display') === 'none' ? 'flex' : 'none');
+    });
+
+    // Close Dropdown on outside click
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('#ke-quick-tools-btn').length) {
+            $('#ke-quick-tools-menu').hide();
+        }
+    });
+
+    // Real-time search filtering
+    $(document).on('input', '#ke-search-strings', function() {
+        const query = $(this).val().toLowerCase().trim();
+        $('.ke-translation-row').each(function() {
+            const source = $(this).find('.ke-translation-source').text().toLowerCase();
+            const value = $(this).find('.ke-translation-input').val().toLowerCase();
+            if (source.includes(query) || value.includes(query)) {
+                $(this).css('display', 'grid');
+            } else {
+                $(this).hide();
+            }
+        });
+    });
+
+    // AJAX Save Translations
+    $(document).on('click', '#ke-save-translations-btn', function(e) {
+        e.preventDefault();
+        const btn = $(this);
+        const mask = $('.ke-loading-mask');
+        
+        btn.prop('disabled', true);
+        mask.addClass('active');
+
+        const translations = {};
+        $('.ke-translation-input').each(function() {
+            const key = $(this).data('key');
+            const val = $(this).val();
+            translations[key] = val;
+        });
+
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'ke_save_translations',
+                nonce: ke_ajax_obj.nonce,
+                translations: translations
+            },
+            success: function(response) {
+                if (response.success) {
+                    showToast(response.data || 'Translations saved successfully!', 'success');
+                } else {
+                    showToast(response.data || 'Failed to save translations.', 'error');
+                }
+            },
+            error: function() {
+                showToast('A server error occurred. Please try again.', 'error');
+            },
+            complete: function() {
+                btn.prop('disabled', false);
+                mask.removeClass('active');
+            }
+        });
+    });
+
+    // AJAX Google Auto Translation
+    $(document).on('click', '#ke-auto-translate-btn', function(e) {
+        e.preventDefault();
+        const btn = $(this);
+        const mask = $('.ke-loading-mask');
+        
+        // Find empty translation fields
+        const emptyKeys = [];
+        $('.ke-translation-input').each(function() {
+            if ($(this).val().trim() === '') {
+                emptyKeys.push($(this).data('key'));
+            }
+        });
+
+        if (emptyKeys.length === 0) {
+            showToast('All fields are already translated!', 'success');
+            return;
+        }
+
+        btn.prop('disabled', true);
+        mask.addClass('active');
+        showToast(`Translating ${emptyKeys.length} strings using Google Translate...`, 'success');
+
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'ke_auto_translate',
+                nonce: ke_ajax_obj.nonce,
+                strings: emptyKeys
+            },
+            success: function(response) {
+                if (response.success) {
+                    const translations = response.data;
+                    let count = 0;
+                    
+                    $('.ke-translation-input').each(function() {
+                        const key = $(this).data('key');
+                        if (translations[key]) {
+                            $(this).val(translations[key]);
+                            // Highlight transition effect
+                            $(this).css('background', '#d1fae5').animate({ backgroundColor: '#ffffff' }, 1500, function() {
+                                $(this).css('background', '');
+                            });
+                            count++;
+                        }
+                    });
+                    
+                    showToast(`Successfully translated ${count} strings!`, 'success');
+                } else {
+                    showToast(response.data || 'Failed to auto-translate.', 'error');
+                }
+            },
+            error: function() {
+                showToast('Failed to connect to translation service.', 'error');
+            },
+            complete: function() {
+                btn.prop('disabled', false);
+                mask.removeClass('active');
+            }
+        });
+    });
+
+    // Reset to Default Translations
+    $(document).on('click', '#ke-reset-translations-btn', function(e) {
+        e.preventDefault();
+        if (!confirm('Are you sure you want to reset all translations to default Arabic settings? Any custom translations will be overwritten.')) {
+            return;
+        }
+
+        const mask = $('.ke-loading-mask');
+        mask.addClass('active');
+
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'ke_reset_translations',
+                nonce: ke_ajax_obj.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    const defaults = response.data;
+                    $('.ke-translation-input').each(function() {
+                        const key = $(this).data('key');
+                        if (defaults[key] !== undefined) {
+                            $(this).val(defaults[key]);
+                        }
+                    });
+                    showToast('All translations reset to defaults!', 'success');
+                } else {
+                    showToast(response.data || 'Failed to reset translations.', 'error');
+                }
+            },
+            error: function() {
+                showToast('Failed to reset translations due to server error.', 'error');
+            },
+            complete: function() {
+                mask.removeClass('active');
+            }
+        });
+    });
+
+    // Export Translations to JSON File
+    $(document).on('click', '#ke-export-translations-btn', function(e) {
+        e.preventDefault();
+        const translations = {};
+        
+        $('.ke-translation-input').each(function() {
+            const key = $(this).data('key');
+            const val = $(this).val();
+            translations[key] = val;
+        });
+
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(translations, null, 4));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "ke-translations-export.json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+        
+        showToast('Translations exported to JSON successfully!', 'success');
+    });
+
+    // Import Translations from JSON File
+    $(document).on('change', '#ke-import-translations-file', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                const translations = JSON.parse(event.target.result);
+                let count = 0;
+                
+                $('.ke-translation-input').each(function() {
+                    const key = $(this).data('key');
+                    if (translations[key] !== undefined) {
+                        $(this).val(translations[key]);
+                        $(this).css('background', '#eff6ff').animate({ backgroundColor: '#ffffff' }, 1500, function() {
+                            $(this).css('background', '');
+                        });
+                        count++;
+                    }
+                });
+                
+                showToast(`Loaded ${count} translations from JSON! Save changes to finalize.`, 'success');
+            } catch (err) {
+                showToast('Invalid JSON file format.', 'error');
+            }
+        };
+        reader.readAsText(file);
+        
+        // Reset file input
+        $(this).val('');
+    });
 });

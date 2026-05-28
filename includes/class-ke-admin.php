@@ -29,6 +29,14 @@ class KE_Admin {
 
 		// Menu Items
 		add_action( 'admin_menu', array( $this, 'add_menu_pages' ) );
+
+		// Translation AJAX Actions
+		add_action( 'wp_ajax_ke_save_translations', array( $this, 'ajax_save_translations' ) );
+		add_action( 'wp_ajax_ke_auto_translate', array( $this, 'ajax_auto_translate' ) );
+		add_action( 'wp_ajax_ke_reset_translations', array( $this, 'ajax_reset_translations' ) );
+
+		// Global high-performance Translation override
+		add_filter( 'gettext', array( __CLASS__, 'translate_override' ), 20, 3 );
 	}
 
 	/**
@@ -60,6 +68,15 @@ class KE_Admin {
 			'manage_options',
 			'ke-import-settings',
 			array( $this, 'render_settings_page' )
+		);
+
+		add_submenu_page(
+			'edit.php?post_type=event',
+			'Quick Translation',
+			'Quick Translation',
+			'manage_options',
+			'ke-translation',
+			array( $this, 'render_translation_page' )
 		);
 	}
 
@@ -514,6 +531,248 @@ class KE_Admin {
 				}
 				break;
 		}
+	}
+
+	/**
+	 * Get Default Translations
+	 */
+	public static function get_default_translations() {
+		return array(
+			'Showing %s results for your search' => 'عرض %s من نتائج البحث',
+			'Register' => 'تسجيل',
+			'Username or Email Address' => 'اسم المستخدم أو البريد الإلكتروني',
+			'Password' => 'كلمة المرور',
+			'Remember me' => 'تذكرني',
+			'Log In' => 'تسجيل الدخول',
+			'Lost your password?' => 'نسيت كلمة المرور؟',
+			'Get New Password' => 'الحصول على كلمة مرور جديدة',
+			'Date' => 'التاريخ',
+			'TBA' => 'يحدد لاحقاً',
+			'Time' => 'الوقت',
+			'Venue' => 'المكان',
+			'Phone' => 'التليفون',
+			'More in this venue' => 'المزيد في المكان ده',
+			'More in this section' => 'المزيد في القسم ده',
+			'Recommended events for you' => 'فعاليات مقترحة ليك',
+			'Address' => 'العنوان',
+			'Website' => 'الموقع الإلكتروني',
+			'Official Website' => 'الموقع الرسمي',
+			'Get Directions' => 'احصل على الاتجاهات',
+			'About Venue' => 'عن المكان',
+			'Upcoming Events' => 'الفعاليات القادمة',
+			'Recent Past Events' => 'الفعاليات السابقة مؤخراً',
+			'No upcoming events scheduled at this venue currently.' => 'مفيش فعاليات قادمة مجدولة في المكان ده حالياً.',
+			'No matching results' => 'مفيش نتائج مطابقة',
+			'Try changing filters or search terms to find what you are looking for.' => 'جرب تغير الفلاتر أو كلمات البحث عشان تلاقي اللي بتدور عليه.',
+			'Clear all filters' => 'مسح كل الفلاتر',
+			'Events' => 'الفعاليات',
+			'Quick Choice' => 'اختيار سريع',
+			'Upcoming' => 'اللي جاية',
+			'Our Recommendations' => 'ترشيحاتنا',
+			'Today' => 'النهارده',
+			'Weekend' => 'الويك إند',
+			'This week' => 'الأسبوع ده',
+			'Filter more' => 'حدد أكتر',
+			'Quick Location' => 'مكان سريع',
+			'All events' => 'كل الفعاليات',
+			'Topic / Search words' => 'الموضوع / كلمات البحث',
+			'Search for events...' => 'ابحث عن فعاليات...',
+			'Sort by' => 'ترتيب حسب',
+			'Upcoming first' => 'القادمة أولاً',
+			'Recently added' => 'المضافة حديثاً',
+			'Apply filters' => 'تطبيق الفلاتر',
+			'LOAD MORE' => 'عرض المزيد',
+		);
+	}
+
+	/**
+	 * High-Performance Translation Override Filter
+	 */
+	public static function translate_override( $translated_text, $text, $domain ) {
+		static $translations = null;
+		if ( null === $translations ) {
+			$translations = get_option( 'ke_quick_translations', array() );
+			$defaults = self::get_default_translations();
+			$translations = wp_parse_args( $translations, $defaults );
+		}
+
+		if ( 'kontentainment-events' === $domain ) {
+			if ( isset( $translations[ $text ] ) && ! empty( $translations[ $text ] ) ) {
+				return $translations[ $text ];
+			}
+		}
+
+		// Sites often have common login/register strings in 'default' or other domains
+		$general_strings = array(
+			'Showing %s results for your search',
+			'Register',
+			'Username or Email Address',
+			'Password',
+			'Remember me',
+			'Log In',
+			'Lost your password?',
+			'Get New Password'
+		);
+		if ( in_array( $text, $general_strings ) ) {
+			if ( isset( $translations[ $text ] ) && ! empty( $translations[ $text ] ) ) {
+				return $translations[ $text ];
+			}
+		}
+
+		return $translated_text;
+	}
+
+	/**
+	 * AJAX Save Translations
+	 */
+	public function ajax_save_translations() {
+		check_ajax_referer( 'ke_ajax_nonce', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Unauthorized' );
+		}
+
+		$translations = isset( $_POST['translations'] ) ? (array) $_POST['translations'] : array();
+		$sanitized = array();
+
+		foreach ( $translations as $key => $val ) {
+			$sanitized[ sanitize_text_field( $key ) ] = sanitize_text_field( $val );
+		}
+
+		update_option( 'ke_quick_translations', $sanitized );
+		wp_send_json_success( 'Translations saved successfully!' );
+	}
+
+	/**
+	 * AJAX Auto Translate using Google Translate client API
+	 */
+	public function ajax_auto_translate() {
+		check_ajax_referer( 'ke_ajax_nonce', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Unauthorized' );
+		}
+
+		$strings = isset( $_POST['strings'] ) ? (array) $_POST['strings'] : array();
+		$translations = array();
+
+		foreach ( $strings as $string ) {
+			$string = sanitize_text_field( $string );
+			if ( empty( $string ) ) {
+				continue;
+			}
+
+			// Call free public Google Translate API (client gtx)
+			$url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ar&dt=t&q=' . rawurlencode( $string );
+			$response = wp_remote_get( $url );
+
+			if ( ! is_wp_error( $response ) ) {
+				$body = wp_remote_retrieve_body( $response );
+				$data = json_decode( $body );
+				if ( is_array( $data ) && isset( $data[0][0][0] ) ) {
+					$translations[ $string ] = $data[0][0][0];
+				}
+			}
+		}
+
+		wp_send_json_success( $translations );
+	}
+
+	/**
+	 * AJAX Reset to Default translations
+	 */
+	public function ajax_reset_translations() {
+		check_ajax_referer( 'ke_ajax_nonce', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Unauthorized' );
+		}
+
+		$defaults = self::get_default_translations();
+		update_option( 'ke_quick_translations', $defaults );
+		wp_send_json_success( $defaults );
+	}
+
+	/**
+	 * Render Quick Translation Dashboard Page
+	 */
+	public function render_translation_page() {
+		$saved = get_option( 'ke_quick_translations', array() );
+		$defaults = self::get_default_translations();
+		$strings = wp_parse_args( $saved, $defaults );
+		?>
+		<div class="wrap ke-translation-container">
+			<div class="ke-loading-mask">
+				<div class="ke-spinner-dual"></div>
+			</div>
+
+			<div class="ke-translation-header">
+				<div class="ke-translation-title-area">
+					<h1><span class="dashicons dashicons-translation"></span> Quick Translation</h1>
+					<p class="description">Allows you to quickly translate front-end strings to your language.</p>
+				</div>
+				<div class="ke-translation-actions">
+					<button type="button" class="ke-translation-btn ke-btn-auto-translate" id="ke-auto-translate-btn">
+						<span class="dashicons dashicons-admin-site"></span> Auto Translation
+					</button>
+					<div class="ke-translation-btn ke-btn-quick-tools" id="ke-quick-tools-btn">
+						<span class="dashicons dashicons-cloud"></span> Quick Tools
+						<div class="ke-quick-tools-dropdown" id="ke-quick-tools-menu">
+							<button type="button" id="ke-export-translations-btn">
+								<span class="dashicons dashicons-download"></span> Export JSON
+							</button>
+							<label for="ke-import-translations-file">
+								<span class="dashicons dashicons-upload"></span> Import JSON
+								<input type="file" id="ke-import-translations-file" accept=".json" style="display: none;">
+							</label>
+							<button type="button" id="ke-reset-translations-btn" style="color: #ef4444;">
+								<span class="dashicons dashicons-trash" style="color: #ef4444;"></span> Reset to Defaults
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="ke-translation-notice">
+				<div class="dashicons dashicons-info"></div>
+				<div>
+					<strong>PLEASE NOTE:</strong> Please keep "%s" as it is in the translated text if the string contains this variable. Incorrect formatting can cause fatal errors in PHP code and prevent the site from loading correctly.
+				</div>
+			</div>
+
+			<div class="ke-translation-card">
+				<div class="ke-translation-list-header">
+					<div class="ke-translation-header-col">
+						<span class="dashicons dashicons-admin-site"></span> Source String - English
+					</div>
+					<div class="ke-translation-header-col">
+						<span class="dashicons dashicons-translation"></span> Translation
+					</div>
+				</div>
+				<div class="ke-translation-list-body">
+					<?php foreach ( $defaults as $english => $fallback ) : 
+						$current_val = isset( $saved[ $english ] ) ? $saved[ $english ] : '';
+						?>
+						<div class="ke-translation-row">
+							<div class="ke-translation-source"><?php echo esc_html( $english ); ?></div>
+							<div class="ke-translation-input-wrap">
+								<input type="text" 
+									class="ke-translation-input" 
+									data-key="<?php echo esc_attr( $english ); ?>" 
+									value="<?php echo esc_attr( $current_val ); ?>" 
+									placeholder="<?php echo esc_attr( $fallback ); ?>">
+							</div>
+						</div>
+					<?php endforeach; ?>
+				</div>
+			</div>
+
+			<div class="ke-translation-footer">
+				<div class="ke-translation-search-wrap">
+					<span class="dashicons dashicons-search"></span>
+					<input type="text" id="ke-search-strings" placeholder="Search source string...">
+				</div>
+				<button type="button" class="ke-btn-save-translations" id="ke-save-translations-btn">Save Changes</button>
+			</div>
+		</div>
+		<?php
 	}
 }
 KE_Admin::get_instance();

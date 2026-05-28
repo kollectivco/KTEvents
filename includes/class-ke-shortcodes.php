@@ -36,7 +36,7 @@ class KE_Shortcodes {
 		?>
 		<div class="ke-isolated-wrap ke-events-directory">
 			<div class="ke-page-header">
-				<h1 class="ke-page-title">الفعاليات</h1>
+				<h1 class="ke-page-title"><?php echo esc_html( __( 'Events', 'kontentainment-events' ) ); ?></h1>
 				<div class="ke-title-line"></div>
 			</div>
 
@@ -76,26 +76,26 @@ class KE_Shortcodes {
 		<form id="ke-filter-form" method="get" action="">
 			<!-- Layer 1: Time/Mode Discovery Tabs -->
 			<div class="ke-filter-layer ke-layer-tabs">
-				<div class="ke-filter-label">اختيار سريع</div>
+				<div class="ke-filter-label"><?php echo esc_html( __( 'Quick Choice', 'kontentainment-events' ) ); ?></div>
 				<div class="ke-tabs-scroll-wrapper">
 					<div class="ke-nav-scroll">
-						<button type="button" class="ke-nav-item active" data-range="">اللي جاية</button>
-						<button type="button" class="ke-nav-item" data-meta="ke_recommended">ترشيحاتنا</button>
-						<button type="button" class="ke-nav-item" data-range="today">النهارده</button>
-						<button type="button" class="ke-nav-item" data-range="weekend">الويك إند</button>
-						<button type="button" class="ke-nav-item" data-range="week">الأسبوع ده</button>
+						<button type="button" class="ke-nav-item active" data-range=""><?php echo esc_html( __( 'Upcoming', 'kontentainment-events' ) ); ?></button>
+						<button type="button" class="ke-nav-item" data-meta="ke_recommended"><?php echo esc_html( __( 'Our Recommendations', 'kontentainment-events' ) ); ?></button>
+						<button type="button" class="ke-nav-item" data-range="today"><?php echo esc_html( __( 'Today', 'kontentainment-events' ) ); ?></button>
+						<button type="button" class="ke-nav-item" data-range="weekend"><?php echo esc_html( __( 'Weekend', 'kontentainment-events' ) ); ?></button>
+						<button type="button" class="ke-nav-item" data-range="week"><?php echo esc_html( __( 'This week', 'kontentainment-events' ) ); ?></button>
 					</div>
 					<button type="button" class="ke-refine-toggle-btn" id="ke-toggle-advanced">
-						<span>حدد أكتر</span>
+						<span><?php echo esc_html( __( 'Filter more', 'kontentainment-events' ) ); ?></span>
 					</button>
 				</div>
 			</div>
 
 			<!-- Layer 2: Location Discovery Pills -->
 			<div class="ke-filter-layer ke-layer-locations">
-				<div class="ke-filter-label">مكان سريع</div>
+				<div class="ke-filter-label"><?php echo esc_html( __( 'Quick Location', 'kontentainment-events' ) ); ?></div>
 				<div class="ke-pills-scroll">
-					<button type="button" class="ke-pill-item active" data-city="">كل الفعاليات</button>
+					<button type="button" class="ke-pill-item active" data-city=""><?php echo esc_html( __( 'All events', 'kontentainment-events' ) ); ?></button>
 					<?php 
 					$cities = get_terms( array( 'taxonomy' => 'event_city', 'hide_empty' => true ) );
 					if ( ! is_wp_error( $cities ) ) :
@@ -115,18 +115,18 @@ class KE_Shortcodes {
 			<div id="ke-advanced-filters" class="ke-refinement-area" style="display: none;">
 				<div class="ke-refinement-grid">
 					<div class="ke-refine-node ke-node-search">
-						<label>الموضوع / كلمات البحث</label>
-						<input type="text" name="ke_search" placeholder="ابحث عن فعاليات..." value="">
+						<label><?php echo esc_html( __( 'Topic / Search words', 'kontentainment-events' ) ); ?></label>
+						<input type="text" name="ke_search" placeholder="<?php echo esc_attr( __( 'Search for events...', 'kontentainment-events' ) ); ?>" value="">
 					</div>
 					<div class="ke-refine-node">
-						<label>ترتيب حسب</label>
+						<label><?php echo esc_html( __( 'Sort by', 'kontentainment-events' ) ); ?></label>
 						<select name="ke_sort" class="ke-styled-select">
-							<option value="upcoming">القادمة أولاً</option>
-							<option value="latest">المضافة حديثاً</option>
+							<option value="upcoming"><?php echo esc_html( __( 'Upcoming first', 'kontentainment-events' ) ); ?></option>
+							<option value="latest"><?php echo esc_html( __( 'Recently added', 'kontentainment-events' ) ); ?></option>
 						</select>
 					</div>
 					<div class="ke-refine-node ke-node-submit">
-						<button type="submit" class="ke-apply-btn button-primary">تطبيق الفلاتر</button>
+						<button type="submit" class="ke-apply-btn button-primary"><?php echo esc_html( __( 'Apply filters', 'kontentainment-events' ) ); ?></button>
 					</div>
 				</div>
 			</div>
