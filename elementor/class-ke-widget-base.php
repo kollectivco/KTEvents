@@ -18,6 +18,14 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 		return $cats;
 	}
 
+	public function get_script_depends() {
+		return [ 'swiper', 'ke-frontend' ];
+	}
+
+	public function get_style_depends() {
+		return is_rtl() ? [ 'swiper', 'ke-frontend', 'ke-frontend-rtl' ] : [ 'swiper', 'ke-frontend' ];
+	}
+
 	/**
 	 * Query Section - Standard Name
 	 */

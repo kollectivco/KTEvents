@@ -26,6 +26,15 @@ class KE_Shortcodes {
 	 * Render Events Archive Shortcode
 	 */
 	public function render_events_archive( $atts ) {
+		// Enqueue required assets since the shortcode is being rendered
+		wp_enqueue_style( 'swiper' );
+		wp_enqueue_script( 'swiper' );
+		wp_enqueue_style( 'ke-frontend' );
+		if ( is_rtl() ) {
+			wp_enqueue_style( 'ke-frontend-rtl' );
+		}
+		wp_enqueue_script( 'ke-frontend' );
+
 		$atts = shortcode_atts( array(
 			'columns' => 3,
 			'limit'   => 12,

@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment Events
  * Plugin URI:  https://github.com/kollectivco/KTEvents
  * Description: A professional editorial events directory for magazine websites.
- * Version:     1.6.2
+ * Version:     1.6.3
  * Author:      Kollectiv
  * Author URI:  https://github.com/kollectivco
  * Text Domain: kontentainment-events
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Define constants
 define( 'KE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'KE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'KE_PLUGIN_VERSION', '1.6.2' );
+define( 'KE_PLUGIN_VERSION', '1.6.3' );
 
 /**
  * Main Kontentainment Events Class
@@ -167,25 +167,40 @@ class KE_Events {
 	}
 
 	/**
-	 * Enqueue frontend assets
+	 * Register and Conditionally Enqueue frontend assets
 	 */
 	public function enqueue_frontend_assets() {
-		// Enqueue Swiper (CDN for reliability and speed)
-		wp_enqueue_style( 'swiper', 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css', array(), '11.0.0' );
-		wp_enqueue_script( 'swiper', 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js', array(), '11.0.0', true );
+		// Register Swiper
+		wp_register_style( 'swiper', 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css', array(), '11.0.0' );
+		wp_register_script( 'swiper', 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js', array(), '11.0.0', true );
 
-		// Plugin assets
-		wp_enqueue_style( 'ke-frontend', KE_PLUGIN_URL . 'assets/css/ke-frontend.css', array( 'swiper' ), KE_PLUGIN_VERSION );
-		if ( is_rtl() ) {
-			wp_enqueue_style( 'ke-frontend-rtl', KE_PLUGIN_URL . 'assets/css/ke-frontend-rtl.css', array( 'ke-frontend' ), KE_PLUGIN_VERSION );
-		}
-		wp_enqueue_script( 'ke-frontend', KE_PLUGIN_URL . 'assets/js/ke-frontend.js', array( 'jquery', 'swiper' ), KE_PLUGIN_VERSION, true );
-
-		// Localize for AJAX
+		// Register Plugin assets
+		wp_register_style( 'ke-frontend', KE_PLUGIN_URL . 'assets/css/ke-frontend.css', array( 'swiper' ), KE_PLUGIN_VERSION );
+		wp_register_style( 'ke-frontend-rtl', KE_PLUGIN_URL . 'assets/css/ke-frontend-rtl.css', array( 'ke-frontend' ), KE_PLUGIN_VERSION );
+		
+		wp_register_script( 'ke-frontend', KE_PLUGIN_URL . 'assets/js/ke-frontend.js', array( 'jquery', 'swiper' ), KE_PLUGIN_VERSION, true );
 		wp_localize_script( 'ke-frontend', 'ke_ajax_obj', array(
 			'ajax_url' => admin_url( 'admin-ajax.php' ),
 			'nonce'    => wp_create_nonce( 'ke_ajax_nonce' )
 		));
+
+		// Conditionally enqueue on specific pages
+		if ( is_post_type_archive( 'event' ) || is_singular( 'event' ) || is_singular( 'venue' ) || is_tax( 'event_category' ) || is_tax( 'event_city' ) || is_tax( 'event_area' ) ) {
+			$this->enqueue_assets_now();
+		}
+	}
+
+	/**
+	 * Force Enqueue Assets (for shortcodes and manual loading)
+	 */
+	public function enqueue_assets_now() {
+		wp_enqueue_style( 'swiper' );
+		wp_enqueue_script( 'swiper' );
+		wp_enqueue_style( 'ke-frontend' );
+		if ( is_rtl() ) {
+			wp_enqueue_style( 'ke-frontend-rtl' );
+		}
+		wp_enqueue_script( 'ke-frontend' );
 	}
 
 	/**
