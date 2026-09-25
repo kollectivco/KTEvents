@@ -19,11 +19,11 @@ abstract class KE_Widget_Base extends \Elementor\Widget_Base {
 	}
 
 	public function get_script_depends() {
-		return [ 'swiper', 'ke-frontend' ];
+		return [ 'ke-swiper', 'ke-frontend' ];
 	}
 
 	public function get_style_depends() {
-		return is_rtl() ? [ 'swiper', 'ke-frontend', 'ke-frontend-rtl' ] : [ 'swiper', 'ke-frontend' ];
+		return is_rtl() ? [ 'ke-swiper', 'ke-frontend', 'ke-frontend-rtl' ] : [ 'ke-swiper', 'ke-frontend' ];
 	}
 
 	/**

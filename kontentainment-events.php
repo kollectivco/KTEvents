@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment Events
  * Plugin URI:  https://github.com/kollectivco/KTEvents
  * Description: A professional editorial events directory for magazine websites.
- * Version:     1.6.5
+ * Version:     1.6.6
  * Author:      Kollectiv
  * Author URI:  https://github.com/kollectivco
  * Text Domain: kontentainment-events
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Define constants
 define( 'KE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'KE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'KE_PLUGIN_VERSION', '1.6.5' );
+define( 'KE_PLUGIN_VERSION', '1.6.6' );
 
 /**
  * Main Kontentainment Events Class
@@ -171,14 +171,14 @@ class KE_Events {
 	 */
 	public function enqueue_frontend_assets() {
 		// Register Swiper
-		wp_register_style( 'swiper', 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css', array(), '11.0.0' );
-		wp_register_script( 'swiper', 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js', array(), '11.0.0', true );
+		wp_register_style( 'ke-swiper', 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css', array(), '11.0.0' );
+		wp_register_script( 'ke-swiper', 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js', array(), '11.0.0', true );
 
 		// Register Plugin assets
-		wp_register_style( 'ke-frontend', KE_PLUGIN_URL . 'assets/css/ke-frontend.css', array( 'swiper' ), KE_PLUGIN_VERSION );
+		wp_register_style( 'ke-frontend', KE_PLUGIN_URL . 'assets/css/ke-frontend.css', array( 'ke-swiper' ), KE_PLUGIN_VERSION );
 		wp_register_style( 'ke-frontend-rtl', KE_PLUGIN_URL . 'assets/css/ke-frontend-rtl.css', array( 'ke-frontend' ), KE_PLUGIN_VERSION );
 		
-		wp_register_script( 'ke-frontend', KE_PLUGIN_URL . 'assets/js/ke-frontend.js', array( 'jquery', 'swiper' ), KE_PLUGIN_VERSION, true );
+		wp_register_script( 'ke-frontend', KE_PLUGIN_URL . 'assets/js/ke-frontend.js', array( 'jquery', 'ke-swiper' ), KE_PLUGIN_VERSION, true );
 		wp_localize_script( 'ke-frontend', 'ke_ajax_obj', array(
 			'ajax_url' => admin_url( 'admin-ajax.php' ),
 			'nonce'    => wp_create_nonce( 'ke_ajax_nonce' )
@@ -194,8 +194,8 @@ class KE_Events {
 	 * Force Enqueue Assets (for shortcodes and manual loading)
 	 */
 	public function enqueue_assets_now() {
-		wp_enqueue_style( 'swiper' );
-		wp_enqueue_script( 'swiper' );
+		wp_enqueue_style( 'ke-swiper' );
+		wp_enqueue_script( 'ke-swiper' );
 		wp_enqueue_style( 'ke-frontend' );
 		if ( is_rtl() ) {
 			wp_enqueue_style( 'ke-frontend-rtl' );

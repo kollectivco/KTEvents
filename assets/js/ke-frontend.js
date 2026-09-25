@@ -152,3 +152,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Elementor Integration for Carousels
+window.addEventListener('elementor/frontend/init', () => {
+    elementorFrontend.hooks.addAction('frontend/element_ready/widget', function($scope) {
+        initKECarousels();
+    });
+});

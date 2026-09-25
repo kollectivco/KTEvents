@@ -32,11 +32,11 @@ class KE_Elementor {
 	 */
 	public function enqueue_swiper() {
 		// Elementor bundles Swiper. We just need to make sure the handle is enqueued.
-		if ( wp_script_is( 'swiper', 'registered' ) ) {
-			wp_enqueue_script( 'swiper' );
+		if ( wp_script_is( 'ke-swiper', 'registered' ) ) {
+			wp_enqueue_script( 'ke-swiper' );
 		}
-		if ( wp_style_is( 'swiper', 'registered' ) ) {
-			wp_enqueue_style( 'swiper' );
+		if ( wp_style_is( 'ke-swiper', 'registered' ) ) {
+			wp_enqueue_style( 'ke-swiper' );
 		}
 	}
 
