@@ -36,6 +36,112 @@ jQuery(document).ready(function($) {
         $(`#ke-venue-mode-${mode}`).fadeIn();
     });
 
+    const bulkBtn = $('#ke-bulk-import-btn');
+    const bulkProgressContainer = $('#ke-bulk-progress');
+    const bulkProgressBar = $('#ke-bulk-progress-bar');
+    const bulkStatusText = $('#ke-bulk-status-text');
+
+    bulkBtn.on('click', async function(e) {
+        e.preventDefault();
+        const urlsText = $('#source_url').val().trim();
+        if (!urlsText) {
+            alert('Please paste at least one URL.');
+            return;
+        }
+
+        const urls = urlsText.split('\n').map(u => u.trim()).filter(u => u !== '');
+        if (urls.length === 0) return;
+
+        if (!confirm(`Are you sure you want to bulk import ${urls.length} events? This might take a few minutes depending on the amount.`)) return;
+
+        bulkProgressContainer.show();
+        fetchBtn.prop('disabled', true);
+        bulkBtn.prop('disabled', true);
+        
+        let successCount = 0;
+        let failCount = 0;
+        
+        for (let i = 0; i < urls.length; i++) {
+            const url = urls[i];
+            bulkStatusText.text(`Processing ${i + 1} / ${urls.length}: ${url}`);
+            
+            try {
+                // 1. Fetch preview
+                const fetchRes = await $.post(ajaxurl, {
+                    action: 'ke_fetch_event_preview',
+                    nonce: $('#ke_import_nonce').val(),
+                    source_url: url
+                });
+
+                if (fetchRes.success && fetchRes.data && fetchRes.data.data) {
+                    const payload = fetchRes.data;
+                    const fields = payload.data.fields;
+                    
+                    const defaultCat = $('select[name="default_category_id"]').val();
+                    const autoCreateVenue = $('input[name="auto_create_venue"]').is(':checked');
+
+                    let venueMode = 'existing';
+                    if (payload.matched_venue_id) {
+                        venueMode = 'existing';
+                    } else if (autoCreateVenue && fields.venue_name) {
+                        venueMode = 'new';
+                    }
+
+                    // 2. Save directly via AJAX
+                    const saveRes = await $.post(ajaxurl, {
+                        action: 'ke_ajax_save_imported_event',
+                        nonce: $('#ke_import_nonce').val(),
+                        title: fields.title,
+                        description: fields.description,
+                        excerpt: fields.excerpt || '',
+                        status: 'upcoming',
+                        event_date: fields.event_date || '',
+                        event_end_date: fields.event_end_date || '',
+                        event_time: fields.event_time || '',
+                        event_end_time: fields.event_end_time || '',
+                        venue_mode: venueMode,
+                        venue_id: payload.matched_venue_id || 0,
+                        venue_name: fields.venue_name || '',
+                        organizer_name: fields.organizer_name || '',
+                        address: fields.address || '',
+                        phone: fields.phone || '',
+                        official_url: fields.official_url || '',
+                        source_url: payload.data.source_url,
+                        image_url: fields.image_url || '',
+                        category_id: defaultCat,
+                        governorate_id: (payload.detected_location && payload.detected_location.gov_id) ? payload.detected_location.gov_id : 0,
+                        city_id: (payload.detected_location && payload.detected_location.city_id) ? payload.detected_location.city_id : 0,
+                        source_name: payload.data.source_name || '',
+                        canonical_url: payload.data.canonical_url || '',
+                        parser_name: payload.data.parser_name || '',
+                        parser_confidence: payload.data.parser_confidence || 0
+                    });
+
+                    if (saveRes.success) {
+                        successCount++;
+                    } else {
+                        failCount++;
+                        console.error('Save error for', url, saveRes);
+                    }
+                } else {
+                    failCount++;
+                    console.error('Fetch error for', url, fetchRes);
+                }
+            } catch (err) {
+                failCount++;
+                console.error('Network error for', url, err);
+            }
+
+            // Update Progress
+            const progress = ((i + 1) / urls.length) * 100;
+            bulkProgressBar.css('width', progress + '%');
+        }
+
+        bulkStatusText.text(`Done! ${successCount} imported successfully, ${failCount} failed.`);
+        fetchBtn.prop('disabled', false);
+        bulkBtn.prop('disabled', false);
+    });
+
     /**
      * Fetch Audit Action
      */
@@ -48,7 +154,12 @@ jQuery(document).ready(function($) {
         fetchBtn.prop('disabled', true);
         fetchSpinner.addClass('is-active');
 
+        // Force the source_url to be the first line if it's multiple
+        let urlsText = $('#source_url').val().trim();
+        let firstUrl = urlsText.split('\n')[0].trim();
+        
         const formData = new FormData(this);
+        formData.set('source_url', firstUrl);
         formData.append('action', 'ke_fetch_event_preview');
         formData.append('nonce', $('#ke_import_nonce').val());
 

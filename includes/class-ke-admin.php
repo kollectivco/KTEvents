@@ -100,13 +100,24 @@ class KE_Admin {
 					<?php wp_nonce_field( 'ke_import_nonce', 'ke_import_nonce' ); ?>
 					<div class="ke-fetch-input-wrap">
 						<div class="ke-input-group">
-							<label for="source_url">Source Event URL</label>
-							<div class="ke-input-with-button">
-								<input type="url" id="source_url" name="source_url" placeholder="https://scenenow.com/Events/Detail/..." required>
-								<button type="submit" class="button button-primary button-hero" id="ke-fetch-btn">Fetch & Audit Data</button>
+							<label for="source_url">Source Event URLs (One per line for Bulk Import)</label>
+							<div class="ke-input-with-button" style="flex-direction: column; align-items: stretch; gap: 10px;">
+								<textarea id="source_url" name="source_url" placeholder="https://scenenow.com/Events/Detail/...&#10;https://cairojazzclub.com/..." required rows="5" class="large-text"></textarea>
+								<div style="display: flex; gap: 10px;">
+									<button type="submit" class="button button-primary button-hero" id="ke-fetch-btn">Preview First URL</button>
+									<button type="button" class="button button-secondary button-hero" id="ke-bulk-import-btn" style="background: #111827; color: #fff; border: none;">Bulk Auto-Import All</button>
+								</div>
 							</div>
-							<p class="description">We support SceneNow, Cairo Jazz Club, and generic schema.org sources.</p>
+							<p class="description">Paste multiple URLs (one per line) to auto-import them all at once.</p>
 						</div>
+					</div>
+
+					<div id="ke-bulk-progress" style="display: none; margin-top: 15px; padding: 15px; background: #f0f0f1; border-left: 4px solid #111827;">
+						<h4 style="margin: 0 0 10px 0;">Bulk Import Progress</h4>
+						<div style="width: 100%; background: #ccc; border-radius: 4px; overflow: hidden; height: 10px;">
+							<div id="ke-bulk-progress-bar" style="width: 0%; background: #111827; height: 100%; transition: width 0.3s;"></div>
+						</div>
+						<p id="ke-bulk-status-text" style="margin: 10px 0 0 0; font-weight: 600;">0 / 0 URLs Processed</p>
 					</div>
 					
 					<div class="ke-fetch-options">

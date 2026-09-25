@@ -21,6 +21,7 @@ class KE_Import_URL {
 	private function __construct() {
 		add_action( 'wp_ajax_ke_fetch_event_preview', array( $this, 'ajax_fetch_preview' ) );
 		add_action( 'admin_post_ke_save_imported_event', array( $this, 'handle_save_import' ) );
+		add_action( 'wp_ajax_ke_ajax_save_imported_event', array( $this, 'ajax_save_imported_event' ) );
 	}
 
 	/**
@@ -293,6 +294,119 @@ class KE_Import_URL {
 		if ( ! is_wp_error( $att_id ) ) {
 			set_post_thumbnail( $post_id, $att_id );
 		}
+	}
+	/**
+	 * Handle AJAX Bulk Save
+	 */
+	public function ajax_save_imported_event() {
+		check_ajax_referer( 'ke_import_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_send_json_error( array( 'message' => 'Insufficient permissions.' ) );
+		}
+
+		$fields = array(
+			'title'          => sanitize_text_field( $_POST['title'] ?? '' ),
+			'description'    => wp_kses_post( $_POST['description'] ?? '' ),
+			'excerpt'        => sanitize_textarea_field( $_POST['excerpt'] ?? '' ),
+			'status'         => sanitize_text_field( $_POST['status'] ?? 'upcoming' ),
+			'event_date'     => sanitize_text_field( $_POST['event_date'] ?? '' ),
+			'event_end_date' => sanitize_text_field( $_POST['event_end_date'] ?? '' ),
+			'event_time'     => sanitize_text_field( $_POST['event_time'] ?? '' ),
+			'event_end_time' => sanitize_text_field( $_POST['event_end_time'] ?? '' ),
+			'venue_mode'     => sanitize_text_field( $_POST['venue_mode'] ?? 'new' ),
+			'venue_name'     => sanitize_text_field( $_POST['venue_name'] ?? '' ),
+			'venue_id'       => intval( $_POST['venue_id'] ?? 0 ),
+			'organizer_name' => sanitize_text_field( $_POST['organizer_name'] ?? '' ),
+			'address'        => sanitize_text_field( $_POST['address'] ?? '' ),
+			'phone'          => sanitize_text_field( $_POST['phone'] ?? '' ),
+			'official_url'   => esc_url_raw( $_POST['official_url'] ?? '' ),
+			'source_url'     => esc_url_raw( $_POST['source_url'] ?? '' ),
+			'image_url'      => esc_url_raw( $_POST['image_url'] ?? '' ),
+			'category_id'    => intval( $_POST['category_id'] ?? 0 ),
+			'governorate_id' => intval( $_POST['governorate_id'] ?? 0 ),
+			'city_id'        => intval( $_POST['city_id'] ?? 0 ),
+		);
+
+		if ( empty( $fields['title'] ) ) {
+			wp_send_json_error( array( 'message' => 'Event title is missing.' ) );
+		}
+
+		// Handle Venue Creation
+		$final_venue_id = $fields['venue_id'];
+		if ( 'new' === $fields['venue_mode'] && ! empty( $fields['venue_name'] ) && ! $final_venue_id ) {
+			$final_venue_id = wp_insert_post( array(
+				'post_type'   => 'venue',
+				'post_title'  => $fields['venue_name'],
+				'post_status' => 'publish',
+			) );
+
+			if ( $final_venue_id && ! is_wp_error( $final_venue_id ) ) {
+				update_post_meta( $final_venue_id, 'KE_venue_address', $fields['address'] );
+				update_post_meta( $final_venue_id, 'KE_venue_website', $fields['official_url'] );
+			}
+		}
+
+		// Assign locations to venue
+		if ( $final_venue_id && ! is_wp_error( $final_venue_id ) ) {
+			if ( $fields['governorate_id'] ) wp_set_object_terms( $final_venue_id, $fields['governorate_id'], 'event_governorate' );
+			if ( $fields['city_id'] ) wp_set_object_terms( $final_venue_id, $fields['city_id'], 'event_city' );
+		}
+
+		// Create Event
+		$post_data = array(
+			'post_type'    => 'event',
+			'post_title'   => $fields['title'],
+			'post_content' => $fields['description'],
+			'post_excerpt' => $fields['excerpt'],
+			'post_status'  => 'publish',
+		);
+
+		$event_id = wp_insert_post( $post_data );
+
+		if ( is_wp_error( $event_id ) || ! $event_id ) {
+			wp_send_json_error( array( 'message' => 'Failed to save event to database.' ) );
+		}
+
+		// Save Meta
+		update_post_meta( $event_id, 'KE_event_status', $fields['status'] );
+		update_post_meta( $event_id, 'KE_event_date', $fields['event_date'] );
+		update_post_meta( $event_id, 'KE_event_end_date', $fields['event_end_date'] );
+		update_post_meta( $event_id, 'KE_event_time', $fields['event_time'] );
+		update_post_meta( $event_id, 'KE_event_end_time', $fields['event_end_time'] );
+		update_post_meta( $event_id, 'KE_event_venue_id', $final_venue_id );
+		update_post_meta( $event_id, 'KE_event_organizer_name', $fields['organizer_name'] );
+		update_post_meta( $event_id, 'KE_event_address', $fields['address'] );
+		update_post_meta( $event_id, 'KE_event_phone', $fields['phone'] );
+		update_post_meta( $event_id, 'KE_event_official_url', $fields['official_url'] );
+		update_post_meta( $event_id, 'KE_event_source_url', $fields['source_url'] );
+
+		update_post_meta( $event_id, 'KE_event_source_name', sanitize_text_field( $_POST['source_name'] ?? '' ) );
+		update_post_meta( $event_id, 'KE_event_canonical_url', esc_url_raw( $_POST['canonical_url'] ?? '' ) );
+		update_post_meta( $event_id, 'KE_event_import_parser', sanitize_text_field( $_POST['parser_name'] ?? '' ) );
+		update_post_meta( $event_id, 'KE_event_import_confidence', intval( $_POST['parser_confidence'] ?? 0 ) );
+		
+		// Set Category
+		if ( $fields['category_id'] ) {
+			wp_set_object_terms( $event_id, intval( $fields['category_id'] ), 'event_category' );
+		}
+
+		// Process Image
+		if ( ! empty( $fields['image_url'] ) ) {
+			$this->sideload_image( $fields['image_url'], $event_id, $fields['title'] );
+		}
+
+		KE_Logs::get_instance()->log( array(
+			'source_url'  => $fields['source_url'],
+			'event_id'    => $event_id,
+			'status'      => 'created_bulk',
+			'message'     => 'Event imported via Bulk URL importer.',
+		) );
+
+		wp_send_json_success( array(
+			'event_id' => $event_id,
+			'message'  => 'Successfully imported.'
+		) );
 	}
 }
 KE_Import_URL::get_instance();
