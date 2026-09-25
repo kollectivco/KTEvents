@@ -15,12 +15,14 @@ class KE_Egypt_Locations {
 	public static function get_governorates() {
 		return array(
 			'Cairo' => array(
-				'Nasr City', 'Heliopolis', 'New Cairo', 'Badr City', 'El Shorouk', 
-				'Obour', 'Zamalek', 'Garden City', 'Downtown', 'Maadi', 'Old Cairo'
+				'Nasr City', 'Downtown', 'Heliopolis', 'New Cairo', 'Shoubra', 
+				'6th of October', 'Garden City', 'Maadi', 'Dokki', 'Haram', 
+				'Rehab City', 'Hadayeq El Kobba', 'Obour City', 'Kattameya', 
+				'Zamalek', 'Manial El Roda', 'Helwan', 'Rod El Farag',
+				'Badr City', 'El Shorouk', 'Old Cairo'
 			),
 			'Giza' => array(
-				'Giza', 'Dokki', 'Mohandessin', 'Agouza', 'Sheikh Zayed', 
-				'6th of October', 'New Giza'
+				'Giza', 'Mohandessin', 'Agouza', 'Sheikh Zayed', 'New Giza'
 			),
 			'Alexandria' => array( 'Alexandria City', 'North Coast', 'Montaza' ),
 			'Red Sea' => array(
