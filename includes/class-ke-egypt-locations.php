@@ -24,7 +24,10 @@ class KE_Egypt_Locations {
 			'Giza' => array(
 				'Giza', 'Mohandessin', 'Agouza', 'Sheikh Zayed', 'New Giza'
 			),
-			'Alexandria' => array( 'Alexandria City', 'North Coast', 'Montaza' ),
+			'Alexandria' => array( 
+				'Alexandria City', 'North Coast', 'Agami', 'Downtown', 'Montaza', 
+				'Moharam Bek', 'Anfoushi', 'Gleem', 'Smouha', 'Mustafa Kamel', 'Roushdy' 
+			),
 			'Red Sea' => array(
 				'Hurghada', 'El Gouna', 'Soma Bay', 'Makadi Bay', 
 				'Sahl Hasheesh', 'Hurghada City'
