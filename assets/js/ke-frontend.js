@@ -154,8 +154,15 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Elementor Integration for Carousels
-window.addEventListener('elementor/frontend/init', () => {
-    elementorFrontend.hooks.addAction('frontend/element_ready/widget', function($scope) {
-        initKECarousels();
-    });
+function keInitElementorIntegration() {
+    if (typeof elementorFrontend !== 'undefined' && elementorFrontend.hooks) {
+        elementorFrontend.hooks.addAction('frontend/element_ready/widget', function($scope) {
+            initKECarousels();
+        });
+    }
+}
+window.addEventListener('elementor/frontend/init', keInitElementorIntegration);
+// Fallback in case elementor is already initialized before this script loads
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(keInitElementorIntegration, 500);
 });

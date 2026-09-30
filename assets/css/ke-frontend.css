@@ -14,8 +14,18 @@
 }
 
 /* Layout Spacing & Wrappers - Scoped to avoid takeover */
-.ke-isolated-wrap,
-.ke-isolated-wrap * {
+.ke-isolated-wrap {
+    font-family: inherit;
+}
+
+/* Force inheritance only on text and form elements, exclude icons and swiper UI */
+.ke-isolated-wrap input,
+.ke-isolated-wrap select,
+.ke-isolated-wrap textarea,
+.ke-isolated-wrap button,
+.ke-isolated-wrap h1, .ke-isolated-wrap h2, .ke-isolated-wrap h3,
+.ke-isolated-wrap h4, .ke-isolated-wrap h5, .ke-isolated-wrap h6,
+.ke-isolated-wrap p {
     font-family: inherit;
 }
 
