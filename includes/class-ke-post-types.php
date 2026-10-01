@@ -29,9 +29,9 @@ class KE_Post_Types {
 		// Event CPT
 		register_post_type( 'event', array(
 			'labels'              => array(
-				'name'               => 'Events',
-				'singular_name'      => 'Event',
-				'menu_name'          => 'KE Events',
+				'name'               => 'K Events',
+				'singular_name'      => 'K Event',
+				'menu_name'          => 'K Event',
 				'add_new'            => 'Add New',
 				'add_new_item'       => 'Add New Event',
 				'edit_item'          => 'Edit Event',
@@ -41,6 +41,7 @@ class KE_Post_Types {
 				'not_found'          => 'No events found',
 				'not_found_in_trash' => 'No events found in Trash',
 			),
+			'menu_position'       => 4,
 			'description'         => 'Editorial events listing',
 			'public'              => true,
 			'show_ui'             => true,
