@@ -1874,3 +1874,91 @@ body.foxiz-dark-mode .ke-elementor-widget:not(.ke-scheme-light) {
     cursor: pointer; 
 }
 .ke-hidden-item { display: none; }
+
+/* ==============================================================
+   100% BULLETPROOF MOBILE RESPONSIVE FIXES
+   ============================================================== */
+@media (max-width: 768px) {
+    /* 1. Elementor Grids: Force 1 column on mobile to prevent squeezing */
+    .ke-isolated-wrap .ke-loop-wrapper,
+    .ke-isolated-wrap .ke-card-grid,
+    .ke-isolated-wrap .ke-columns-1, 
+    .ke-isolated-wrap .ke-columns-2, 
+    .ke-isolated-wrap .ke-columns-3, 
+    .ke-isolated-wrap .ke-columns-4, 
+    .ke-isolated-wrap .ke-columns-5,
+    .ke-loop-wrapper:not([class*="ke-columns-mobile-"]) {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+    }
+
+    /* Keep 2 columns ONLY if explicitly requested by Elementor setting */
+    .ke-isolated-wrap .ke-loop-wrapper.ke-columns-mobile-2 {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+
+    /* 2. Single Event Hero (Fix overflow and alignment) */
+    .ke-single-hero-foxiz {
+        flex-direction: column !important;
+        gap: 20px !important;
+    }
+    
+    .ke-single-hero-foxiz .ke-poster-box {
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-top: 0 !important;
+    }
+    
+    .ke-single-hero-foxiz .ke-info-box {
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+
+    /* 3. Hero split on archive page */
+    .ke-hero-split {
+        flex-direction: column !important;
+        gap: 20px !important;
+    }
+    .ke-hero-poster-col, .ke-hero-meta-col {
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* 4. Carousels (Ensure arrows don't break boundaries) */
+    .ke-carousel-container {
+        padding: 0 10px !important;
+        overflow: hidden !important;
+    }
+    
+    .ke-carousel-container .swiper-button-next,
+    .ke-carousel-container .swiper-button-prev {
+        display: none !important; /* Hide arrows on mobile for better touch experience */
+    }
+
+    /* 5. Typography sizing */
+    .ke-hero-title, .ke-info-box .ke-title-large {
+        font-size: 28px !important;
+        line-height: 1.2 !important;
+        margin-bottom: 20px !important;
+    }
+
+    .ke-foxiz-section-title {
+        font-size: 20px !important;
+    }
+
+    /* 6. Dashboard layout (if used on frontend) */
+    .ke-dashboard-layout {
+        flex-direction: column !important;
+        gap: 20px !important;
+    }
+    .ke-main-col, .ke-sidebar {
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+}
